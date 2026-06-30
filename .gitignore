@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+
+# build output
+dist
+dist-ssr
+*.local
+
+# editor / OS
+.DS_Store
+.vite
+.idea
+.vscode
+
+# local agent/tooling config (contains machine-specific absolute paths)
+.claude

@@ -1,0 +1,179 @@
+{
+  "_readme": "Investment Time Machine — MVP campaign content. Drop-in for a solo-dev SPA. All scoring is hardcoded (no real engine). The Autopsy's 'Multiverse' uses 3 STATIC scenarios (not generated timelines). Engine semantics: each choice rebalances the portfolio to target fractions of the CURRENT total value (alloc), or holds (hold:true), or sells half of holdings to cash (sellHalf:true). 'leverage':2 doubles NVDA exposure by adding borrowed cash equal to the NVDA holding; subtract the loan principal at the very end (optional for MVP). After each day's choice, apply that phase's returns. DQ = average of the 3 chosen dq values. Risk bucket from dqAvg: >=75 disciplined, <=45 reckless, else balanced. Verdict from returnPct vs thresholds.returnHigh and dqAvg vs thresholds.dqHigh.",
+  "meta": {
+    "campaignId": "ai_boom_2023_2025",
+    "title": "The AI Boom",
+    "subtitle": "2023 - 2025",
+    "profile": "New Graduate",
+    "profileBlurb": "You're 24, just got your first real paycheck, with $10,000 saved.",
+    "goal": "long_term_wealth",
+    "startCash": 10000,
+    "estimatedMinutes": 10
+  },
+  "engine": {
+    "phaseReturns": [
+      { "label": "Run-up (Day 1 -> Day 2)", "nvda": 0.55, "etf": 0.18, "cash": 0 },
+      { "label": "Crash (Day 2 -> Day 3)", "nvda": -0.28, "etf": -0.09, "cash": 0 },
+      { "label": "Recovery (Day 3 -> Epilogue)", "nvda": 0.30, "etf": 0.10, "cash": 0 }
+    ],
+    "thresholds": { "returnHigh": 0.25, "dqHigh": 70 },
+    "riskBucketByDqAvg": { "disciplined": ">=75", "reckless": "<=45", "balanced": "otherwise" }
+  },
+  "days": [
+    {
+      "id": 1,
+      "title": "The Spike",
+      "date": "May 25, 2023",
+      "whyContext": "fomo_event",
+      "story": "Your group chat won't stop posting NVIDIA gains. The fear of missing out is real. You have $10,000 doing nothing.",
+      "signals": [
+        { "tone": "bull", "text": "NVIDIA jumps 24% overnight - the biggest single-day value gain in stock-market history. The CEO says AI chip demand is 'off the charts.'" },
+        { "tone": "caution", "text": "Analysts warn NVIDIA now trades at ~200x earnings - 'priced for perfection.' One slip and it falls hard." },
+        { "tone": "noise", "text": "Veteran investor: 'Every tech boom ends in a bubble. Remember the year 2000.'" }
+      ],
+      "prompt": "Your first move. What do you do with your $10,000?",
+      "choices": [
+        { "id": "1A", "label": "Go all-in on NVIDIA", "alloc": { "nvda": 1, "etf": 0, "cash": 0 }, "dq": 25, "archetype": "thrill_seeker", "feedback": "Bold - but you put everything into one stock right after a 24% spike, before checking anything else. Notice how that urgency felt." },
+        { "id": "1B", "label": "Take a ~25% position, keep cash ready", "alloc": { "nvda": 0.25, "etf": 0, "cash": 0.75 }, "dq": 75, "archetype": "steady_hand", "feedback": "A real bet, but you kept powder dry. You can react to whatever comes next." },
+        { "id": "1C", "label": "Buy a broad AI/tech ETF instead", "alloc": { "nvda": 0, "etf": 0.70, "cash": 0.30 }, "dq": 85, "archetype": "steady_hand", "feedback": "You bet on the trend, not a single horse. Less thrilling, much harder to blow up." },
+        { "id": "1D", "label": "Wait for a dip - it already ran 24%", "alloc": { "nvda": 0, "etf": 0, "cash": 1 }, "dq": 50, "archetype": "researcher", "feedback": "Patience is a real strategy. But 'waiting for a dip' can mean waiting forever. We'll see." }
+      ],
+      "cliffhanger": "You make your move. -> One year later. The world has changed."
+    },
+    {
+      "id": 2,
+      "title": "The Peak",
+      "date": "June 18, 2024",
+      "whyContext": "euphoria",
+      "story": "A year on, AI is everywhere. NVIDIA just became the most valuable company on Earth - over $3 trillion - and split its stock 10-for-1. A coworker remortgaged his house to buy more. Everyone feels like a genius.",
+      "signals": [
+        { "tone": "bull", "text": "NVIDIA overtakes Apple and Microsoft as the world's most valuable company. 'The AI revolution is just getting started.'" },
+        { "tone": "caution", "text": "Strategists warn the 'Magnificent Seven' now make up a record share of the index - concentration not seen since the dot-com peak." },
+        { "tone": "noise", "text": "After the 10-for-1 split, shares look 'cheaper' - retail buying surges." }
+      ],
+      "prompt": "Your portfolio is up. The crowd is euphoric. What now?",
+      "choices": [
+        { "id": "2A", "label": "Borrow money to buy even more", "alloc": { "nvda": 1, "etf": 0, "cash": 0 }, "leverage": 2, "dq": 10, "archetype": "gambler", "feedback": "Leverage at peak euphoria. Remember this choice tomorrow." },
+        { "id": "2B", "label": "Buy more - the split made it 'cheap'", "alloc": { "nvda": 1, "etf": 0, "cash": 0 }, "dq": 30, "archetype": "crowd_follower", "feedback": "Careful - a split changes the price tag, not the value. $10k of a $120 stock or a $12 stock is still $10k." },
+        { "id": "2C", "label": "Take some profits, move into a diversified ETF", "alloc": { "nvda": 0.25, "etf": 0.55, "cash": 0.20 }, "dq": 90, "archetype": "steady_hand", "feedback": "Unsexy and smart. You locked in gains and cut your bet on one name near record highs." },
+        { "id": "2D", "label": "Hold everything exactly as is", "hold": true, "dq": 60, "archetype": "researcher", "feedback": "Letting winners run isn't wrong - but did you check how concentrated you've become?" }
+      ],
+      "cliffhanger": "You decide. That night, an unfamiliar name hits the headlines: DeepSeek."
+    },
+    {
+      "id": 3,
+      "title": "The Shock",
+      "date": "January 27, 2025",
+      "whyContext": "crash",
+      "story": "You wake to red everywhere. A Chinese startup, DeepSeek, built an AI model rivaling the best - for a fraction of the cost. The whole premise ('AI needs endless NVIDIA chips') is suddenly in doubt. By midday NVIDIA is down 17% - the biggest one-day loss of value in history. Your hands are sweating.",
+      "signals": [
+        { "tone": "bear", "text": "$590 BILLION erased from NVIDIA in a single day. 'Is the AI bubble finally bursting?'" },
+        { "tone": "caution", "text": "Some analysts: 'Cheaper AI could mean MORE chip demand, not less' (the Jevons paradox)." },
+        { "tone": "noise", "text": "Nobody knows if this is the top or the buying opportunity of the decade." }
+      ],
+      "prompt": "This is the moment. What do you do?",
+      "choices": [
+        { "id": "3A", "label": "Sell everything - get to cash now", "alloc": { "nvda": 0, "etf": 0, "cash": 1 }, "dq": 20, "archetype": "panic_seller", "feedback": "You stopped the pain. But selling in panic locks in the loss, and you won't be there if it bounces. Notice the urge." },
+        { "id": "3B", "label": "Buy the dip - aggressively", "alloc": { "nvda": 1, "etf": 0, "cash": 0 }, "dq": 45, "archetype": "gambler", "feedback": "Buying reflexively is as thoughtless as panic-selling. Did you weigh the news, or just follow a slogan?" },
+        { "id": "3C", "label": "Pause, re-read the news, hold your plan", "hold": true, "dq": 90, "archetype": "tactician", "feedback": "You separated the scary headline from the real question: does cheaper AI kill chip demand, or grow it? That's thinking, not reacting." },
+        { "id": "3D", "label": "Sell half to calm down, hold the rest", "sellHalf": true, "dq": 70, "archetype": "steady_hand", "feedback": "A reasonable middle path - less risk without abandoning ship. Not perfect, not panic." }
+      ],
+      "cliffhanger": "The dust settles. Time to see who you really are."
+    }
+  ],
+  "verdicts": {
+    "lucky_not_good": {
+      "headline": "LUCKY - NOT GOOD.",
+      "body": "You made money. But you took risks that usually don't pay off. Change one headline and the same choices lose you most of your money."
+    },
+    "skilled": {
+      "headline": "SKILLED. YOU EARNED THIS.",
+      "body": "Strong process and a strong result. This is the kind of decision-making that compounds over a lifetime, not just one campaign."
+    },
+    "unlucky_sound": {
+      "headline": "UNLUCKY - BUT SOUND.",
+      "body": "The result stings, but your process was right. Make decisions like this consistently and the odds are firmly on your side."
+    },
+    "poor": {
+      "headline": "THIS ONE STINGS.",
+      "body": "Poor process and poor luck this time. The good news: process is the part you fully control - and it's the most fixable."
+    }
+  },
+  "counterfactuals": {
+    "_readme": "Static 3-scenario sets used in Autopsy Act 4 (The Multiverse). Selected by risk bucket. 'real' should be replaced at render time with the player's actual computed returnPct; moderate/severe are illustrative downside outcomes for the SAME choices.",
+    "reckless": {
+      "lossCount": 2,
+      "ofN": 3,
+      "scenarios": [
+        { "id": "real", "label": "Real history", "tone": "good", "return": "+45%", "note": "What actually happened." },
+        { "id": "moderate", "label": "Plausible bad", "tone": "bad", "return": "-31%", "note": "NVIDIA misses one earnings; AI capex cools." },
+        { "id": "severe", "label": "Catastrophic", "tone": "bad", "return": "-61%", "note": "DeepSeek arrives in 2023; the bubble pops early." }
+      ],
+      "punchline": "You didn't make a +45% decision. You made a decision that won in 1 of 3 worlds - and you happened to live in that one."
+    },
+    "balanced": {
+      "lossCount": 1,
+      "ofN": 3,
+      "scenarios": [
+        { "id": "real", "label": "Real history", "tone": "good", "return": "+24%", "note": "What actually happened." },
+        { "id": "moderate", "label": "Plausible bad", "tone": "mild", "return": "-8%", "note": "NVIDIA misses one earnings; AI capex cools." },
+        { "id": "severe", "label": "Catastrophic", "tone": "bad", "return": "-19%", "note": "DeepSeek arrives in 2023; the bubble pops early." }
+      ],
+      "punchline": "Your spread of outcomes was tighter. You gave up some upside for a lot less fragility - usually a good trade."
+    },
+    "disciplined": {
+      "lossCount": 1,
+      "ofN": 3,
+      "scenarios": [
+        { "id": "real", "label": "Real history", "tone": "good", "return": "+18%", "note": "What actually happened." },
+        { "id": "moderate", "label": "Plausible bad", "tone": "mild", "return": "-3%", "note": "NVIDIA misses one earnings; AI capex cools." },
+        { "id": "severe", "label": "Catastrophic", "tone": "mild", "return": "-11%", "note": "DeepSeek arrives in 2023; the bubble pops early." }
+      ],
+      "punchline": "Across every world, your downside stayed small. That's not luck - that's a process that survives surprises."
+    }
+  },
+  "alex": {
+    "name": "Alex",
+    "tagline": "The Disciplined Investor",
+    "choices": ["1C", "2C", "3C"],
+    "realReturn": "+11%",
+    "avgReturn": "+9%",
+    "worstCase": "-11%",
+    "comparisonCopy": "Here's Alex - diversified, kept their nerve. In your timeline you may have beaten Alex. But across all three worlds, Alex averaged +9% and never lost more than 11%. You won the round. Alex would win the decade."
+  },
+  "autopsy": {
+    "act1_victory_lap": {
+      "title": "The Result",
+      "copy": "Your $10,000 became ${finalValue}. That's {returnPct}. You beat the market.",
+      "tone": "celebratory"
+    },
+    "act2_pivot": {
+      "copy": "Most apps would stop here and call you a winner. We're going to ask the only question that actually matters: Was that a good decision - or a good outcome?"
+    },
+    "act3_mirror": {
+      "intro": "Here's what you actually told yourself.",
+      "template": "{day}. You {choiceLabel}. You said: '{whyText}'. {biasLine}",
+      "note": "Quote each captured 'why' verbatim. {biasLine} names the bias from the motivation's family (e.g., 'That feeling has a name: FOMO - the most expensive emotion in investing.')."
+    },
+    "act4_multiverse": {
+      "intro": "We ran your exact decisions through other ways history could have gone.",
+      "twinIntro": "And here's an investor who diversified and kept their nerve.",
+      "note": "Render counterfactuals[riskBucket].scenarios as 3 cards (green/red), then the punchline, then alex.comparisonCopy."
+    },
+    "act5_reframe": {
+      "verdictNote": "Render verdicts[verdict].headline (large) + body.",
+      "copy": "This isn't about being wrong. It's about a skill almost no one has: telling the difference between a good bet and a lucky one. Decision Quality: {dqScore}/100. Most people never measure this. You just did.",
+      "hook": "Want to prove it wasn't a fluke? Next time, NVIDIA collapses. Same you, harder world. See if your process holds when luck doesn't."
+    },
+    "reaction_capture": {
+      "surprise": "Did this surprise you?",
+      "rating": "How eye-opening was this? (1-5 stars)",
+      "emailHook": "Tomorrow, replay this with an Alternate Timeline where NVIDIA collapses. Want us to ping you?"
+    },
+    "share_card": {
+      "line1": "I scored {dqScore}/100 on Decision Quality.",
+      "line2": "{verdictHeadline}",
+      "cta": "What would YOU have done? - Investment Time Machine"
+    }
+  }
+}

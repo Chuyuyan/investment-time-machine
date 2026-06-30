@@ -1,0 +1,143 @@
+{
+  "_readme": "Capture-the-Why taxonomy. Architecture: a reusable Motivation Library (atomic, each with a 7-trait fingerprint) + Context Menus that re-skin 4 motivations per situation. Runtime: on each 'why' tap, add motivation.traits to the running dnaVector; archetype = nearest prototype (min Euclidean distance) in archetypes[]. Traits: FOMO is a vulnerability (high = worse); the other six are virtues. Conviction is ambiguous alone - Conviction + Research + Calibration = earned; Conviction - Research - Calibration = blind. Trait scale: -2..+2. Forward-compatible: when free-text 'why' capture is added later, an LLM classifies text into the nearest motivation id and all downstream systems keep working.",
+  "traits": [
+    { "id": "fomo", "label": "FOMO", "polarity": "vulnerability", "meaning": "Decisions driven by missing out / herd. High is worse." },
+    { "id": "discipline", "label": "Discipline", "polarity": "virtue", "meaning": "Acting on plan, overriding impulse." },
+    { "id": "patience", "label": "Patience", "polarity": "virtue", "meaning": "Tolerating inaction / long horizon." },
+    { "id": "conviction", "label": "Conviction", "polarity": "ambiguous", "meaning": "Strength of independent belief; earned only with research + calibration." },
+    { "id": "research", "label": "Research", "polarity": "virtue", "meaning": "Grounded in information vs emotion/social cues." },
+    { "id": "riskAwareness", "label": "Risk Awareness", "polarity": "virtue", "meaning": "Weighs downside, sizing, what-could-go-wrong." },
+    { "id": "calibration", "label": "Calibration", "polarity": "virtue", "meaning": "Stated certainty matches reality; updates on evidence." }
+  ],
+  "families": [
+    { "id": "social", "label": "Social / Herd", "valence": "vulnerability", "biasLine": "That has a name: herd instinct. The crowd is the most expensive voice in investing." },
+    { "id": "fear", "label": "Fear / Pain-avoidance", "valence": "vulnerability", "biasLine": "That feeling has a name: panic. It's the tax fear charges on every portfolio." },
+    { "id": "greed", "label": "Greed / Overconfidence", "valence": "vulnerability", "biasLine": "That has a name: overconfidence. It feels like edge. It's usually just exposure." },
+    { "id": "plan", "label": "Plan / Discipline", "valence": "virtue", "biasLine": "That's discipline - boring on the day, decisive over a decade." },
+    { "id": "research", "label": "Evidence / Research", "valence": "virtue", "biasLine": "That's process. You reasoned instead of reacted." },
+    { "id": "conviction", "label": "Patience / Conviction", "valence": "virtue", "biasLine": "That's conviction with patience - the rare kind that survives a bad week." },
+    { "id": "humility", "label": "Humility / Risk", "valence": "virtue", "biasLine": "That's risk awareness. You respected what you couldn't know." }
+  ],
+  "motivations": [
+    { "id": "plan_fit", "text": "It fits my plan and I sized it sensibly", "family": "plan", "archetype": "steady_hand", "traits": { "fomo": -1, "discipline": 2, "patience": 1, "conviction": 0, "research": 1, "riskAwareness": 2, "calibration": 1 } },
+    { "id": "rebalance_dca", "text": "I'm rebalancing / averaging in on schedule", "family": "plan", "archetype": "steady_hand", "traits": { "fomo": -1, "discipline": 2, "patience": 1, "conviction": 0, "research": 1, "riskAwareness": 2, "calibration": 1 } },
+    { "id": "take_profits", "text": "I took some profits / trimmed concentration", "family": "plan", "archetype": "steady_hand", "traits": { "fomo": -1, "discipline": 2, "patience": 1, "conviction": 0, "research": 0, "riskAwareness": 2, "calibration": 1 } },
+    { "id": "size_to_risk", "text": "I sized to my risk - no chasing", "family": "humility", "archetype": "steady_hand", "traits": { "fomo": -2, "discipline": 2, "patience": 1, "conviction": 0, "research": 1, "riskAwareness": 2, "calibration": 1 } },
+    { "id": "cash_ready", "text": "I had cash ready and bought to plan", "family": "humility", "archetype": "tactician", "traits": { "fomo": -1, "discipline": 2, "patience": 2, "conviction": 1, "research": 1, "riskAwareness": 2, "calibration": 2 } },
+    { "id": "afford_to_lose", "text": "I'm only risking what I can afford to lose", "family": "humility", "archetype": "tactician", "traits": { "fomo": -1, "discipline": 1, "patience": 1, "conviction": 0, "research": 0, "riskAwareness": 2, "calibration": 2 } },
+    { "id": "dont_understand", "text": "I don't understand it well enough yet, so I wait", "family": "humility", "archetype": "tactician", "traits": { "fomo": -1, "discipline": 1, "patience": 1, "conviction": 0, "research": 1, "riskAwareness": 1, "calibration": 2 } },
+    { "id": "research_thesis", "text": "I researched it and believe in the long-term case", "family": "research", "archetype": "researcher", "traits": { "fomo": -1, "discipline": 1, "patience": 1, "conviction": 2, "research": 2, "riskAwareness": 0, "calibration": 1 } },
+    { "id": "dig_in", "text": "I dug into whether the move is justified", "family": "research", "archetype": "researcher", "traits": { "fomo": -1, "discipline": 1, "patience": 1, "conviction": 0, "research": 2, "riskAwareness": 1, "calibration": 1 } },
+    { "id": "checked_change", "text": "I checked whether anything actually changed first", "family": "research", "archetype": "tactician", "traits": { "fomo": -1, "discipline": 1, "patience": 1, "conviction": 0, "research": 2, "riskAwareness": 1, "calibration": 2 } },
+    { "id": "thesis_broke", "text": "My thesis broke - new info changed my view", "family": "research", "archetype": "tactician", "traits": { "fomo": 0, "discipline": 1, "patience": 0, "conviction": 1, "research": 2, "riskAwareness": 1, "calibration": 2 } },
+    { "id": "thesis_intact", "text": "My thesis is intact; the price doesn't change it", "family": "conviction", "archetype": "researcher", "traits": { "fomo": -1, "discipline": 1, "patience": 2, "conviction": 2, "research": 1, "riskAwareness": 0, "calibration": 1 } },
+    { "id": "long_horizon", "text": "Long-term horizon - I ignore the noise", "family": "conviction", "archetype": "steady_hand", "traits": { "fomo": -1, "discipline": 2, "patience": 2, "conviction": 1, "research": 0, "riskAwareness": 1, "calibration": 1 } },
+    { "id": "corrections_normal", "text": "Corrections are normal - I stuck to my plan", "family": "conviction", "archetype": "steady_hand", "traits": { "fomo": -1, "discipline": 2, "patience": 2, "conviction": 1, "research": 0, "riskAwareness": 1, "calibration": 1 } },
+    { "id": "herd", "text": "Everyone's buying/selling - so I did too", "family": "social", "archetype": "crowd_follower", "traits": { "fomo": 2, "discipline": -1, "patience": -1, "conviction": -2, "research": -2, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "dont_miss_out", "text": "I don't want to miss out", "family": "social", "archetype": "thrill_seeker", "traits": { "fomo": 2, "discipline": -2, "patience": -1, "conviction": -1, "research": -1, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "momentum", "text": "It's been soaring - momentum is strong", "family": "social", "archetype": "thrill_seeker", "traits": { "fomo": 2, "discipline": -1, "patience": -1, "conviction": -1, "research": -1, "riskAwareness": -2, "calibration": -1 } },
+    { "id": "cheap_anchor", "text": "It dropped, so it must be cheap now", "family": "social", "archetype": "crowd_follower", "traits": { "fomo": 1, "discipline": -1, "patience": -1, "conviction": -1, "research": -2, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "stop_pain", "text": "I was scared it'd drop more - I had to stop the pain", "family": "fear", "archetype": "panic_seller", "traits": { "fomo": 0, "discipline": -2, "patience": -2, "conviction": -1, "research": -1, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "lock_gains_fear", "text": "I wanted to lock in gains before they vanished", "family": "fear", "archetype": "panic_seller", "traits": { "fomo": 0, "discipline": -1, "patience": -1, "conviction": -1, "research": -1, "riskAwareness": 0, "calibration": -1 } },
+    { "id": "refuse_loss", "text": "I refuse to sell at a loss - I'll wait for break-even", "family": "fear", "archetype": "the_stubborn", "traits": { "fomo": 0, "discipline": -1, "patience": -1, "conviction": 1, "research": -1, "riskAwareness": -2, "calibration": -2 } },
+    { "id": "frozen", "text": "I froze - I didn't know what to do", "family": "fear", "archetype": "the_freezer", "traits": { "fomo": 0, "discipline": -1, "patience": 0, "conviction": -1, "research": -1, "riskAwareness": 0, "calibration": -1 } },
+    { "id": "sure_thing", "text": "It's a sure thing - it only goes up", "family": "greed", "archetype": "gambler", "traits": { "fomo": 1, "discipline": -1, "patience": -1, "conviction": 1, "research": -1, "riskAwareness": -2, "calibration": -2 } },
+    { "id": "time_market", "text": "I tried to time the top/bottom by gut", "family": "greed", "archetype": "gambler", "traits": { "fomo": 0, "discipline": -1, "patience": -1, "conviction": 0, "research": -1, "riskAwareness": -1, "calibration": -2 } },
+    { "id": "revenge", "text": "I'm doubling down to win it back", "family": "greed", "archetype": "gambler", "traits": { "fomo": 1, "discipline": -2, "patience": -2, "conviction": -1, "research": -1, "riskAwareness": -2, "calibration": -2 } },
+    { "id": "leverage", "text": "I borrowed / leveraged to maximize gains", "family": "greed", "archetype": "gambler", "traits": { "fomo": 1, "discipline": -2, "patience": -1, "conviction": 1, "research": -1, "riskAwareness": -2, "calibration": -2 } },
+    { "id": "reflexive_buy", "text": "Blood in the streets - I bought aggressively", "family": "greed", "archetype": "gambler", "traits": { "fomo": 0, "discipline": -1, "patience": -1, "conviction": 1, "research": -2, "riskAwareness": -2, "calibration": -1 } }
+  ],
+  "contexts": [
+    {
+      "context": "buying",
+      "prompt": "Why this move?",
+      "options": [
+        { "motivationId": "research_thesis", "text": "I researched it and believe long-term" },
+        { "motivationId": "plan_fit", "text": "It fits my plan and I sized it sensibly" },
+        { "motivationId": "dont_miss_out", "text": "I don't want to miss out" },
+        { "motivationId": "momentum", "text": "It's been soaring - momentum is strong" }
+      ]
+    },
+    {
+      "context": "selling",
+      "prompt": "Why this move?",
+      "options": [
+        { "motivationId": "plan_fit", "text": "It hit my target / fits my plan" },
+        { "motivationId": "thesis_broke", "text": "My thesis broke - new info changed my view" },
+        { "motivationId": "stop_pain", "text": "I'm scared it'll drop more" },
+        { "motivationId": "time_market", "text": "It feels like the top" }
+      ]
+    },
+    {
+      "context": "holding",
+      "prompt": "Why hold?",
+      "options": [
+        { "motivationId": "thesis_intact", "text": "My thesis is intact; the price doesn't change it" },
+        { "motivationId": "long_horizon", "text": "Long-term horizon - I ignore the noise" },
+        { "motivationId": "refuse_loss", "text": "I refuse to sell at a loss" },
+        { "motivationId": "frozen", "text": "I froze - I didn't know what to do" }
+      ]
+    },
+    {
+      "context": "adding",
+      "prompt": "Why add more?",
+      "options": [
+        { "motivationId": "rebalance_dca", "text": "I'm averaging in on schedule" },
+        { "motivationId": "research_thesis", "text": "My thesis got stronger on new evidence" },
+        { "motivationId": "cheap_anchor", "text": "It dropped, so it's cheap now" },
+        { "motivationId": "revenge", "text": "I'm doubling down to win it back" }
+      ]
+    },
+    {
+      "context": "panic",
+      "prompt": "Why this move?",
+      "options": [
+        { "motivationId": "plan_fit", "text": "I followed my plan despite the fear" },
+        { "motivationId": "checked_change", "text": "I checked whether anything actually changed" },
+        { "motivationId": "stop_pain", "text": "I had to make the pain stop" },
+        { "motivationId": "herd", "text": "Everyone was selling, so I sold" }
+      ]
+    },
+    {
+      "context": "fomo_event",
+      "prompt": "Why this move?",
+      "options": [
+        { "motivationId": "size_to_risk", "text": "I sized a position to my risk - no chasing" },
+        { "motivationId": "dig_in", "text": "I dug into whether the move is justified" },
+        { "motivationId": "dont_miss_out", "text": "I jumped in - can't watch others get rich" },
+        { "motivationId": "sure_thing", "text": "I went big - this is a sure thing" }
+      ]
+    },
+    {
+      "context": "crash",
+      "prompt": "Why this move?",
+      "options": [
+        { "motivationId": "corrections_normal", "text": "Corrections are normal - I stuck to my plan" },
+        { "motivationId": "cash_ready", "text": "I had cash ready and bought to plan" },
+        { "motivationId": "stop_pain", "text": "I sold to stop the bleeding" },
+        { "motivationId": "reflexive_buy", "text": "Blood in the streets - I bought big" }
+      ]
+    },
+    {
+      "context": "euphoria",
+      "prompt": "Why this move?",
+      "options": [
+        { "motivationId": "take_profits", "text": "I took some profits / rebalanced" },
+        { "motivationId": "afford_to_lose", "text": "I trimmed concentration to manage my risk" },
+        { "motivationId": "momentum", "text": "The trend is my friend - I went bigger" },
+        { "motivationId": "leverage", "text": "I leveraged up to maximize gains" }
+      ]
+    }
+  ],
+  "archetypes": [
+    { "id": "thrill_seeker", "name": "The Thrill-Seeker", "evolvesTo": "steady_hand", "prototype": { "fomo": 2, "discipline": -2, "patience": -1, "conviction": -1, "research": -1, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "crowd_follower", "name": "The Crowd-Follower", "evolvesTo": "researcher", "prototype": { "fomo": 2, "discipline": -1, "patience": -1, "conviction": -2, "research": -2, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "gambler", "name": "The Gambler", "evolvesTo": "tactician", "prototype": { "fomo": 1, "discipline": -1, "patience": -1, "conviction": 1, "research": -1, "riskAwareness": -2, "calibration": -2 } },
+    { "id": "panic_seller", "name": "The Panic-Seller", "evolvesTo": "steady_hand", "prototype": { "fomo": 0, "discipline": -2, "patience": -2, "conviction": -1, "research": -1, "riskAwareness": -1, "calibration": -1 } },
+    { "id": "the_stubborn", "name": "The Stubborn", "evolvesTo": "tactician", "prototype": { "fomo": 0, "discipline": -1, "patience": -1, "conviction": 1, "research": -1, "riskAwareness": -2, "calibration": -2 } },
+    { "id": "the_freezer", "name": "The Freezer", "evolvesTo": "steady_hand", "prototype": { "fomo": 0, "discipline": -2, "patience": 0, "conviction": -1, "research": -1, "riskAwareness": 0, "calibration": -1 } },
+    { "id": "researcher", "name": "The Researcher", "evolvesTo": "tactician", "prototype": { "fomo": -1, "discipline": 1, "patience": 1, "conviction": 2, "research": 2, "riskAwareness": 0, "calibration": 1 } },
+    { "id": "steady_hand", "name": "The Steady Hand", "evolvesTo": "tactician", "prototype": { "fomo": -1, "discipline": 2, "patience": 2, "conviction": 1, "research": 1, "riskAwareness": 2, "calibration": 1 } },
+    { "id": "tactician", "name": "The Tactician", "evolvesTo": null, "prototype": { "fomo": -1, "discipline": 2, "patience": 2, "conviction": 1, "research": 2, "riskAwareness": 2, "calibration": 2 } }
+  ]
+}
