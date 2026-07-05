@@ -125,6 +125,24 @@ bridge to real-money confidence. All case figures are directionally real but
 simplified; do a fact-check pass with exact numbers + sources before any public
 release.
 
+**THE FUSION DESIGN (agreed direction, 2026-07-05) — how life and chapters
+combine.** Principle: life is the wrapper, never the delay. Full production only
+at chapter open (the pinch) and chapter close (the Autopsy); every decision in
+between gets 1–2 minutes of compressed life: (1) a VOICE brings the situation
+(Marcus/coworker/Mom), (2) the persistent savings bar + dream shows what the
+money means, (3) ONE ripple after. Chapter = life stage × era × hidden question
+(eras naturally cluster by mood, so real history supplies the curriculum):
+Ch.1 = age 22, 2020–21, Moderna/Nikola/Zoom/GameStop, "Is loud the same as
+true?" · Ch.2 = age 24, 2022–23, Meta/FRC/Netflix, "When is a falling price a
+bargain?" · later chapters shift identity (married, obligations) so SIZING
+overtakes PICKING and the whole-market-fund choice becomes a real dramatic
+option (the XEQT resolution). Names stay hidden in-story ("the vaccine company
+Marcus won't shut up about"); the chapter Autopsy reveals "this was Moderna —
+it really happened" as the mic-drop. Bets come from the persistent life
+bankroll (the car fund), which is the entire feeling-layer in one mechanic.
+Rejected alternatives: study-app-in-phone framing (homework feeling), full
+production per decision (buries thinking).
+
 **Chapter mode built (2026-07-02), with two settled refinements:** (1) The
 hidden question is DISCOVERED, not announced — chapter tiles say only "one
 hidden question"; the report reveals it afterward ("Did you feel it? Every
