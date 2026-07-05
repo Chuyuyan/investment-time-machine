@@ -6,7 +6,8 @@
 > resume on any device (or by any collaborator/assistant) without losing the
 > thread. If you are picking this up cold, read top to bottom once.
 >
-> Last updated: 2026-06-30.
+> Last updated: 2026-07-01. **Start with §0.5 (Mission & design spine) — it is
+> the current governing section; §§1–8 predate the July rebuild.**
 
 ---
 
@@ -20,6 +21,120 @@ facts — it is to build **judgment under uncertainty** and to feel: *"What kind
 of life would I build if I consistently made different financial decisions?"*
 Investing is the arena; the real subject is **life**, and beneath that,
 **thinking**.
+
+---
+
+## 0.5 Mission & design spine (settled 2026-07-01 — governs everything)
+
+> This section is the current spine and a knife. It supersedes anything below it
+> that conflicts. §§1–8 predate the July rebuild and are partly stale; trust §0.5
+> and §5-current (build status) first.
+
+**Mission.** *Help people become better investors by helping them make better
+investment decisions.* Investing is the domain; decision-making is the transferable
+skill; reflection/coaching is the learning mechanism. We do **not** teach what to
+buy, how to read statements, or investing rules — we improve investors by having
+them make, and then understand, many investment decisions. Success looks like a
+player saying: *"I finally understand how I make investment decisions, and I feel
+more confident making them in real life."*
+
+**The filter — apply to every feature.** *Will this help someone make better
+investment decisions in the real world?* NOT "is it more realistic?", NOT "does it
+teach finance?", NOT "does it teach general decision-making?" Keep investing at the
+center; this is not a generic decision game.
+
+**The two mysteries (the engine model).**
+- **Situational mystery — "What's happening here?"** The job of the **gameplay**.
+  Makes a single decision gripping. Every situation must feel genuinely *different*
+  from every prior one (AI boom, rates, tariffs, crypto, a company you love / one
+  everyone hates) — the pull is *"what makes THIS one different?"*, never a generic
+  "should I buy?". The market mystery constantly changes.
+- **Self mystery — "What kind of investor am I?"** The job of the **Autopsy**.
+  Makes you want the *next* chapter. Persistent; one decision can't answer it; you
+  return to assemble a picture of yourself you can't finish in one sitting.
+
+**Refinements that correct earlier drafts:**
+- **The Autopsy is the payoff, not the engine.** The engine is the experience
+  itself — every decision must be meaningful, difficult, and emotionally engaging
+  *on its own*. Nobody should play just to reach the next Autopsy. Gameplay → curious
+  about the market; Autopsy → curious about yourself.
+- **Conviction, not certainty.** Not a detective game with a correct answer. The
+  player builds *enough confidence to act* — never tries to be sure. Research
+  *increases* uncertainty (reveals how much was always there); the skill is acting
+  clearly anyway.
+- **The amount is not the signal — how you arrived at it is.** Never imply "bigger
+  bet = more meaningful" (that rewards gambling and corrupts the Autopsy). Same
+  allocation can earn opposite verdicts; different allocations can earn the same one.
+  Coaching question: *"why this amount, and what changed your mind?"* — never *"why
+  not more?"*
+- **The real conflict is internal** (your reach vs. your fear), not two NPCs giving
+  advice. "A reasonable amount" settles the external argument, not the internal one;
+  the unavoidable cost of any choice is finding out what kind of investor you are.
+- **The transformation:** *become someone who can make investment decisions without
+  needing certainty.* Late-game calm is self-knowledge, not market knowledge.
+
+**Build status (2026-07-01).** The Chapter One vertical slice is implemented
+end-to-end in `src/components/DecisionClimax.jsx` (the `?proto=decision` prototype)
+and is the live deliverable: mysterious opening → interactive cold open (Ray) →
+roam-able phone morning on a world clock (Marcus = badge pressure, Mom = a phone
+**call** = weight, News breaks, market opens 9:30, texture apps with one job each)
+→ decision (say → drag-to-commit → hold) → order ritual → settle ("what have I
+done") → night cliffhanger → **Result** (the second clock) → **Autopsy** (5 acts:
+decouple what-happened from what-you-did · echo-chamber reveal · words-vs-hands ·
+process verdict · Investor-DNA seed) → **Day Two** hook. Day One stays guided
+(tutorial); later chapters open up. Next: put it in front of real players.
+
+**Second prototype — the naked loop (`?proto=core`, `src/components/CoreLoop.jsx`).**
+Built 2026-07-02 to test the skeleton with no story: 10 REAL historical moments
+(NVIDIA '24, GameStop '21, First Republic '23, Meta '22, Tesla '19, Sears '14,
+Apple '16, Zoom '20, Moderna '20, Microsoft '13), names hidden until after the
+call. Plain language only (playtest rule: no finance terms, no short forms, no
+unexplained symbols — clues literally say "says UP / says DOWN" plus loudness in
+words). Outcomes are what really happened, so it cannot teach fake rules; an
+authored "careful read" per case separates judgment from result. End report
+mirrors loss-aversion (bet size after losses vs. wins) and outcome concentration
+(one call carries the profit → why whole-market funds win). **Playtest verdict:
+learnable but "feels like a test, not a game" → the skeleton needs the skin.
+Next: merge — real-history moments inside the lived Chapter One frame. Open
+design question from playtest: teach single-stock judgment vs. index-fund
+reality (student/married/how-much-money identities) — see life chapters, §7.**
+
+**v3 (insight-as-reward) + v4 (rule-proofing), 2026-07-02.** Playtests drove two
+more iterations: (a) reflection ≠ reward — added the RHYME mechanic (cases carry
+hidden shapes: craze/scare/fade/machine/flip; noticing a rhyme before it's named
+pays a bonus; report confirms discoveries, told-lesson block deleted). (b) A
+player solved v3 at 9/10 with one rule ("always bet against the loudest clue")
+because famous stories are famous for being ironic → added 6 counter-rule cases
+(Amazon '15, Nikola '20, AMD '15, Best Buy '12, Enron '01, Intel '20; pool now
+20, draw 10) so every simple rule scores ~6/10, plus a RULE DETECTOR in the
+report that names the player's rule to their face. Key playtest sentence: "he is
+actually thinking about each question — in the chapter he wasn't." The loop
+creates thinking; the chapter creates feeling. Merge later, deliberately.
+
+**Chapter curriculum (agreed direction, 2026-07-02).** Chapters organized by
+QUESTION, not by time order and not by labeled topic (labels re-create the rule
+problem). Each chapter argues both sides of one question: 1. "Is loud the same
+as true?" (GME, Amazon, Nikola, NVDA, Cisco) · 2. "When is a falling price a
+bargain?" (Meta, FRC, Netflix, AmEx) · 3. "When is cheap a trap?" (Sears, Kodak,
+AMD, Best Buy) · 4. "Does boring win?" (Apple, MSFT, Intel, Enron) · 5. "How do
+you bet on a coin flip?" (Tesla, Moderna — really about sizing) · Final: mixed,
+unlabeled. Every clue type in the game maps to free real-world sources (insider
+filings, results, valuation, charts, news) — eventually say so IN the game
+("everything you just used exists free in real life — here's where") as the
+bridge to real-money confidence. All case figures are directionally real but
+simplified; do a fact-check pass with exact numbers + sources before any public
+release.
+
+**Chapter mode built (2026-07-02), with two settled refinements:** (1) The
+hidden question is DISCOVERED, not announced — chapter tiles say only "one
+hidden question"; the report reveals it afterward ("Did you feel it? Every
+moment was asking: …") with both sides argued. Rhyme mechanic lives only in The
+Exam (in themed chapters it would be trivial and would leak the question).
+(2) The rule detector is now a FRAMEWORK-BOUNDARY mirror, not an anti-rule
+scold: great investors keep frameworks and learn their edges, so the report
+itemizes exactly where the player's rule earned and where it cost ("It earned
+on Amazon, NVIDIA. It cost you Nikola, GameStop, Cisco… learn exactly where it
+stops working").
 
 ---
 

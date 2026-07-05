@@ -26,11 +26,58 @@ import { money } from '../format.js';
 
 const DEV =
   typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('dev');
+// ?report=1 shows the curiosity drop-off report instead of the game.
+const REPORT =
+  typeof window !== 'undefined' && new URLSearchParams(window.location.search).has('report');
+
+// Human labels + canonical order for the funnel, so a report reads like the
+// actual experience, not internal phase names.
+const PHASE_LABELS = {
+  promise: 'Opening hook',
+  open: 'Cold open (Ray)',
+  phone: 'The phone morning',
+  say: 'Decision · what you tell yourself',
+  move: 'Decision · the allocation',
+  away: 'Stepped away',
+  filling: 'Order filling',
+  settle: '“What have I done”',
+  done: 'The aftermath',
+  night: 'The night',
+  result: 'The Result',
+  autopsy: 'The Autopsy',
+  dayTwo: 'Day Two hook',
+};
+const PHASE_ORDER = Object.keys(PHASE_LABELS);
+
+// Drop-off session state at MODULE scope — exactly one session per page load,
+// immune to StrictMode's double-invoke and dev HMR remounts. A real reload
+// re-evaluates the module and starts fresh.
+let CURR_SESSION = null; // { S, H }
+let CURR_PHASE = 'promise';
 
 const TOTAL = 10000;
 const HOLD_MS = 1500;
 const FRIEND = 'Marcus';
 const DREAM = { label: 'First car', icon: '🚗', goal: 15400, gap: 5400 };
+
+// THE INCITING FRAME — the first thing you see. Not an explanation; a hook. It
+// makes ONE promise — that this morning matters — and refuses to say why. It
+// never names investing, decisions, or "the point." Curiosity, not context: the
+// player chases the answer instead of being handed it. (Future-self, looking back.)
+const PROMISE = [
+  'March 2024.',
+  'Years from now, you’ll still remember this morning.',
+  'Not because of the money.',
+  'Because of what you were about to decide.',
+];
+
+// The cold open — the GAP, before the market exists. The dream is worthless as
+// information ("First car, $5,400 to go"); it only bites once the player has
+// FELT the life it's missing. So Day One opens on a real interaction: Ray offers
+// a paid Sunday shift, and YOU have to send the "can't — no ride." The
+// realization ("a car would've cleared a grand out here") is delivered by Ray,
+// a person, NOT a narrator — the player discovers it by doing it. When NVDA
+// appears minutes later, it reads as a bridge across a gap they just lived.
 
 const LINES = [
   { id: 'all_in', text: "All in. I'm not watching this happen without me.", implied: 1.0 },
@@ -40,16 +87,57 @@ const LINES = [
   { id: 'wait', text: "I don't actually get what just happened. I'll wait.", implied: 0.0 },
 ];
 
+// A real phone, not a menu of game buttons. Each LIVE app does exactly one
+// emotional job before the decision — Notes: the plan · Photos: attachment ·
+// Maps: the cost of no car · Savings: the stakes · News: uncertainty ·
+// Messages: pressure · Trade: commitment. Apps with no job (Weather, Music,
+// Camera) stay as dim wallpaper — they make the phone feel owned without
+// pretending to matter. What lights up is what changes how you feel.
 const APPS = [
-  { id: 'messages', label: 'Messages', icon: '💬', live: true },
-  { id: 'savings', label: 'Savings', icon: '🏦', live: true },
-  { id: 'trade', label: 'Trade', icon: '📈', live: true },
-  { id: 'news', label: 'News', icon: '📰', live: true },
-  { id: 'photos', label: 'Photos', icon: '📷', live: false },
-  { id: 'maps', label: 'Maps', icon: '🗺️', live: false },
-  { id: 'weather', label: 'Weather', icon: '⛅', live: false },
-  { id: 'camera', label: 'Camera', icon: '📸', live: false },
+  { id: 'messages', label: 'Messages', icon: '💬' },
+  { id: 'news', label: 'News', icon: '📰' },
+  { id: 'notes', label: 'Notes', icon: '📝' },
+  { id: 'photos', label: 'Photos', icon: '📷' },
+  { id: 'maps', label: 'Maps', icon: '🗺️' },
+  { id: 'savings', label: 'Savings', icon: '🏦' },
+  { id: 'trade', label: 'Trade', icon: '📈' },
+  { id: 'weather', label: 'Weather', icon: '⛅', dead: true },
+  { id: 'music', label: 'Music', icon: '🎵', dead: true },
+  { id: 'camera', label: 'Camera', icon: '📸', dead: true },
 ];
+
+// Toasts are MARCUS's channel (pressure) plus the two singular signals — news
+// breaking and the market opening. Mom is NOT here: she's a phone call (weight).
+const TOAST_ICON = { marcus: '💬', news: '📰', market: '📈' };
+
+// Mom's call — authored, paced WEIGHT. A call demands you stop and be present;
+// a toast you flick away. That difference is the whole point.
+const MOM_CALL = [
+  'Morning, honey. You’ve been quiet up there.',
+  'I saw the balance on the fridge tablet. You didn’t move the car money, did you?',
+  'You worked two years of Saturdays for that.',
+  'Don’t throw it at a maybe. …Just think first. For me. Okay?',
+];
+
+// TEXTURE — read-only glimpses of a life. No gameplay; they exist only to make
+// the phone feel like it's genuinely yours, and quietly plant the stakes.
+const PHOTOS = [
+  { grad: 'linear-gradient(135deg,#38507a,#161f30)', emoji: '🚗', cap: 'the ’08 Civic. still up on Marketplace — $15,400.' },
+  { grad: 'linear-gradient(135deg,#6b3a52,#241019)', emoji: '👥', cap: 'the depot crew. back when Marcus still worked here.' },
+  { grad: 'linear-gradient(135deg,#3a5b48,#131f18)', emoji: '🏭', cap: 'last shift of the week. 4:50am.' },
+  { grad: 'linear-gradient(135deg,#5a5030,#211d10)', emoji: '🎂', cap: 'mom’s birthday. Marcus drove you both.' },
+];
+
+const NOTE_BODY = `sep   4,100
+oct   5,250
+jan   7,800
+may  10,000  ← here
+
+goal  15,400  (the Civic)
+left   5,400
+
+≈ 7 more months. if nothing breaks.
+unless something changes.`;
 
 // The research layer has ONE job, and it's the opposite of Marcus's. Marcus =
 // emotional pressure (FOMO, "everyone's getting rich"). News = COMPLEXITY: it
@@ -119,6 +207,30 @@ const NEWS = [
   },
 ];
 
+// Intraday price path — HISTORY, not prediction. Generated once so the line is
+// stable (the live header number is what moves). It climbs from the open with
+// real-looking jitter and one mid-morning dip that recovers — the "it almost
+// scared you out, then ripped higher" shape that makes the FOMO honest. A chart
+// exists here for BELIEF, not analysis: it shows what already happened and
+// refuses to tell you what happens next.
+const OPEN_PRICE = 95.2;
+function buildSeries(open, close, n) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const p = i / (n - 1);
+    const trend = open + (close - open) * (p * p * (3 - 2 * p)); // smoothstep
+    const noise = Math.sin(i * 1.7) * 0.9 + Math.sin(i * 0.6) * 1.6;
+    const dip = i > n * 0.34 && i < n * 0.5 ? -3.4 : 0; // the scare
+    pts.push(+(trend + noise + dip).toFixed(2));
+  }
+  pts[0] = open;
+  pts[n - 1] = close;
+  return pts;
+}
+const SERIES = buildSeries(OPEN_PRICE, 118.42, 42);
+const DAY_HIGH = Math.max(...SERIES);
+const DAY_LOW = Math.min(...SERIES);
+
 // ---- tiny synth so the prototype has game-feel without audio assets ----------
 function makeAudio() {
   let ctx = null;
@@ -183,13 +295,11 @@ function buzz(ms) {
 }
 
 export default function DecisionClimax() {
-  // wake | phone | house | say | move | away | done
-  const [phase, setPhase] = useState('wake');
+  // promise | open | phone | say | move | away | filling | done | night | result | autopsy | dayTwo
+  const [phase, setPhase] = useState('promise');
   // within 'phone': lock | home | messages | savings | trade
   const [screen, setScreen] = useState('lock');
-  const [armed, setArmed] = useState(false); // market "opens" after breakfast
-  const [msgRead, setMsgRead] = useState(false); // badge clears once you've looked
-  const [newsRead, setNewsRead] = useState(false);
+  const [armed, setArmed] = useState(false); // the market opens on the world clock
 
   const [said, setSaid] = useState(null);
   const [invested, setInvested] = useState(0);
@@ -200,15 +310,21 @@ export default function DecisionClimax() {
   const [metrics, setMetrics] = useState(null);
   const [returnBanner, setReturnBanner] = useState(null);
 
-  // morning content that arrives on timers (the world reaching you)
+  // The morning as a WORLD ON ITS OWN CLOCK. Marcus (pressure) and Mom (brake)
+  // text you over time; news breaks; the market opens — all on timers, whatever
+  // screen you're on. Toasts intrude. You roam; life happens TO you. No corridor.
   const [lockNotifs, setLockNotifs] = useState([]);
-  const [threadMsgs, setThreadMsgs] = useState([]);
-  const [threadDone, setThreadDone] = useState(false);
-  const [typing, setTyping] = useState(false);
-  const [momLines, setMomLines] = useState([]);
-  const [momDone, setMomDone] = useState(false);
-  const [momReady, setMomReady] = useState(false);
+  const [morning, setMorning] = useState(false); // the world clock is running
+  const [threadMsgs, setThreadMsgs] = useState([]); // Marcus thread
+  const [momMsgs, setMomMsgs] = useState([]); // Mom thread
+  const [notifs, setNotifs] = useState([]); // live toast queue (intrusions)
+  const [seenMarcus, setSeenMarcus] = useState(0);
+  const [seenMom, setSeenMom] = useState(0);
+  const [newsBroken, setNewsBroken] = useState(false);
+  const [newsSeen, setNewsSeen] = useState(false);
+  const [momCall, setMomCall] = useState(null); // null | 'incoming' | 'active'
   const [worldMsgs, setWorldMsgs] = useState([]);
+  const [outcome, setOutcome] = useState(null); // the second clock: what the night did
 
   const audio = useRef(null);
   const trackRef = useRef(null);
@@ -234,6 +350,10 @@ export default function DecisionClimax() {
   const totalAway = useRef(0);
   const awayStart = useRef(0);
   const newsReadIds = useRef(new Set()); // which sources were opened (diligence)
+  const notifSeq = useRef(0); // unique ids for toast intrusions
+  const marketOpened = useRef(false); // the market opens once, after Mom's call
+  const momAnswered = useRef(null); // did you pick up Mom's call? (null = never came)
+  const tickRef = useRef(118.42); // live price, as a ref (buy price at commit)
 
   const rec = (type, data) => log.current.push({ t: Math.round(performance.now()), type, ...data });
   const beep = (name) => {
@@ -244,6 +364,82 @@ export default function DecisionClimax() {
   useEffect(() => {
     audio.current = makeAudio();
   }, []);
+
+  useEffect(() => {
+    tickRef.current = tick; // keep the buy-price ref fresh
+  }, [tick]);
+
+  // ---- CURIOSITY DROP-OFF TRACKER ------------------------------------------
+  // The whole point of a playtest: where did they lose interest? We log the
+  // phase timeline + the moment they looked away (tab blur) or left (pagehide),
+  // persisted to localStorage so a quit is captured. Headline: did they reach —
+  // and act on — Day Two? Viewable at ?report=1; nothing shows during play.
+  useEffect(() => {
+    if (REPORT) return;
+    if (!CURR_SESSION) {
+      let H = [];
+      try {
+        H = JSON.parse(localStorage.getItem('itm_sessions') || '[]');
+      } catch {
+        H = [];
+      }
+      const S = {
+        id: Date.now(),
+        when: new Date().toLocaleString(),
+        t0: performance.now(),
+        events: [],
+        furthest: 'promise',
+        reachedDayTwo: false,
+        replays: 0,
+        ended: null,
+      };
+      H.push(S);
+      if (H.length > 15) H = H.slice(-15);
+      CURR_SESSION = { S, H };
+      try {
+        localStorage.setItem('itm_sessions', JSON.stringify(H));
+      } catch {
+        /* ignore */
+      }
+    }
+    const save = () => {
+      try {
+        localStorage.setItem('itm_sessions', JSON.stringify(CURR_SESSION.H));
+      } catch {
+        /* ignore */
+      }
+    };
+    const mark = (kind) => {
+      const S = CURR_SESSION.S;
+      const t = Math.round(performance.now() - S.t0);
+      S.events.push({ phase: CURR_PHASE, t, kind });
+      S.ended = { phase: CURR_PHASE, kind, t };
+      save();
+    };
+    const onHide = () => mark('left');
+    const onVis = () => document.hidden && mark('blur');
+    window.addEventListener('pagehide', onHide);
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.removeEventListener('pagehide', onHide);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, []);
+
+  // log every phase entry with its timestamp (the funnel)
+  useEffect(() => {
+    CURR_PHASE = phase;
+    if (!CURR_SESSION) return;
+    const S = CURR_SESSION.S;
+    S.events.push({ phase, t: Math.round(performance.now() - S.t0) });
+    S.furthest = phase;
+    if (phase === 'dayTwo') S.reachedDayTwo = true;
+    try {
+      localStorage.setItem('itm_sessions', JSON.stringify(CURR_SESSION.H));
+    } catch {
+      /* ignore */
+    }
+  }, [phase]);
 
   // Live price ticker — climbs while you hesitate (urgency you can watch).
   useEffect(() => {
@@ -280,65 +476,54 @@ export default function DecisionClimax() {
     return () => ids.forEach(clearTimeout);
   }, [phase, screen]);
 
-  // ---- TEXT THREAD: the fuse, with a typing indicator ----------------------
+  // ---- THE MORNING: GUIDED FREEDOM -----------------------------------------
+  // Not a corridor, not a barrage. Three tools, each distinct:
+  //   Marcus  = PRESSURE — toasts, sparse (a fuse, not spam).
+  //   News    = UNCERTAINTY — breaks once; a badge you can go read.
+  //   Mom     = WEIGHT — a phone CALL that stops everything (not a toast).
+  // You explore freely in the window; the market opens only after Mom's call
+  // lands — so the emotional beats are paced even though you roam.
   useEffect(() => {
-    if (!(phase === 'phone' && screen === 'messages')) return;
-    setThreadMsgs([]);
-    setThreadDone(false);
-    const convo = [
-      [400, { who: 'them', text: 'ok you HAVE to see this' }],
-      [1700, { who: 'them', text: 'NVDA. i put in last tuesday. up 40 percent already' }],
-      [3400, { who: 'me', text: 'no way' }],
-      [4400, { who: 'them', text: 'dead serious. my brother bought a CAR off this. cash 🚗' }],
-      [6200, { who: 'them', text: "you're still like 5k short on yours right?" }],
-      [8000, { who: 'them', text: 'this could close that gap like… this week. i’m telling you' }],
-      [9800, { who: 'them', text: "you'll hate yourself if you watch this from the sidelines" }],
-    ];
+    if (!morning) return;
     const ids = [];
-    convo.forEach(([ms, m]) => {
-      if (m.who === 'them') ids.push(setTimeout(() => setTyping(true), Math.max(0, ms - 700)));
-      ids.push(
-        setTimeout(() => {
-          setTyping(false);
-          setThreadMsgs((p) => [...p, m]);
-          if (m.who === 'them') {
-            beep('ding');
-            buzz(14);
-          }
-        }, ms),
-      );
+    const at = (ms, fn) => ids.push(setTimeout(fn, ms));
+    // Marcus's pressure arrives as a growing badge, NOT a top pop-up — you feel
+    // his panic climbing in the corner of your eye, without the UI shoving it in
+    // your face. You discover it by opening Messages. Calm on arrival.
+    const marcus = (text) => setThreadMsgs((p) => [...p, { who: 'them', text }]);
+    at(2000, () => marcus('you up?? NVDA is NOT stopping rn 🚀'));
+    at(8000, () => marcus('my brother literally bought a CAR off this. cash 🚗'));
+    at(12000, () => {
+      setNewsBroken(true); // a quiet News badge — uncertainty you can go find
+      setNewsSeen(false);
     });
-    ids.push(setTimeout(() => setThreadDone(true), 10800));
+    at(16000, () => setMomCall((c) => (c === null && !committed.current ? 'incoming' : c)));
+    at(32000, () => openMarket()); // fallback if the call is dodged or ignored
     return () => ids.forEach(clearTimeout);
-  }, [phase, screen]);
+  }, [morning]);
 
-  // ---- HOME: after a beat, Mom calls you down ------------------------------
+  // Mom's phone rings while incoming — a call insists, a toast doesn't.
   useEffect(() => {
-    if (!(phase === 'phone' && screen === 'home') || momReady) return;
-    const id = setTimeout(() => setMomReady(true), 5000);
-    return () => clearTimeout(id);
-  }, [phase, screen, momReady]);
+    if (momCall !== 'incoming') return;
+    const ring = () => {
+      beep('knock');
+      buzz([120, 80, 120]);
+    };
+    ring();
+    const id = setInterval(ring, 1900);
+    return () => clearInterval(id);
+  }, [momCall]);
 
-  // ---- HOUSE: mom interrupts, names the stakes (the brake) ------------------
+  // A real inbox: opening a conversation marks it read; the open thread stays read.
   useEffect(() => {
-    if (phase !== 'house') return;
-    setMomLines([]);
-    setMomDone(false);
-    const lines = [
-      [400, 'You up, honey? Breakfast’s getting cold.'],
-      [2600, 'You’re not putting your savings into that chip stock everyone’s on about, are you?'],
-      [5400, 'You’ve been saving two years for that car. Don’t throw it at a maybe.'],
-    ];
-    const ids = lines.map(([ms, text]) =>
-      setTimeout(() => {
-        setMomLines((p) => [...p, text]);
-        beep('knock');
-        buzz([12, 40, 12]);
-      }, ms),
-    );
-    ids.push(setTimeout(() => setMomDone(true), 7000));
-    return () => ids.forEach(clearTimeout);
-  }, [phase]);
+    if (screen === 'marcus') setSeenMarcus(threadMsgs.length);
+  }, [screen, threadMsgs.length]);
+  useEffect(() => {
+    if (screen === 'mom') setSeenMom(momMsgs.length);
+  }, [screen, momMsgs.length]);
+  useEffect(() => {
+    if (screen === 'news') setNewsSeen(true);
+  }, [screen]);
 
   // ---- DONE: the world continues — both choices can ache -------------------
   useEffect(() => {
@@ -475,9 +660,17 @@ export default function DecisionClimax() {
       deliberateMs: Math.round(now - moveStart.current - totalAway.current),
       pauseBeforeCommitMs: Math.round(now - (lastAllocT.current || moveStart.current)),
       readReport: newsReadIds.current.has('earnings'),
+      openedWarning: newsReadIds.current.has('valuation'), // the voice that challenged Marcus
+      openedSocial: newsReadIds.current.has('reddit'), // the crowd that cheered him
+      openedExplainer: newsReadIds.current.has('explain'),
       newsOpened: newsReadIds.current.size,
+      buyPrice: tickRef.current,
+      momAnswered: momAnswered.current,
     });
-    setPhase('done');
+    // The order goes through a broker ritual (Submitting → Filled), then a beat
+    // of silence (settle) before the world reacts — the money has moved, and for
+    // a moment it's just you and what you did.
+    setPhase(investedRef.current > 0 ? 'filling' : 'settle');
   }
 
   // ---- STEP AWAY: a real decision, not abandonment. The world moves on. -----
@@ -511,21 +704,67 @@ export default function DecisionClimax() {
     setPhase('move');
   }
 
-  // ---- phone navigation ----------------------------------------------------
+  // ---- toast intrusions: the world reaching you wherever you are -----------
+  function pushToast(app, from, text) {
+    const id = ++notifSeq.current;
+    setNotifs((p) => [...p.slice(-2), { id, app, from, text }]); // at most 3 at once
+    beep('ding');
+    buzz(16);
+    setTimeout(() => setNotifs((p) => p.filter((n) => n.id !== id)), 4400);
+  }
+
+  // ---- the market opens: the ONE beat that turns you toward the decision ---
+  function openMarket() {
+    if (marketOpened.current) return;
+    marketOpened.current = true;
+    setArmed(true);
+    // The ONE interrupt that matters — and it doubles as a signpost to Trade.
+    pushToast('market', 'Markets', 'NVDA is open · 9:30 — your call now');
+    const say = (text) => setThreadMsgs((p) => [...p, { who: 'them', text }]); // badge, not a pop
+    setTimeout(() => say('it’s OPEN and it’s already ripping. GO 🙏'), 2800);
+    setTimeout(() => say('you’re 5k short on the car right? this closes it THIS WEEK'), 7000);
+  }
+
+  // ---- Mom's call: authored weight, then the market turns ------------------
+  function answerMom() {
+    beep('tap');
+    buzz(12);
+    momAnswered.current = true;
+    rec('mom_call', { answered: true });
+    setMomCall('active');
+  }
+  function endMomCall() {
+    setMomCall(null);
+    setMomMsgs((p) => [...p, { who: 'them', text: 'okay. love you. …call me after, alright?' }]);
+    setTimeout(openMarket, 2400); // her weight lands first, THEN the market opens
+  }
+  function declineMom() {
+    beep('tap');
+    buzz(10);
+    momAnswered.current = false;
+    rec('mom_call', { answered: false });
+    setMomCall(null);
+    setMomMsgs((p) => [...p, { who: 'them', text: 'you didn’t pick up. …you’re not doing something silly with that money, are you?' }]);
+    setTimeout(openMarket, 2400);
+  }
+
+  // ---- phone navigation: you roam freely; nothing is forced ---------------
   function openApp(app) {
     beep('tap');
     buzz(8);
-    if (app.id === 'messages') {
-      setMsgRead(true); // opening the thread clears the badge, like a real phone
-      return setScreen('messages');
-    }
-    if (app.id === 'news') {
-      setNewsRead(true);
-      return setScreen('news');
-    }
-    if (app.id === 'savings') return setScreen('savings');
-    if (app.id === 'trade') return setScreen('trade');
-    // decorative apps: a tiny shake handled in CSS via :active
+    if (app.dead) return; // Camera etc.: just a tap, no gameplay
+    rec('open_app', { id: app.id });
+    setScreen(app.id); // ids map 1:1 to screens (messages→inbox, trade, photos…)
+  }
+  function openConvo(who) {
+    beep('tap');
+    buzz(6);
+    setScreen(who); // 'marcus' | 'mom'
+  }
+  function openFromToast(n) {
+    setNotifs((p) => p.filter((x) => x.id !== n.id));
+    beep('tap');
+    setScreen(n.app === 'market' ? 'trade' : n.app); // marcus | mom | news | trade
   }
   function readArticle(id) {
     beep('tap');
@@ -536,27 +775,20 @@ export default function DecisionClimax() {
   function unlock() {
     beep('tap');
     buzz(10);
+    rec('unlock', {});
     setScreen('home');
+    setMorning(true); // the world starts moving the moment you're in
   }
   function goHome() {
     beep('tap');
     buzz(8);
     setScreen('home');
   }
-  function leaveThreadToHouse() {
-    rec('read_thread', {});
-    setPhase('house');
-  }
-  function leaveHouse() {
-    setArmed(true);
-    rec('breakfast_done', {});
-    setPhase('phone');
-    setScreen('home');
-  }
-  function openTrade() {
+  function goBack() {
     beep('tap');
-    buzz(10);
-    setScreen('trade');
+    buzz(6);
+    if (screen === 'marcus' || screen === 'mom') return setScreen('messages');
+    setScreen('home');
   }
   function startDecision() {
     rec('open_trade', {});
@@ -566,6 +798,7 @@ export default function DecisionClimax() {
   }
 
   function replay() {
+    if (CURR_SESSION) CURR_SESSION.S.replays += 1; // wanting more = a strong signal
     log.current = [];
     investedRef.current = 0;
     moveStart.current = 0;
@@ -581,6 +814,7 @@ export default function DecisionClimax() {
     totalAway.current = 0;
     newsReadIds.current = new Set();
     committed.current = false;
+    marketOpened.current = false;
     holdProg.current = 0;
     setMetrics(null);
     setSaid(null);
@@ -588,18 +822,22 @@ export default function DecisionClimax() {
     setHold(0);
     setTick(118.42);
     setArmed(false);
-    setMsgRead(false);
-    setNewsRead(false);
-    setMomReady(false);
+    setMorning(false);
     setLockNotifs([]);
     setThreadMsgs([]);
-    setThreadDone(false);
-    setTyping(false);
-    setMomLines([]);
-    setMomDone(false);
+    setMomMsgs([]);
+    setNotifs([]);
+    setSeenMarcus(0);
+    setSeenMom(0);
+    setNewsBroken(false);
+    setNewsSeen(false);
+    setMomCall(null);
     setWorldMsgs([]);
+    setOutcome(null);
+    momAnswered.current = null;
+    tickRef.current = 118.42;
     setScreen('lock');
-    setPhase('wake');
+    setPhase('promise');
   }
 
   function pokeBalance() {
@@ -608,41 +846,92 @@ export default function DecisionClimax() {
     setTimeout(() => setCheckShake(false), 450);
   }
 
+  // ---- THE SECOND CLOCK: what the night actually did -----------------------
+  // A real overnight gamble. The AI boom tilts up, but the downside is real —
+  // and it is DELIBERATELY independent of decision quality. A careful call can
+  // lose; a reckless one can win. That gap is the whole lesson the Autopsy names.
+  function revealResult() {
+    const invested = investedRef.current;
+    const up = Math.random() < 0.58;
+    const mag = up ? 6 + Math.random() * 22 : 5 + Math.random() * 19;
+    const movePct = +(up ? mag : -mag).toFixed(1);
+    const pnl = Math.round((invested * movePct) / 100);
+    setOutcome({ movePct, pnl, up: movePct >= 0, endValue: invested + pnl });
+    rec('result', { movePct });
+    beep('tick');
+    setPhase('result');
+  }
+
   const inDecision = phase === 'say' || phase === 'move';
-  const unread = msgRead ? 0 : 3;
-  const newsUnread = newsRead ? 0 : 1;
+  const msgBadge = threadMsgs.length - seenMarcus + (momMsgs.length - seenMom);
+  const newsBadge = newsBroken && !newsSeen ? 4 : 0;
+
+  if (REPORT) return <SessionReport />;
 
   return (
     <div className={`climax phase-${phase}`} style={{ '--commit': fraction.toFixed(3) }}>
       {DEV && <div className="proto-badge">PROTOTYPE · day one · ?dev</div>}
 
-      {phase === 'wake' && <WakeStage onWake={() => { setPhase('phone'); setScreen('lock'); }} />}
+      {phase === 'promise' && (
+        <PromiseStage
+          onBegin={() => {
+            rec('promise_done', {});
+            setPhase('open');
+          }}
+        />
+      )}
+
+      {phase === 'open' && (
+        <ColdOpen
+          onEnter={() => {
+            rec('cold_open_done', {});
+            setPhase('phone');
+            setScreen('lock');
+          }}
+        />
+      )}
 
       {phase === 'phone' && (
-        <PhoneFrame balance={TOTAL} screen={screen} onHome={goHome}>
+        <PhoneFrame screen={screen} notifs={notifs} onHome={goHome} onBack={goBack} onToast={openFromToast}>
           {screen === 'lock' && <LockScreen tick={tick} notifs={lockNotifs} onUnlock={unlock} />}
           {screen === 'home' && (
             <HomeScreen
               apps={APPS}
               armed={armed}
-              unread={unread}
-              newsUnread={newsUnread}
-              momReady={momReady}
+              msgBadge={msgBadge}
+              newsBadge={newsBadge}
+              hint={
+                armed
+                  ? 'The market’s open. Open Trade when you’re ready.'
+                  : 'Look around — your phone, your morning. The market opens at 9:30.'
+              }
               onOpen={openApp}
-              onMom={() => setPhase('house')}
             />
           )}
           {screen === 'messages' && (
-            <ThreadScreen msgs={threadMsgs} typing={typing} done={threadDone} onContinue={leaveThreadToHouse} />
+            <MessagesInbox
+              marcus={threadMsgs}
+              mom={momMsgs}
+              seenMarcus={seenMarcus}
+              seenMom={seenMom}
+              onOpen={openConvo}
+            />
           )}
+          {screen === 'marcus' && <ThreadScreen msgs={threadMsgs} who={FRIEND} />}
+          {screen === 'mom' && <ThreadScreen msgs={momMsgs} who="Mom" />}
           {screen === 'news' && <NewsScreen onRead={readArticle} />}
           {screen === 'savings' && <SavingsScreen />}
           {screen === 'trade' && <TradeScreen tick={tick} armed={armed} onBuy={startDecision} />}
+          {screen === 'photos' && <PhotosScreen />}
+          {screen === 'notes' && <NotesScreen />}
+          {screen === 'maps' && <MapsScreen />}
+          {screen === 'weather' && <WeatherScreen />}
+          {screen === 'music' && <MusicScreen />}
         </PhoneFrame>
       )}
 
-      {phase === 'house' && (
-        <HouseStage lines={momLines} done={momDone} onContinue={leaveHouse} />
+      {phase === 'phone' && momCall && (
+        <MomCall mode={momCall} lines={MOM_CALL} onAnswer={answerMom} onDecline={declineMom} onEnd={endMomCall} />
       )}
 
       {inDecision && <Ticker tick={tick} hot={fraction} />}
@@ -670,6 +959,24 @@ export default function DecisionClimax() {
 
       {phase === 'away' && <AwayStage tick={tick} onReturn={comeBack} />}
 
+      {phase === 'filling' && (
+        <FillingStage
+          invested={invested}
+          shares={tick > 0 ? Math.floor(invested / tick) : 0}
+          price={tick}
+          onDone={() => setPhase('settle')}
+        />
+      )}
+
+      {phase === 'settle' && (
+        <SettleStage
+          invested={invested}
+          shares={tick > 0 ? Math.floor(invested / tick) : 0}
+          price={tick}
+          onRelease={() => setPhase('done')}
+        />
+      )}
+
       {phase === 'done' && (
         <DoneStage
           said={said}
@@ -680,45 +987,211 @@ export default function DecisionClimax() {
           worldMsgs={worldMsgs}
           checkShake={checkShake}
           onPoke={pokeBalance}
-          onReplay={replay}
+          onSleep={() => setPhase('night')}
         />
+      )}
+
+      {phase === 'night' && <NightStage invested={invested} onMorning={revealResult} />}
+
+      {phase === 'result' && (
+        <ResultStage invested={invested} metrics={metrics} outcome={outcome} onNext={() => setPhase('autopsy')} />
+      )}
+
+      {phase === 'autopsy' && (
+        <AutopsyStage invested={invested} said={said} metrics={metrics} outcome={outcome} onNext={() => setPhase('dayTwo')} />
+      )}
+
+      {phase === 'dayTwo' && (
+        <DayTwoStage invested={invested} outcome={outcome} onReplay={replay} />
       )}
     </div>
   );
 }
 
-/* ------------------------------ Stage: WAKE -------------------------------- */
-function WakeStage({ onWake }) {
+/* ------------------------------ Stage: INCITING FRAME (the hook) ---------- */
+// Cinematic, one line at a time. Makes this morning feel significant and says
+// nothing about why — the player leaves wanting to know. Ends by handing them
+// the buzzing phone, straight into the morning, with no explanation.
+function PromiseStage({ onBegin }) {
+  const [i, setI] = useState(0);
+  const last = i >= PROMISE.length - 1;
   return (
-    <button className="wake" onClick={onWake}>
-      <p className="wake-time">Sunday · 7:14 AM</p>
-      <div className="wake-phone">
-        <span className="wake-buzz">📱</span>
+    <div className="promise" onClick={() => !last && setI((v) => v + 1)}>
+      <div className="promise-dots">
+        {PROMISE.map((_, k) => (
+          <span key={k} className={`pr-dot ${k <= i ? 'on' : ''}`} />
+        ))}
       </div>
-      <p className="wake-hint">Your phone is buzzing on the nightstand.</p>
-      <p className="wake-tap">tap to reach for it</p>
-    </button>
+      <p className="promise-line" key={i}>
+        {PROMISE[i]}
+      </p>
+      {!last ? (
+        <p className="promise-tap">tap to continue</p>
+      ) : (
+        <button
+          className="promise-begin"
+          onClick={(e) => {
+            e.stopPropagation();
+            onBegin();
+          }}
+        >
+          <span className="pb-buzz">📱</span> your phone buzzes on the nightstand
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------ Stage: COLD OPEN --------------------------- */
+// The gap, lived — not narrated. Ray offers the Sunday shift; the player must
+// send the "can't, no ride" themselves. Ray delivers the reframe. Ends on the
+// phone buzzing again — Marcus, the market intruding on the gloom you just felt.
+function ColdOpen({ onEnter }) {
+  const [msgs, setMsgs] = useState([]);
+  const [typing, setTyping] = useState(false);
+  const [gate, setGate] = useState(null); // 'reply' | 'ready' | null
+  const bodyRef = useRef(null);
+  const timers = useRef([]);
+  const after = (ms, fn) => timers.current.push(setTimeout(fn, ms));
+  const push = (m) => setMsgs((p) => [...p, m]);
+
+  useEffect(() => {
+    // Ray's opening burst
+    after(700, () => push({ who: 'ray', text: 'you up?' }));
+    after(1700, () => setTyping(true));
+    after(2600, () => {
+      setTyping(false);
+      push({ who: 'ray', text: 'sunday run just opened. 200 cash, one shift' });
+    });
+    after(3700, () => setTyping(true));
+    after(4700, () => {
+      setTyping(false);
+      push({ who: 'ray', text: 'you want it? gotta know by 8' });
+    });
+    after(5300, () => setGate('reply'));
+    return () => timers.current.forEach(clearTimeout);
+  }, []);
+
+  useEffect(() => {
+    if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+  }, [msgs, typing, gate]);
+
+  function reply(kind) {
+    setGate(null);
+    let t;
+    if (kind === 'try') {
+      push({ who: 'me', text: 'yeah — gimme a sec to sort a ride' });
+      after(1400, () => push({ who: 'aside', text: 'Marcus won’t be up for hours. Mom’s car left an hour ago.' }));
+      after(3200, () => push({ who: 'me', text: '…actually can’t. no way to get out there' }));
+      t = 4200;
+    } else {
+      push({ who: 'me', text: 'can’t. no way out there on a sunday' });
+      t = 1300;
+    }
+    // Ray delivers the realization — a person, not a narrator.
+    after(t, () => setTyping(true));
+    after(t + 950, () => {
+      setTyping(false);
+      push({ who: 'ray', text: '3rd sunday in a row man 😕' });
+    });
+    after(t + 2300, () => push({ who: 'ray', text: 'you had a car you’d have cleared a grand out here by now' }));
+    after(t + 3800, () => push({ who: 'ray', text: 'offer stands whenever. get some sleep' }));
+    after(t + 5000, () => setGate('ready'));
+  }
+
+  return (
+    <div className="coldopen">
+      <div className="cold-head">
+        <span className="cold-contact">Ray</span>
+        <span className="cold-sub">depot · dispatch</span>
+      </div>
+      <div className="cold-thread" ref={bodyRef}>
+        <p className="cold-timestamp">Sunday 7:14 AM · your phone’s been lit up since midnight</p>
+        {msgs.map((m, i) =>
+          m.who === 'aside' ? (
+            <p key={i} className="cold-aside">
+              {m.text}
+            </p>
+          ) : (
+            <div key={i} className={`bubble ${m.who === 'me' ? 'me' : 'them'}`}>
+              {m.text}
+            </div>
+          ),
+        )}
+        {typing && (
+          <div className="bubble them typing">
+            <span /> <span /> <span />
+          </div>
+        )}
+      </div>
+
+      {gate === 'reply' && (
+        <div className="cold-replies">
+          <button className="cold-reply" onClick={() => reply('try')}>
+            “yeah — I’ll sort a ride”
+          </button>
+          <button className="cold-reply" onClick={() => reply('no')}>
+            “can’t. no way out there”
+          </button>
+        </div>
+      )}
+
+      {gate === 'ready' && (
+        <button className="cold-enter" onClick={onEnter}>
+          <span className="cold-buzz">📱</span>
+          your phone buzzes again — it’s Marcus
+        </button>
+      )}
+    </div>
   );
 }
 
 /* ------------------------------ Phone frame -------------------------------- */
-const SCREEN_TITLES = { messages: FRIEND, news: 'The Wire', savings: 'Savings', trade: 'Trade' };
+const SCREEN_TITLES = {
+  messages: 'Messages',
+  marcus: FRIEND,
+  mom: 'Mom',
+  news: 'The Wire',
+  savings: 'Savings',
+  trade: 'Trade',
+  photos: 'Photos',
+  notes: 'Notes',
+  maps: 'Maps',
+  weather: 'Weather',
+  music: 'Music',
+};
 
-function PhoneFrame({ balance, screen, onHome, children }) {
+function PhoneFrame({ screen, notifs, onHome, onBack, onToast, children }) {
   const inApp = screen !== 'lock' && screen !== 'home';
+  const backLabel = screen === 'marcus' || screen === 'mom' ? 'Messages' : 'Home';
   return (
     <div className="phone-wrap">
       <div className="phone">
         <div className="phone-status">
-          <span>7:14</span>
-          <span className="phone-bal">Savings · {money(balance)}</span>
+          <span>{screen === 'trade' ? '9:30' : '7:14'}</span>
+          <span className="phone-bal">Savings · {money(TOTAL)}</span>
           <span className="phone-sig">●●● 87%</span>
         </div>
+
+        {/* the world reaching you — toasts intrude on whatever you're doing */}
+        {notifs.length > 0 && (
+          <div className="toast-layer">
+            {notifs.map((n) => (
+              <button key={n.id} className={`toast toast-${n.app}`} onClick={() => onToast(n)}>
+                <span className="toast-from">
+                  {TOAST_ICON[n.app] || '🔔'} {n.from}
+                </span>
+                <span className="toast-text">{n.text}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         <div className={`phone-screen screen-${screen}`}>
           {inApp && (
             <div className="app-bar">
-              <button className="app-back" onClick={onHome}>
-                ‹ Home
+              <button className="app-back" onClick={onBack}>
+                ‹ {backLabel}
               </button>
               <span className="app-title">{SCREEN_TITLES[screen] || ''}</span>
             </div>
@@ -756,7 +1229,7 @@ function LockScreen({ tick, notifs, onUnlock }) {
         ))}
         {notifs.length === 0 && <p className="lock-quiet">·</p>}
       </div>
-      {notifs.length >= 3 && (
+      {notifs.length >= 1 && (
         <button className="lock-unlock" onClick={onUnlock}>
           <span className="lu-arrow">⌃</span> swipe up to open
         </button>
@@ -766,7 +1239,10 @@ function LockScreen({ tick, notifs, onUnlock }) {
 }
 
 /* ------------------------------ HOME -------------------------------------- */
-function HomeScreen({ apps, armed, unread, newsUnread, momReady, onOpen, onMom }) {
+// The home base you roam. The dream widget keeps the stakes present; the grid is
+// a real phone (mostly texture). Nothing glows, nothing nags — the world reaches
+// you through toasts, not a rail.
+function HomeScreen({ apps, armed, msgBadge, newsBadge, hint, onOpen }) {
   return (
     <div className="home">
       <div className="home-goal">
@@ -780,59 +1256,207 @@ function HomeScreen({ apps, armed, unread, newsUnread, momReady, onOpen, onMom }
         </div>
       </div>
 
-      {momReady && !armed && (
-        <button className="home-mom" onClick={onMom}>
-          🔔 Mom’s calling you down for breakfast — tap
-        </button>
-      )}
-
       <div className="home-grid">
         {apps.map((app) => {
-          const glow = app.id === 'trade' && armed;
-          const badge =
-            app.id === 'messages' ? unread : app.id === 'news' ? newsUnread : 0;
+          const badge = app.id === 'messages' ? msgBadge : app.id === 'news' ? newsBadge : 0;
+          const glow = app.id === 'trade' && armed; // Trade lights up only once the market's open
           return (
             <button
               key={app.id}
-              className={`app ${app.live ? 'live' : 'dead'} ${glow ? 'glow' : ''}`}
+              className={`app ${app.dead ? 'dead' : 'live'} ${glow ? 'glow' : ''}`}
               onClick={() => onOpen(app)}
             >
               <span className="app-icon">{app.icon}</span>
               <span className="app-label">{app.label}</span>
               {badge > 0 && <span className="app-badge">{badge}</span>}
+              {glow && <span className="app-open">OPEN</span>}
             </button>
           );
         })}
       </div>
+
+      {/* guided freedom: always a visible next step, never a forced one */}
+      {hint && <p className={`home-hint ${armed ? 'go' : ''}`}>{hint}</p>}
     </div>
   );
 }
 
-/* ------------------------------ MESSAGES ---------------------------------- */
-function ThreadScreen({ msgs, typing, done, onContinue }) {
+/* ------------------------------ MESSAGES: inbox + threads ----------------- */
+function MessagesInbox({ marcus, mom, seenMarcus, seenMom, onOpen }) {
+  const rows = [
+    { who: 'marcus', name: FRIEND, msgs: marcus, seen: seenMarcus, avatar: '🧑🏻' },
+    { who: 'mom', name: 'Mom', msgs: mom, seen: seenMom, avatar: '👩🏻' },
+  ];
+  return (
+    <div className="inbox">
+      {rows.map((r) => {
+        const last = r.msgs[r.msgs.length - 1];
+        const unread = r.msgs.length - r.seen;
+        return (
+          <button key={r.who} className={`inbox-row ${unread > 0 ? 'unread' : ''}`} onClick={() => onOpen(r.who)}>
+            <span className="inbox-avatar">{r.avatar}</span>
+            <div className="inbox-meta">
+              <span className="inbox-name">{r.name}</span>
+              <span className="inbox-preview">{last ? last.text : 'No messages yet'}</span>
+            </div>
+            {unread > 0 && <span className="inbox-badge">{unread}</span>}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function ThreadScreen({ msgs, who }) {
   const bodyRef = useRef(null);
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
-  }, [msgs, typing]);
+  }, [msgs]);
   return (
     <div className="thread">
       <div className="thread-body" ref={bodyRef}>
+        {msgs.length === 0 && <p className="thread-empty">No messages from {who} yet.</p>}
         {msgs.map((m, i) => (
           <div key={i} className={`bubble ${m.who}`}>
             {m.text}
           </div>
         ))}
-        {typing && (
-          <div className="bubble them typing">
-            <span /> <span /> <span />
-          </div>
-        )}
       </div>
-      {done && (
-        <button className="thread-cont" onClick={onContinue}>
-          “Breakfast!” — Mom, from downstairs ↓
-        </button>
-      )}
+    </div>
+  );
+}
+
+/* ------------------------------ TEXTURE apps (no gameplay) ---------------- */
+function PhotosScreen() {
+  return (
+    <div className="photos">
+      <div className="photos-grid">
+        {PHOTOS.map((p, i) => (
+          <div key={i} className="photo">
+            <span className="photo-img" style={{ background: p.grad }}>
+              {p.emoji}
+            </span>
+            <span className="photo-cap">{p.cap}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NotesScreen() {
+  return (
+    <div className="notes-app">
+      <div className="note">
+        <p className="note-title">car fund 🚗</p>
+        <pre className="note-body">{NOTE_BODY}</pre>
+      </div>
+    </div>
+  );
+}
+
+function MapsScreen() {
+  return (
+    <div className="mini-app">
+      <div className="map-tile">🗺️</div>
+      <p className="mini-label">Recent</p>
+      <div className="mini-row">
+        <span>📍 The depot</span>
+        <span>41 min</span>
+      </div>
+      <div className="mini-row">
+        <span>📍 Home</span>
+        <span>—</span>
+      </div>
+      <p className="mini-note">No car on file — directions are transit only.</p>
+    </div>
+  );
+}
+
+function WeatherScreen() {
+  return (
+    <div className="mini-app center">
+      <p className="wx-temp">61°</p>
+      <p className="wx-cond">Clear · Sunday</p>
+      <p className="mini-note">A good day for a drive. If you had one.</p>
+    </div>
+  );
+}
+
+function MusicScreen() {
+  return (
+    <div className="mini-app center">
+      <div className="music-art">🎵</div>
+      <p className="mini-label">Last played</p>
+      <p className="music-track">“Runnin’ Down a Dream”</p>
+      <p className="mini-note">paused · 1:12</p>
+    </div>
+  );
+}
+
+/* ------------------------------ Mom's call (WEIGHT) ----------------------- */
+// A full-screen call that stops everything. Marcus you flick away; Mom you have
+// to face. Answering plays her out at her pace; you decide when to hang up.
+function MomCall({ mode, lines, onAnswer, onDecline, onEnd }) {
+  const [shown, setShown] = useState(0);
+  const [secs, setSecs] = useState(0);
+  useEffect(() => {
+    if (mode !== 'active') return;
+    const ids = lines.map((_, i) => setTimeout(() => setShown(i + 1), 400 + i * 2700));
+    const tick = setInterval(() => setSecs((s) => s + 1), 1000);
+    return () => {
+      ids.forEach(clearTimeout);
+      clearInterval(tick);
+    };
+  }, [mode, lines]);
+
+  if (mode === 'incoming') {
+    return (
+      <div className="call-screen incoming">
+        <div className="call-top">
+          <span className="call-status">incoming call</span>
+          <span className="call-avatar">👩🏻</span>
+          <span className="call-name">Mom</span>
+          <span className="call-sub">mobile</span>
+        </div>
+        <div className="call-actions">
+          <button className="call-btn decline" onClick={onDecline}>
+            <span className="cb-icon">✕</span>
+            Decline
+          </button>
+          <button className="call-btn answer" onClick={onAnswer}>
+            <span className="cb-icon">✆</span>
+            Answer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const mm = Math.floor(secs / 60);
+  const ss = String(secs % 60).padStart(2, '0');
+  const doneTalking = shown >= lines.length;
+  return (
+    <div className="call-screen active">
+      <div className="call-top">
+        <span className="call-avatar small">👩🏻</span>
+        <span className="call-name">Mom</span>
+        <span className="call-timer">
+          {mm}:{ss}
+        </span>
+      </div>
+      <div className="call-lines">
+        {lines.slice(0, shown).map((l, i) => (
+          <p key={i} className="call-line">
+            {l}
+          </p>
+        ))}
+      </div>
+      {doneTalking && <p className="call-hint">she’s waiting for an answer — hang up when you’re ready</p>}
+      <button className={`call-btn end ${doneTalking ? 'ready' : ''}`} onClick={onEnd}>
+        <span className="cb-icon">✕</span>
+        {doneTalking ? 'End call' : 'Hang up'}
+      </button>
     </div>
   );
 }
@@ -910,7 +1534,41 @@ function SavingsScreen() {
   );
 }
 
-/* ------------------------------ TRADE ------------------------------------- */
+/* ------------------------------ TRADE (brokerage) ------------------------- */
+// The chart is HISTORY, not prediction: a believable intraday line that shows
+// what already happened and says nothing about what comes next. It's here for
+// belief, not analysis — no projected returns, no decision-support, just the
+// look of a real broker so the money feels real when it moves.
+function PriceChart({ series }) {
+  const w = 320;
+  const h = 116;
+  const pad = 5;
+  const min = DAY_LOW - 1.5;
+  const max = DAY_HIGH + 1.5;
+  const range = max - min || 1;
+  const X = (i) => pad + (i / (series.length - 1)) * (w - pad * 2);
+  const Y = (v) => pad + (1 - (v - min) / range) * (h - pad * 2);
+  const line = series.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join(' ');
+  const area = `${line} L${X(series.length - 1).toFixed(1)} ${h} L${X(0).toFixed(1)} ${h} Z`;
+  const lx = X(series.length - 1);
+  const ly = Y(series[series.length - 1]);
+  const oy = Y(series[0]);
+  return (
+    <svg className="tr-chart" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="nvGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="rgba(46,204,113,0.32)" />
+          <stop offset="100%" stopColor="rgba(46,204,113,0)" />
+        </linearGradient>
+      </defs>
+      <line className="tr-chart-open" x1="0" y1={oy} x2={w} y2={oy} vectorEffect="non-scaling-stroke" />
+      <path d={area} fill="url(#nvGrad)" />
+      <path className="tr-chart-line" d={line} fill="none" vectorEffect="non-scaling-stroke" />
+      <circle className="tr-chart-dot" cx={lx} cy={ly} r="3" />
+    </svg>
+  );
+}
+
 function TradeScreen({ tick, armed, onBuy }) {
   if (!armed) {
     return (
@@ -925,50 +1583,74 @@ function TradeScreen({ tick, armed, onBuy }) {
       </div>
     );
   }
+  const chgAbs = tick - OPEN_PRICE;
+  const chgPct = (chgAbs / OPEN_PRICE) * 100;
   return (
     <div className="trade open">
-      <p className="tr-sym">NVDA</p>
-      <p className="tr-price">{tick.toFixed(2)}</p>
-      <p className="tr-chg">▲ +24.4% today · still climbing</p>
-      <div className="tr-hype">{FRIEND}: it just hit another high lol. don’t be the guy who watched.</div>
-      <button className="tr-buy" onClick={onBuy}>
-        Buy NVDA →
-      </button>
-      <p className="tr-note">{DREAM.icon} ${DREAM.gap.toLocaleString()} from your first car</p>
-    </div>
-  );
-}
-
-/* ------------------------------ Stage: HOUSE ------------------------------ */
-function HouseStage({ lines, done, onContinue }) {
-  return (
-    <div className="house">
-      <p className="house-room">🍳 Downstairs · the kitchen</p>
-      <div className="house-lines">
-        {lines.map((t, i) => (
-          <p key={i} className="mom-line">
-            <span className="mom-who">Mom</span>
-            {t}
-          </p>
-        ))}
+      <div className="tr-top">
+        <div className="tr-id">
+          <span className="tr-ticker">NVDA</span>
+          <span className="tr-name">NVIDIA Corp · NASDAQ</span>
+        </div>
+        <div className="tr-quote">
+          <span className="tr-last">{tick.toFixed(2)}</span>
+          <span className="tr-delta">▲ {chgAbs.toFixed(2)} ({chgPct.toFixed(1)}%)</span>
+        </div>
       </div>
-      {done && (
-        <button className="house-cont" onClick={onContinue}>
-          You glance back at your phone… (market’s open now)
+
+      <PriceChart series={SERIES} />
+      <div className="tr-axis">
+        <span>9:30</span>
+        <span>11:00</span>
+        <span>12:30</span>
+        <span>Now</span>
+      </div>
+
+      <div className="tr-facts">
+        <div>
+          <span>Open</span>
+          <strong>{OPEN_PRICE.toFixed(2)}</strong>
+        </div>
+        <div>
+          <span>Day range</span>
+          <strong>
+            {DAY_LOW.toFixed(2)}–{DAY_HIGH.toFixed(2)}
+          </strong>
+        </div>
+        <div>
+          <span>Volume</span>
+          <strong>487M</strong>
+        </div>
+      </div>
+
+      <div className="tr-hype">
+        <span className="tr-hype-who">💬 {FRIEND}</span>
+        it just hit another high lol. don’t be the guy who watched.
+      </div>
+
+      <div className="tr-order">
+        <div className="tr-power">
+          <span>Buying power</span>
+          <strong>{money(TOTAL)}</strong>
+        </div>
+        <button className="tr-buy" onClick={onBuy}>
+          Buy NVDA
         </button>
-      )}
+      </div>
+      <p className="tr-note">{DREAM.icon} ${DREAM.gap.toLocaleString()} from your first car</p>
     </div>
   );
 }
 
 /* ------------------------------- Ticker ------------------------------------ */
 function Ticker({ tick, hot }) {
+  const chgPct = ((tick - OPEN_PRICE) / OPEN_PRICE) * 100;
   return (
     <div className="climax-ticker" style={{ '--hot': hot.toFixed(3) }}>
       <span className="tk-sym">NVDA</span>
       <span className="tk-arrow">▲</span>
       <span className="tk-price">{tick.toFixed(2)}</span>
-      <span className="tk-chg">+24.4% today</span>
+      <span className="tk-chg">+{chgPct.toFixed(1)}% today</span>
     </div>
   );
 }
@@ -1111,7 +1793,7 @@ function AwayStage({ tick, onReturn }) {
 }
 
 /* ------------------------------ Stage: DONE -------------------------------- */
-function DoneStage({ said, invested, safe, price, metrics, worldMsgs, checkShake, onPoke, onReplay }) {
+function DoneStage({ said, invested, safe, price, metrics, worldMsgs, checkShake, onPoke, onSleep }) {
   const [shownSafe, setShownSafe] = useState(TOTAL);
   useEffect(() => {
     let raf = 0;
@@ -1190,8 +1872,8 @@ function DoneStage({ said, invested, safe, price, metrics, worldMsgs, checkShake
         ))}
       </div>
 
-      <button className="replay-btn" onClick={onReplay}>
-        Live the morning again
+      <button className="sleep-btn" onClick={onSleep}>
+        {walkedAway ? 'Get on with your day →' : 'Try to get some sleep →'}
       </button>
 
       {DEV && (
@@ -1264,6 +1946,547 @@ function Fp({ label, val, flag }) {
     <div className="fp-row">
       <span>{label}</span>
       <strong className={flag ? 'flag' : ''}>{val}</strong>
+    </div>
+  );
+}
+
+/* ------------------------------ Stage: FILLING ---------------------------- */
+// The order ritual — the instant the money actually, irreversibly moves.
+// Submitting… → Filled. Pure believability: no number here computes an outcome.
+function FillingStage({ invested, shares, price, onDone }) {
+  const [step, setStep] = useState('submitting'); // submitting | filled
+  useEffect(() => {
+    const t1 = setTimeout(() => setStep('filled'), 1150);
+    const t2 = setTimeout(onDone, 2700);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [onDone]);
+  return (
+    <div className={`filling step-${step}`}>
+      {step === 'submitting' ? (
+        <>
+          <div className="fill-spinner" />
+          <p className="fill-status">Submitting order…</p>
+          <p className="fill-detail">Buy {shares} NVDA · market order</p>
+          <p className="fill-sub">Moving {money(invested)} from Savings</p>
+        </>
+      ) : (
+        <>
+          <div className="fill-check">✓</div>
+          <p className="fill-status filled">Order filled</p>
+          <p className="fill-detail">
+            {shares} shares @ ${price.toFixed(2)}
+          </p>
+          <p className="fill-sub debit">−{money(invested)} from Savings</p>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------ Stage: SETTLE (what have I done) ----------- */
+// The held breath. The order is filled; the world hasn't reacted yet. It's just
+// you and a number that refuses to resolve. The only thing you can DO is check
+// it — and it gives you nothing. You discover the weight by reaching for an
+// answer that isn't there, not by being told to feel it. You have to decide to
+// stop looking before the day moves on.
+function SettleStage({ invested, shares, price, onRelease }) {
+  const walkedAway = invested === 0;
+  const [checks, setChecks] = useState(0);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setReady(true), walkedAway ? 2600 : 3400);
+    return () => clearTimeout(t);
+  }, [walkedAway]);
+
+  const checkLines = [
+    'It won’t tell you anything.',
+    'You check it again anyway.',
+    'You know it won’t change. You look anyway.',
+  ];
+  const abstainLines = [
+    'Still there. All of it.',
+    'You keep opening it to make sure it’s real.',
+  ];
+  const lines = walkedAway ? abstainLines : checkLines;
+  const check = () => {
+    setChecks((c) => c + 1);
+    buzz(22);
+  };
+  const showRelease = ready || checks >= 3;
+
+  return (
+    <div className="settle">
+      <p className="settle-time">7:41 AM</p>
+
+      <button className="settle-check" onClick={check}>
+        <span className="settle-sym">
+          {walkedAway ? 'Savings' : 'NVDA · your position'}
+        </span>
+        {walkedAway ? (
+          <span className="settle-val safe">{money(TOTAL)}</span>
+        ) : (
+          <span key={checks} className={`settle-val pos-blur ${checks ? 'shook' : ''}`}>
+            $▮▮▮▮▮
+          </span>
+        )}
+        <span className="settle-sub">
+          {walkedAway ? 'untouched' : `${shares} shares @ $${price.toFixed(2)}`}
+        </span>
+      </button>
+
+      {checks > 0 && (
+        <p key={checks} className="settle-echo">
+          {lines[Math.min(checks - 1, lines.length - 1)]}
+        </p>
+      )}
+      {checks === 0 && <p className="settle-hint">tap to check it</p>}
+
+      {showRelease && (
+        <button className="settle-release" onClick={onRelease}>
+          {walkedAway ? 'Set the phone down →' : 'Lock the phone. Try to look away →'}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/* ------------------------------ Stage: NIGHT (the hook) ------------------- */
+// Day One's open loop. The outcome is deliberately withheld (Two Clocks), so
+// the reason to come back is a QUESTION, not an answer: the position sits open
+// all night, and a premarket message arrives — then cuts off. You find out
+// tomorrow. That gap is the hook.
+function NightStage({ invested, onMorning }) {
+  const walkedAway = invested === 0;
+  const [beat, setBeat] = useState(0); // 0 quiet · 1 typing · 2 message · 3 morning
+  useEffect(() => {
+    const ids = [
+      setTimeout(() => setBeat(1), 2200),
+      setTimeout(() => setBeat(2), 4300),
+      setTimeout(() => setBeat(3), 5900),
+    ];
+    return () => ids.forEach(clearTimeout);
+  }, []);
+  const cliff = walkedAway
+    ? 'bro. premarket is INSANE. you really didn’t get in?? 😭'
+    : 'bro. did you see premarket?? you’re not gonna—';
+  return (
+    <div className="night">
+      <p className="night-time">2:47 AM</p>
+      <p className="night-line">
+        {walkedAway
+          ? 'You didn’t put anything in. So why are you still awake?'
+          : 'You should be asleep. It’s in there all night — doing something you can’t see.'}
+      </p>
+
+      <div className="night-pos">
+        <span className="night-pos-label">{walkedAway ? 'Still in Savings' : 'NVDA · position open'}</span>
+        <span className="night-pos-val pos-blur">$▮▮▮▮▮</span>
+      </div>
+
+      {beat >= 1 && (
+        <div className="night-phone">
+          {beat === 1 && (
+            <div className="bubble them typing night-typing">
+              <span /> <span /> <span />
+            </div>
+          )}
+          {beat >= 2 && <div className="bubble them night-cliff">{cliff}</div>}
+        </div>
+      )}
+
+      {beat >= 3 && (
+        <div className="night-end">
+          <p className="night-tbc">The longest night of your life. Then the alarm.</p>
+          <button className="night-morning" onClick={onMorning}>
+            ☀︎ Monday · 9:29 AM — see what the night did →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ==========================================================================
+   THE PAYOFF — Result (the second clock) → Autopsy (decouple + reveal) →
+   Day Two. The whole bet: does the player leave understanding their decision
+   better, not just richer or poorer?
+   ========================================================================== */
+
+// Decision quality — graded on PROCESS, deliberately blind to the outcome.
+// Facing the numbers and the doubt, sizing sanely, not deciding on pure hype.
+function gradeDecision(m) {
+  m = m || {};
+  const frac = (m.finalAlloc || 0) / TOTAL;
+  let dq = 0;
+  if (m.readReport) dq += 34; // faced the actual numbers
+  if (m.openedWarning) dq += 22; // faced the voice that challenged the hype
+  dq += Math.min(m.newsOpened || 0, 4) * 4; // breadth of looking
+  if (frac <= 0.5) dq += 16;
+  else if (frac <= 0.8) dq += 8; // sizing sanity
+  if ((m.deliberateMs || 0) > 5000) dq += 10; // didn't blink
+  if (m.momAnswered === true) dq += 6; // stopped to hear the brake
+  dq = Math.max(0, Math.min(100, dq));
+  return { dq, good: dq >= 50, frac };
+}
+
+// Process × outcome → the four honest verdicts. The result never sets the grade.
+function verdictOf(good, up) {
+  if (good && up)
+    return { key: 'earned', title: 'Earned.', line: 'You did the work and it paid. Don’t let the win rewrite the story — this time skill and luck happened to agree.' };
+  if (good && !up)
+    return { key: 'unlucky', title: 'Sound. Unlucky.', line: 'You did it right and still lost money. That isn’t a mistake — it’s what investing feels like. Good decision, bad dice. Make it again.' };
+  if (!good && up)
+    return { key: 'lucky', title: 'Lucky. Not good.', line: 'It worked — and that’s the trap. You got paid for a bet you didn’t understand. Do this enough times and the market collects it all back.' };
+  return { key: 'reckless', title: 'That’s the bill.', line: 'Hype in, money out. Nothing here was thought through, and the morning noticed.' };
+}
+
+/* ------------------------------ Stage: RESULT ----------------------------- */
+function ResultStage({ invested, outcome, onNext }) {
+  const walkedAway = invested === 0;
+  const [shown, setShown] = useState(0);
+  useEffect(() => {
+    if (walkedAway) return;
+    const start = performance.now();
+    let raf;
+    const step = (now) => {
+      const p = Math.min(1, (now - start) / 1200);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setShown(Math.round(outcome.endValue * eased));
+      if (p < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [walkedAway, outcome]);
+
+  if (walkedAway) {
+    const wouldHave = Math.round((TOTAL * outcome.movePct) / 100);
+    return (
+      <div className="result">
+        <p className="result-kicker">You put nothing in. The night still had an answer.</p>
+        <p className={`result-move ${outcome.up ? 'up' : 'down'}`}>
+          NVDA {outcome.up ? '▲' : '▼'} {Math.abs(outcome.movePct)}% overnight
+        </p>
+        <div className="result-cf">
+          <span className="result-cf-label">The {money(TOTAL)} you kept</span>
+          <span className="result-cf-val">{money(TOTAL)}</span>
+          <span className="result-cf-note">
+            {outcome.up
+              ? `would’ve been ${money(TOTAL + wouldHave)}. You left ${money(wouldHave)} on the table.`
+              : `would’ve been ${money(TOTAL + wouldHave)}. You dodged a ${money(-wouldHave)} hit — it’s all still yours.`}
+          </span>
+        </div>
+        <button className="result-next" onClick={onNext}>
+          So — right call, or scared call? →
+        </button>
+      </div>
+    );
+  }
+
+  const pnl = outcome.pnl;
+  const shifts = Math.max(1, Math.round(Math.abs(pnl) / 200));
+  return (
+    <div className="result">
+      <p className="result-kicker">The number you couldn’t see all night —</p>
+      <p className={`result-value ${outcome.up ? 'up' : 'down'}`}>{money(shown)}</p>
+      <p className={`result-move ${outcome.up ? 'up' : 'down'}`}>
+        NVDA {outcome.up ? '▲' : '▼'} {Math.abs(outcome.movePct)}% overnight · {pnl >= 0 ? '+' : '−'}
+        {money(Math.abs(pnl))}
+      </p>
+      <p className="result-gut">
+        {outcome.up
+          ? pnl >= DREAM.gap
+            ? `${DREAM.icon} That’s the whole gap. You could buy the car today.`
+            : `${DREAM.icon} +${money(pnl)}. The driveway got ${Math.round((pnl / DREAM.gap) * 100)}% closer — overnight.`
+          : `${DREAM.icon} ${money(Math.abs(pnl))} — about ${shifts} Saturday shifts — gone before breakfast.`}
+      </p>
+      <button className="result-next" onClick={onNext}>
+        But was it the right call? →
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------ Stage: AUTOPSY ---------------------------- */
+// A mirror, not a scoreboard. It reveals what was invisible while you decided,
+// separates what happened from what you did, and lets you convict yourself.
+function AutopsyStage({ invested, said, metrics, outcome, onNext }) {
+  const m = metrics || {};
+  const line = said ? said.text : '';
+  const walkedAway = invested === 0;
+  const g = gradeDecision(m);
+
+  const acts = [];
+  acts.push({
+    kicker: 'The two clocks',
+    head: 'What happened isn’t what you did.',
+    body: 'The market just handed you a number. It is not your grade. A careful call can lose; a careless one can win. Hold them apart — or you’ll learn exactly the wrong lesson from today.',
+  });
+
+  // The reveal — your relationship to disconfirming information (the echo chamber).
+  let echoHead, echoBody;
+  if (m.readReport && m.openedWarning) {
+    echoHead = 'You faced the doubt.';
+    echoBody =
+      'You opened the earnings report AND the column that called it “the best company at the worst price.” You saw the case for and the case against, and moved anyway. That’s not recklessness — that’s a decision made with your eyes open.';
+  } else if ((m.newsOpened || 0) === 0) {
+    echoHead = 'You didn’t look at all.';
+    echoBody =
+      'Four sources sat one tap away. You opened none. The only voice you let into the room was the one screaming at you to buy.';
+  } else if (m.openedSocial && !m.openedWarning) {
+    echoHead = 'You went looking for a yes.';
+    echoBody =
+      'You opened r/wallstreetbets — the room already agreeing with Marcus. The one voice that pushed back — “you’re not investing, you’re predicting” — you left unread. You didn’t research the trade. You collected permission for it.';
+  } else if (!m.readReport) {
+    echoHead = 'You read around the numbers.';
+    echoBody =
+      'You sampled a few takes but never opened the earnings report itself — the one place the actual figures lived. You weighed opinions and skipped the evidence.';
+  } else {
+    echoHead = 'You checked the company, not the price.';
+    echoBody =
+      'You opened the report — good — but skipped the voice challenging the valuation. You confirmed NVDA was strong, never whether it was worth this.';
+  }
+  acts.push({ kicker: 'What you let in', head: echoHead, body: echoBody });
+
+  // Words vs. hands (+ Mom).
+  const impliedDollars = said ? Math.round((said.implied * TOTAL) / 100) * 100 : 0;
+  const gap = (m.finalAlloc || 0) - impliedDollars;
+  let wordsBody;
+  if (Math.abs(gap) >= 2500) {
+    wordsBody =
+      gap > 0
+        ? `The words were careful. The thumb wasn’t — ${money(m.finalAlloc)} against a plan of about ${money(impliedDollars)}. The story you told yourself and the move you made were two different people.`
+        : `You talked big, then pulled back to ${money(m.finalAlloc)}. Somewhere between the sentence and the tap, you flinched. Worth knowing which one is the real you.`;
+  } else {
+    wordsBody = `For once the words and the hands agreed — ${money(m.finalAlloc)}, about what you said you’d do. You meant it.`;
+  }
+  if (m.momAnswered === false) wordsBody += ' And you sent your mom to voicemail before you did it.';
+  else if (m.momAnswered === true) wordsBody += ' Your mom asked you to think first — you picked up, and decided anyway.';
+  if (!walkedAway) acts.push({ kicker: 'Words vs. hands', head: `“${line}”`, body: wordsBody });
+
+  // The verdict — on the decision, not the result.
+  const v = walkedAway
+    ? g.good
+      ? { key: 'earned', title: 'Passed — on purpose.', line: 'You did the reading and decided it wasn’t worth it. Whatever the stock did overnight, that was a real call, not a flinch.' }
+      : { key: 'reckless', title: 'Frozen, not chosen.', line: 'You didn’t weigh it and pass — you just didn’t move. Doing nothing felt safe, but it wasn’t a decision. Next time, that difference is everything.' }
+    : verdictOf(g.good, outcome.up);
+  acts.push({ kicker: 'The verdict · on the decision, not the result', head: v.title, body: v.line, tone: v.key });
+
+  // Reflection + Investor DNA seed (self-discovery, never a score).
+  let dna;
+  if (walkedAway) dna = g.good ? 'You’d rather miss out than be wrong.' : 'When it counts, you freeze.';
+  else if (!m.openedWarning && g.frac > 0.6) dna = 'When the crowd gets loud, your allocation gets big.';
+  else if (!m.openedWarning) dna = 'You trust the voices that already agree with you.';
+  else if (m.readReport && m.openedWarning) dna = 'You look before you leap.';
+  else dna = 'You decide fast, and explain it to yourself later.';
+  acts.push({
+    kicker: 'Investor DNA · entry 001',
+    head: dna,
+    body: 'One morning isn’t a pattern — it’s the first dot. Live enough of these and this line becomes a portrait: who you actually are when money meets uncertainty.',
+    dna: true,
+  });
+
+  const [step, setStep] = useState(0);
+  const last = step >= acts.length - 1;
+  const a = acts[step];
+  return (
+    <div className="autopsy-slice">
+      <div className="au-dots">
+        {acts.map((_, i) => (
+          <span key={i} className={`au-dot ${i <= step ? 'on' : ''}`} />
+        ))}
+      </div>
+      <div className={`au-act ${a.tone ? `tone-${a.tone}` : ''} ${a.dna ? 'dna' : ''}`} key={step}>
+        <p className="au-kicker">{a.kicker}</p>
+        <p className="au-head">{a.head}</p>
+        <p className="au-body">{a.body}</p>
+      </div>
+      <button className="au-next" onClick={() => (last ? onNext() : setStep((s) => s + 1))}>
+        {last ? 'Carry it into Day Two →' : 'Go on →'}
+      </button>
+    </div>
+  );
+}
+
+/* ------------------------------ Stage: DAY TWO ---------------------------- */
+// The loop closes and pulls forward: your world changed because of the call you
+// made, and a new one is already waiting.
+function DayTwoStage({ invested, outcome, onReplay }) {
+  const walkedAway = invested === 0;
+  const pnl = walkedAway ? 0 : outcome.pnl;
+  const worth = TOTAL + pnl; // your money now
+  const gap = Math.max(0, DREAM.goal - worth);
+  const pct = Math.min(100, Math.round((worth / DREAM.goal) * 100));
+  const hook = walkedAway
+    ? outcome.up
+      ? 'so… it ran without us. still think it’s too expensive?? 😅'
+      : 'ok you might’ve been right lol. still watching?'
+    : outcome.up
+      ? 'WE’RE UP 🚀 do we let it ride or take the car money off the table??'
+      : 'rough open man. do we hold or cut it before it gets worse??';
+  return (
+    <div className="daytwo">
+      <p className="d2-kicker">Monday. The week’s only just started.</p>
+      <p className="d2-line">
+        {walkedAway
+          ? 'Your savings are exactly where they were. But the way you look at them changed.'
+          : outcome.up
+            ? 'You carry a win you’re not sure you earned — and a chart you’ll now check every hour.'
+            : 'You carry a loss, and a mom who didn’t say “I told you so.” She didn’t have to.'}
+      </p>
+
+      <div className="d2-goal">
+        <div className="d2-goal-head">
+          <span>{DREAM.icon} {DREAM.label}</span>
+          <strong>{gap > 0 ? `${money(gap)} to go` : 'fully funded'}</strong>
+        </div>
+        <div className="d2-bar">
+          <span style={{ width: `${pct}%` }} className={outcome && !outcome.up && !walkedAway ? 'down' : ''} />
+        </div>
+        <div className="d2-goal-foot">
+          <span>Your money now</span>
+          <strong className={pnl > 0 ? 'up' : pnl < 0 ? 'down' : ''}>{money(worth)}</strong>
+        </div>
+      </div>
+
+      <div className="d2-hook">
+        <span className="d2-hook-who">💬 {FRIEND}</span>
+        <span className="d2-hook-text">{hook}</span>
+      </div>
+
+      <p className="d2-tbc">Day Two picks up right here — a new call, already shaped by this one.</p>
+      <button className="d2-replay" onClick={onReplay}>
+        ↻ Live Day One again
+      </button>
+    </div>
+  );
+}
+
+/* ==========================================================================
+   THE INSTRUMENT — "where did curiosity drop?" Reads the sessions logged to
+   localStorage during play. Headline: how many reached (and acted on) Day Two,
+   and where the rest fell away. This is how a playtest becomes data.
+   ========================================================================== */
+function SessionReport() {
+  let sessions = [];
+  try {
+    sessions = JSON.parse(localStorage.getItem('itm_sessions') || '[]');
+  } catch {
+    sessions = [];
+  }
+  const recent = [...sessions].reverse();
+  const label = (p) => PHASE_LABELS[p] || p;
+  const fmt = (ms) => (ms >= 1000 ? (ms / 1000).toFixed(ms >= 10000 ? 0 : 1) + 's' : Math.round(ms) + 'ms');
+  const reachedDayTwo = sessions.filter((s) => s.reachedDayTwo).length;
+
+  const drops = {};
+  sessions
+    .filter((s) => !s.reachedDayTwo)
+    .forEach((s) => {
+      const p = s.ended?.phase || s.furthest;
+      drops[p] = (drops[p] || 0) + 1;
+    });
+  const worst = Object.entries(drops).sort((a, b) => b[1] - a[1])[0];
+
+  const dwellOf = (s) => {
+    const entries = (s.events || []).filter((e) => !e.kind);
+    // merge consecutive identical phases (StrictMode can double-log the first)
+    const merged = [];
+    for (const e of entries) {
+      if (merged.length && merged[merged.length - 1].phase === e.phase) continue;
+      merged.push(e);
+    }
+    const rows = [];
+    for (let i = 0; i < merged.length; i++) {
+      const end = merged[i + 1]?.t ?? s.ended?.t ?? merged[i].t;
+      rows.push({ phase: merged[i].phase, dwell: Math.max(0, end - merged[i].t) });
+    }
+    return rows;
+  };
+  const durOf = (s) => s.ended?.t ?? s.events?.[s.events.length - 1]?.t ?? 0;
+
+  const textReport = () => {
+    const lines = [`ITM playtest — ${sessions.length} session(s) · ${reachedDayTwo} reached Day Two`];
+    if (worst) lines.push(`Most common drop-off: ${label(worst[0])} (${worst[1]}×)`);
+    lines.push('');
+    recent.forEach((s, i) => {
+      lines.push(`#${recent.length - i} · ${s.when}`);
+      lines.push(`  reached ${label(s.furthest)}${s.reachedDayTwo ? ' ✓ Day Two' : ''} · ${fmt(durOf(s))}${s.replays ? ` · replayed ${s.replays}×` : ''}`);
+      if (s.ended && !s.reachedDayTwo) lines.push(`  left at ${label(s.ended.phase)} (${s.ended.kind})`);
+      dwellOf(s).forEach((r) => lines.push(`    ${label(r.phase)} — ${fmt(r.dwell)}`));
+      lines.push('');
+    });
+    return lines.join('\n');
+  };
+
+  return (
+    <div className="report">
+      <h2 className="rp-title">Where did curiosity drop?</h2>
+      <div className="rp-summary">
+        <div className="rp-stat">
+          <span>{sessions.length}</span>sessions
+        </div>
+        <div className="rp-stat big">
+          <span>
+            {reachedDayTwo}/{sessions.length || 0}
+          </span>
+          wanted Day Two
+        </div>
+        <div className="rp-stat">
+          <span>{worst ? label(worst[0]) : '—'}</span>most common drop-off
+        </div>
+      </div>
+
+      {recent.length === 0 && (
+        <p className="rp-empty">
+          No sessions yet. Play the game in this browser (<code>?proto=decision</code>), then come back to{' '}
+          <code>?proto=decision&amp;report=1</code>.
+        </p>
+      )}
+
+      <div className="rp-list">
+        {recent.map((s, i) => {
+          const done = s.reachedDayTwo;
+          return (
+            <div key={s.id} className={`rp-card ${done ? 'done' : 'dropped'}`}>
+              <div className="rp-card-head">
+                <span className="rp-when">
+                  #{recent.length - i} · {s.when}
+                </span>
+                <span className={`rp-badge ${done ? 'ok' : 'no'}`}>{done ? '✓ reached Day Two' : 'dropped'}</span>
+              </div>
+              <div className="rp-reached">
+                Got to <strong>{label(s.furthest)}</strong> · {fmt(durOf(s))}
+                {s.replays ? ` · replayed ${s.replays}×` : ''}
+                {s.ended && !done ? <span className="rp-left"> — left at {label(s.ended.phase)} ({s.ended.kind})</span> : null}
+              </div>
+              <div className="rp-track">
+                {dwellOf(s).map((r, k) => (
+                  <div key={k} className="rp-seg">
+                    <span className="rp-seg-label">{label(r.phase)}</span>
+                    <span className="rp-seg-time">{fmt(r.dwell)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="rp-actions">
+        <button onClick={() => navigator.clipboard?.writeText(textReport())}>Copy report</button>
+        <button
+          onClick={() => {
+            localStorage.removeItem('itm_sessions');
+            window.location.reload();
+          }}
+        >
+          Clear
+        </button>
+        <a href="?proto=decision">← back to the game</a>
+      </div>
     </div>
   );
 }
