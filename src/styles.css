@@ -4127,6 +4127,62 @@ body {
   font-style: italic;
   color: var(--muted);
 }
+
+/* ---------- THE REASON: tap the clue carrying your call ---------- */
+.core-sig.leanable {
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s ease, background 0.12s ease, transform 0.06s ease;
+}
+.core-sig.leanable:hover {
+  border-color: var(--accent);
+  background: rgba(91, 140, 255, 0.06);
+}
+.core-sig.leanable:active {
+  transform: scale(0.99);
+}
+.core-sig.leaned {
+  border-color: var(--accent);
+  border-style: solid;
+  background: rgba(91, 140, 255, 0.1);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.cs-lean-tag {
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+}
+.core-lean-nudge {
+  margin: 12px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--accent);
+  animation: pulse 1.8s ease-in-out infinite;
+}
+.core-lean-echo {
+  margin: 4px 0 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+.core-lean-echo.held {
+  color: var(--green);
+}
+.core-lean-echo.broke {
+  color: var(--amber);
+}
+.core-regret {
+  margin: 4px 0 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 92, 92, 0.35);
+  background: rgba(255, 92, 92, 0.07);
+  color: #f0a0a0;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  font-style: italic;
+}
 .rule-up {
   color: var(--green);
   font-weight: 700;
@@ -4202,6 +4258,483 @@ body {
   background: transparent;
   border: none;
   padding: 0;
+}
+
+/* ---------- "new to stocks?" primer (optional, collapsed) ---------- */
+.core-basics {
+  margin: 14px 0 4px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
+.core-basics summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent);
+  list-style: none;
+}
+.core-basics summary::-webkit-details-marker {
+  display: none;
+}
+.core-basics p {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #cdd5e0;
+}
+
+/* ---------- v7: career, rival, juice ---------- */
+.career-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 6px;
+}
+.career-side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.career-side.lead {
+  border-color: var(--green);
+  box-shadow: 0 0 14px rgba(46, 204, 113, 0.12);
+}
+.career-name {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+.career-amt {
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.career-vs {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+.career-note {
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.career-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.core-marcus {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  border-left: 3px solid #e06ad0;
+  background: var(--surface);
+}
+.cm-who {
+  font-size: 11px;
+  font-weight: 700;
+  color: #e06ad0;
+}
+.cm-text {
+  font-size: 14px;
+  line-height: 1.35;
+}
+.core-marcus-result {
+  margin: 6px 0 8px;
+  font-size: 13px;
+  text-align: center;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.core-marcus-result.up {
+  color: #e06ad0;
+}
+.core-streak {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--amber);
+  animation: resultPop 0.5s ease;
+}
+/* ---------- v8: the second act — a position that unfolds ---------- */
+.core-beat {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fade 0.5s ease;
+}
+.beat-kicker {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.beat-news {
+  padding: 12px 14px;
+  border-radius: 14px;
+  border-left: 3px solid rgb(var(--cool));
+  background: rgba(var(--cool), 0.07);
+  font-size: 15px;
+  line-height: 1.5;
+  animation: notifIn 0.4s ease;
+}
+.beat-pos {
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-align: center;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.beat-pos.up {
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  background: rgba(46, 204, 113, 0.07);
+  color: var(--green);
+}
+.beat-pos.down {
+  border: 1px solid rgba(255, 92, 92, 0.4);
+  background: rgba(255, 92, 92, 0.07);
+  color: var(--red);
+}
+.beat-q {
+  margin: 2px 0 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+}
+.beat-actions {
+  display: flex;
+  gap: 8px;
+}
+.beat-actions.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+.beat-btn.trim:hover {
+  border-color: var(--amber);
+}
+
+/* ---------- v10: THE TAPE — a market that moves while you decide ---------- */
+.core-tape {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fade 0.4s ease;
+}
+.tape-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-variant-numeric: tabular-nums;
+}
+.tape-price {
+  font-size: 14px;
+  font-weight: 700;
+}
+.tape-price.up,
+.tape-pnl.up {
+  color: var(--green);
+}
+.tape-price.down,
+.tape-pnl.down {
+  color: var(--red);
+}
+.tape-pnl {
+  font-size: 18px;
+  font-weight: 800;
+}
+.tape-chart {
+  width: 100%;
+  height: 130px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+.mp-line {
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.mp-line.up {
+  stroke: var(--green);
+}
+.mp-line.down {
+  stroke: var(--red);
+}
+.mp-entry {
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 1;
+  stroke-dasharray: 3 4;
+}
+.tape-dot {
+  fill: #fff;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+}
+.tape-news {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--cool), 0.45);
+  background: rgba(var(--cool), 0.08);
+  animation: notifIn 0.35s ease;
+}
+.tn-text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.tn-reason {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--amber);
+}
+.tape-resume {
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+.tape-resume:hover {
+  border-color: var(--accent);
+}
+.tape-hint {
+  margin: 0;
+  min-height: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+/* the finished ride, with your actions marked on it */
+.mini-wrap {
+  margin: 6px 0 10px;
+}
+.minipath {
+  width: 100%;
+  height: 90px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(0, 0, 0, 0.25);
+}
+.mp-tag {
+  font-size: 8px;
+  fill: var(--muted);
+}
+.mp-mark {
+  font-size: 11px;
+  font-weight: 800;
+}
+.mp-mark.mk-exit {
+  fill: var(--red);
+}
+.mp-mark.mk-trim {
+  fill: var(--amber);
+}
+.mp-mark.mk-add {
+  fill: var(--green);
+}
+.mini-cap {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* the thesis, written back to you — with the steelman */
+.thesis-card {
+  margin: 14px 0 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(91, 140, 255, 0.4);
+  background: rgba(91, 140, 255, 0.07);
+}
+.th-h {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 700;
+}
+.th-line {
+  margin: 0 0 6px;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.th-counter {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  font-style: italic;
+  color: var(--amber);
+}
+.pattern-h {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.beat-btn {
+  flex: 1;
+  padding: 14px 8px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: var(--radius);
+  border: 2px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+.beat-btn.hold:hover {
+  border-color: var(--accent);
+}
+.beat-btn.add:hover {
+  border-color: var(--green);
+}
+.beat-btn.sell:hover {
+  border-color: var(--red);
+}
+.core-exit-note {
+  margin: 4px 0 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  text-align: center;
+  font-style: italic;
+}
+.core-exit-note.bad {
+  border: 1px solid rgba(245, 166, 35, 0.35);
+  background: rgba(245, 166, 35, 0.07);
+  color: var(--amber);
+}
+.core-exit-note.good {
+  border: 1px solid rgba(46, 204, 113, 0.35);
+  background: rgba(46, 204, 113, 0.06);
+  color: var(--green);
+}
+.core-shifts {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 13px;
+  font-style: italic;
+  color: var(--amber);
+}
+
+/* ---------- the Civic bar: money is a life, not a counter ---------- */
+.civic-bar {
+  margin: 10px 0 8px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 170, 70, 0.3);
+  background: rgba(245, 170, 70, 0.05);
+}
+.civic-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  font-weight: 700;
+}
+.civic-head strong {
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+}
+.civic-track {
+  height: 7px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin: 8px 0 8px;
+}
+.civic-track span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--green), rgba(var(--warm), 0.9));
+  transition: width 0.6s ease;
+}
+.civic-cap {
+  margin: 0;
+  font-size: 12px;
+  font-style: italic;
+  color: var(--muted);
+}
+
+.core-short-note {
+  margin: 4px 0 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 92, 92, 0.35);
+  background: rgba(255, 92, 92, 0.06);
+  font-size: 13px;
+  line-height: 1.5;
+  color: #f0a0a0;
+  text-align: center;
+}
+.report-vs {
+  margin: 0 0 16px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 600;
+}
+.report-vs.won {
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  background: rgba(46, 204, 113, 0.08);
+  color: var(--green);
+}
+.report-vs.lost {
+  border: 1px solid rgba(224, 106, 208, 0.4);
+  background: rgba(224, 106, 208, 0.07);
+  color: #e8a5de;
+}
+.bust-h1 {
+  color: var(--red);
+}
+.bust-line {
+  margin: 0 0 14px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #cdd5e0;
+}
+.marcus-taunt {
+  color: #e8a5de;
+  font-style: italic;
 }
 
 /* ---------- chapter select (the question stays hidden) ---------- */

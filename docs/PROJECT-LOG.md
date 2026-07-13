@@ -143,6 +143,118 @@ bankroll (the car fund), which is the entire feeling-layer in one mechanic.
 Rejected alternatives: study-app-in-phone framing (homework feeling), full
 production per decision (buries thinking).
 
+**v5 — THE INVESTIGATION GAME (2026-07-05).** Response to "still an interactive
+story — the player consumes content": clues now start FACE-DOWN, labels only.
+The player chooses where to look (2 free looks; deeper digging costs $200/$400
+from the fund — time is money), or buys on the pitch alone (allowed, recorded).
+This makes information-selection the second interlocking decision (what do I
+look at? → what do I do?), which is the actual skill: deciding which information
+deserves limited attention. At reveal, skipped cards flip anyway ("you never
+opened this") with a regret line when the clue that pointed the right way went
+unopened — reveal-is-the-twin-of-concealment, mechanized. The report gains an
+INVESTIGATION MIRROR: your looking habit ("you opened Online buzz most, never
+once What the bosses did" / "decided on the pitch alone 4 of 5 times"). This
+finally implements principle #9 (discover information, don't consume it) in the
+core loop.
+
+**v10 — THE TAPE (2026-07-06).** Playtest on v9: "story unchanged/stronger is
+not natural · I can't see any reason for the result · I still can't see this
+moving toward a game." Root diagnosis: after nine versions of text cards, the
+problem wasn't rules — NOTHING MOVED. Games have a world running in time under
+your hovering thumb. Rebuilt the second act as a LIVE TAPE: after commit, the
+real price path draws itself (~20s), P&L ticks live, news lands and PAUSES the
+tape (decision space), and plain-language buttons sit under your thumb the
+whole time (Buy $500 more · Sell half · Sell everything — all "story" jargon
+deleted). Sell early and the tape keeps rolling without you — you WATCH what
+you dodged or missed. Exits graded by what you sold ON, via timing attribution:
+a fact ("you sold because the facts changed — the right reason"), a scary
+headline ("changed nothing real"), or nothing at all ("nothing had happened —
+except the price. The number scared you, not the facts."). The reveal shows the
+whole ride as a chart with your actions marked (▲ adds · ◆ half-sells · ▼
+exit) — the result explains itself visually. Report ledger: why-you-sell
+(facts / headlines / price-alone / stayed-through-broken-facts).
+
+**v9 — THE THESIS LOOP (2026-07-06).** Player caught v8's flaw before playing
+it: hold-or-sell on price moves = a trading simulator that TRAINS price-reaction
+(the disease we exist to cure). Rebuilt around the thesis (per Sid Meier's
+interesting-decisions criteria + Koster's fun=learnable-pattern): (1) at commit
+the game WRITES YOUR THESIS BACK with the steelman ("UP — because X. The
+strongest voice against you: Y") — thesis formation is explicit, information
+gets organized, autonomy preserved. (2) Beats carry hidden tags (kind:
+fact/noise, side) — the game never shows them; judging fact-vs-noise IS the
+learnable skill. Beat question: "You're in because of [your reason] — does this
+news change that story?" Four actions: story unchanged—hold · stronger—add ·
+shaky—sell half · broke—get out. (3) Exits graded by REASON, not price: "You
+left because the STORY changed — the right reason, whatever the price did" vs
+"You left on noise" vs "the facts broke your thesis and you stayed for the
+price." Price comparison demoted to "for the record." (4) Report: "The pattern
+you're developing" — why-you-leave ledger (story exits vs noise exits vs dead
+holds). (5) MARCUS IS A PERSON now, not a bot: his last two results set his
+mood, mood sets his size (heater→$2,000 double-down, down-bad→$500) with
+emotional lines — he sizes on feelings, the anti-model alive; rival AND
+relationship. Belief evolves, not just the position.
+
+**v8 — THE SECOND ACT (2026-07-06).** Player: "career/rival/streaks are
+amplifiers — the individual decision still isn't intrinsically interesting."
+Diagnosis: the decision had no second act (read → bet → outcome = a quiz). Real
+investing unfolds AFTER you're in. Cases now carry a normalized price `path`
+(entry=100) and `beats`: after committing, the position LIVES — price moves
+against you, news lands, Marcus reacts — and at each beat you choose HOLD /
+ADD $500 / SELL EVERYTHING. Sell early → the reveal compares exit vs. end
+("holding would have made you $X more — you read it right, the wiggle shook
+you out" ↔ "selling saved you $X — knowing when you're wrong is a skill too").
+Report gains the SHAKEN-OUT mirror. This is the Two Clocks as gameplay: each
+beat is the fast clock trying to break your slow-clock thesis. Beats written
+for Chapter I (NVIDIA dip→rip, GameStop squeeze-then-collapse, Amazon weak
+quarter→cloud reveal, Nikola spike→downhill-truck report, Cisco climb→wobble);
+other cases resolve single-shot until beats are authored. ALSO the LIFE FUND
+(player: "when I lose money I want my life to change"): money converts to
+Saturdays at Ray's $200/shift ("that's 10 Saturday shifts — gone"), and the
+chapter-select shows the Civic bar ($15,400 goal) with life captions that
+change with the balance ("bus pass, instant noodles" → "you could buy it today
+— or keep it invested; people face this exact choice").
+
+**v7 — MAKE IT A GAME (2026-07-06).** "Good lesson — how do we make it FUN?"
+Three additions, each mission-checked: (1) CAREER FUND — one bankroll persists
+across all chapters (localStorage); fall below $250 → BUST screen, career over
+("the market didn't end your run — your bet sizes did; stay in the game").
+Survival/sizing is now the game itself. (2) MARCUS THE RIVAL — follows the
+loudest clue every round, always $1,000, never sits out; calls his bet BEFORE
+you decide (social pressure, measured: conformity mirror "you bet with Marcus
+8 of 10" + independence stat "when you disagreed you were right X of Y"); runs
+his own career fund; chapter select is a You-vs-Marcus scoreboard; when he wins
+a run the report says loud-and-lucky look identical over ten bets. (3) JUICE —
+rolling P&L count-up, streak flair. Plus a teach-in-the-moment note when a DOWN
+bet loses more than its stake (real short-selling danger, prevents "bug"
+perception). Also same-day: valuation label → "Is the price fair for what you
+get?" + collapsed "New to stocks? 20s of basics" primer with the corner-shop
+analogy (playtest: user couldn't distinguish trend vs. value — the game never
+taught what a stock IS).
+
+**v6 — THE REASON (2026-07-05).** Player feedback: the skill isn't which card
+you flip, it's WHICH SOURCE YOU TRUST; and the strongest regret isn't "you never
+opened this" but "you opened it and talked yourself out of it." So: flip-cards
+deleted — all clues open, always (reading is thinking). To place a bet you must
+tap the ONE clue carrying your call ("what are you leaning on?"). The ignored
+warning detects itself (bet against a strong clue history proved right → "You
+read it. You decided it didn't matter. It was the one that mattered."). The
+report becomes a personal TRUST LEDGER: per-source track record of the clues
+that carried your calls ("'Online buzz' carried 4 — 1 held; you never once
+leaned on 'what the bosses did'"), plus an override count. The ideal loop is
+now the actual loop: pitch → investigate → conflicting evidence → less certain →
+enough conviction → commit. Goal taught by structure: not knowing everything —
+reaching enough conviction to act despite uncertainty.
+
+**v5.1 CORRECTION (2026-07-05, same day) — agency ≠ scarcity.** The pay-to-look
+version failed its first playtest immediately ("I cannot think and learn").
+Lesson banked as a principle: you can't learn to value information you've never
+seen, and paying-to-look is scarcity, not agency. Now: every clue shows its
+direction chip + label up front (the CONFLICT is visible at a glance — that's
+what powers thinking); full text is one FREE tap away; read all, some, or none;
+choices still recorded. When reading is free, what you skip reveals character,
+not budget — a STRONGER mirror. Real attention-scarcity belongs to the life
+layer's clock (the 9:30 open), never to fees in the learning loop.
+
 **Chapter mode built (2026-07-02), with two settled refinements:** (1) The
 hidden question is DISCOVERED, not announced — chapter tiles say only "one
 hidden question"; the report reveals it afterward ("Did you feel it? Every
