@@ -619,3 +619,130 @@ mirror → coach → pattern vision** — because voice can only be judged empir
 
 Everything else exists to answer this. The MVP's job is to answer it; the rest of
 the roadmap is worth building only if the answer is yes.
+
+---
+
+# PART TWO — THE v2 DESIGN VISION (2026-07-13)
+
+> This is the clearest statement of the game we have. It supersedes the earlier
+> exploratory framing as the **direction** (not by deleting it — v1 stays live at
+> `?proto=core`). Read this before designing anything so we never drift back into a
+> **Life Sim** or a dry **Investment Simulator** again.
+>
+> Structure: **Mission → Fantasy → Core Principle → Core Loop → Systems → Learning
+> → Progression → Filter.**
+
+## Mission
+Help players become better **real-world** investors — not by teaching them to predict
+the market, but by teaching them how to **discover opportunities, evaluate evidence,
+allocate capital, and make better decisions under uncertainty.**
+- Not a stock simulator. Not a finance-theory course.
+- Goal: build the *thinking process* of a great investor.
+- Everything practiced must transfer directly to real investing.
+
+## Fantasy
+**Become the investor who finds what everyone else missed.**
+Not "get rich," not "beat the market with luck." Become the person who recognizes
+opportunity early, stays calm through uncertainty, and **survives the biggest moments
+in market history.**
+
+## Core Principle
+- **Tradeoffs create gameplay.**
+- **Uncertainty creates authenticity.**
+- Uncertainty alone is not fun. Tradeoffs alone are not investing.
+- **The game lives where the two overlap.**
+
+## Core Gameplay Loop
+The player opens the game out of **curiosity** ("what happened in the market today? is
+there something everyone is misunderstanding?"), never to "answer another question."
+
+    Market → something unusual happened → investigate → build conviction →
+    allocate capital → manage portfolio → the market responds → reflect →
+    something new catches your attention
+
+Driven by **discovery**, not quizzes. Our equivalent of "what's in the next cave? /
+the next Joker? / the next relic?" is: **what's the next opportunity hiding in the
+market?** Research must feel like *exploration*, never homework.
+
+## Systems
+- **The market is always alive.** Several real companies at once, each with price,
+  chart, news, earnings, valuation, insider trading, filings, sentiment, analyst
+  views. Nothing hidden behind game mechanics. **Attention — not information — is
+  scarce.** The player chooses what deserves attention.
+- **Portfolio = a base, not a deck, and not a container.** It's the persistent
+  consequence of every decision; ownership comes from persistence. But the real
+  gameplay is **capital allocation**, not portfolio management. The question is never
+  "should I buy this stock?" — it's **"given everything I already own, how should I
+  reshape my capital?"** Every opportunity forces a *relative* tradeoff (sell A to buy
+  B? raise cash? double down? diversify? hold? wait?). The portfolio exists to
+  **generate these relative decisions** — that is the class of decision that cannot
+  exist without it.
+- **Capital allocation is the core skill:** constantly balancing opportunity, risk,
+  liquidity, conviction, existing positions, and future uncertainty — exactly what
+  real investors do.
+- **Storms are market events, not chapters** (COVID crash, dot-com, 2008, AI boom,
+  meme mania). The storm doesn't ask what to do — it **reveals whether the portfolio
+  you built during calm can survive.** FTL: build during calm, storm tests the build.
+- **Life is not another game.** No relationships, cooking, farming, errands. Life
+  exists only to give financial decisions **emotional weight**, and appears in exactly
+  three places: (1) **sizing** ("$5,000 — that's three months of rent"), (2) **dreams**
+  (car, emergency fund, home, independence — quietly visible, never interrupt), (3)
+  **major life events** (medical bill, job loss, new child — change the financial
+  situation, never become separate gameplay).
+
+## Learning Philosophy
+Everything inside the game is **real**: real companies, prices, news, earnings, SEC
+filings, insider trades, market history. **No fake clues, no magical hints, no hidden
+answers.** The player learns using exactly the information real investors use.
+
+- **Reflection never grades outcomes — it analyzes process.** Not "right/wrong." It
+  mirrors *how you think* (e.g. "you focused on earnings and revenue, ignored
+  valuation"; "you consistently followed insider buying").
+- **Reality Bridge:** every era ends by explicitly connecting the game to real
+  investing — the skills used, and *where to find the same data today* (SEC EDGAR,
+  Yahoo Finance, company IR pages, Macrotrends, TradingView). Constantly reinforce:
+  **nothing you learned only works inside the game.**
+
+## Progression
+Not more story, characters, or gear. Progression = **entering richer markets.** Early
+eras: few companies, simple situations. Later eras: more sectors, more companies, more
+conflicting evidence, more simultaneous opportunities, more complex portfolio
+decisions. **Difficulty comes from market complexity, not artificial mechanics.**
+
+## Long-Term Transformation
+Player starts chasing legendary stock picks; discovers the greatest investors aren't
+the ones who predict every winner — they're the ones who discover better
+opportunities, evaluate evidence clearly, allocate intelligently, survive uncertainty,
+and let compounding work. Final realization is not *"I learned to predict stocks"* but
+**"I learned to think like an investor."**
+
+## Design Filter
+Every new feature passes one test: **Does this help players become better real-world
+investors while making the game more engaging?** Only teaches but isn't fun → reject.
+Fun but doesn't improve real investing thinking → reject. The game succeeds only when
+**engagement and learning reinforce each other.**
+
+---
+
+## v2 build log — the naked capital-allocation test (`?proto=v2`)
+
+**What we're testing (the one question):** does a *relative* capital-allocation
+decision — "given everything I hold and my scarce cash, what do I give up to take
+this?" — feel **tense** or **clerical** when repeated many times? Reasoning took us as
+far as it can (the portfolio provably generates a decision class that can't exist
+without it; whether that class is *fun* is empirical). This is the smallest build that
+settles it.
+
+**Scope (deliberately naked):** one real era, **Jan 2019 → Dec 2021** (the COVID
+crash is the storm). Five real companies with real, checkable, split-adjusted prices:
+Apple, Microsoft, Tesla, Zoom, Delta — chosen because their paths *diverge violently*
+so allocation shape matters (Tesla ~17x moonshot; Zoom pump-and-fade darling; Delta
+cheap value-trap; Apple/Microsoft steady compounders; cash as dry powder). Start with
+$10,000 cash. Each of 5 moments: read what's happening → **reshape capital under scarce
+cash** (buy forces selling or spending your only cash) → time advances → the market
+answers. Then process-mirror reflection + reality bridge. **No phone, no Marcus/Mom, no
+chapters, no life-sim.** Just the relative decision, naked.
+
+**Not yet built (the full vision above):** live multi-datapoint market, discovery/attention
+economy, multiple eras/progression, dreams & life events, insider/filings data. Those
+come only if the naked decision proves it has legs.
