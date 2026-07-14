@@ -44,16 +44,29 @@ const TICKS = [
 const LAST = TICKS.length - 1;
 
 // Terse, real, per-tick note: valuation + one situation line.
+// Per-tick research: valuation, the news line, and a plain-language financials snapshot.
+const N = (val, news, num) => ({ val, news, num });
 const NOTE = {
-  AAPL: [['fair', 'Cheap-ish; fears over slowing iPhone sales in China.'], ['fair', 'Nearly doubled; services booming.'], ['fair', 'On sale in the crash; stores shut but cash-rich.'], ['exp', 'Split 4-for-1; work-from-home device demand.'], ['exp', 'Record holiday quarter.'], ['exp', 'Still strong, still pricey.']],
-  MSFT: [['fair', 'Steady cloud grower, quietly compounding.'], ['fair', 'Cloud keeps taking share from Amazon.'], ['fair', 'Crash-resistant; the world needs Teams & Azure.'], ['exp', 'Priced richly, but demand is real.'], ['exp', 'Cloud climbs again.'], ['exp', 'The boring winner.']],
-  TSLA: [['exp', 'Barely profitable; the most bet-against stock in America.'], ['exp', 'First real profits; China factory opening.'], ['exp', 'Factories shut; is there enough cash?'], ['exp', 'Split its stock; S&P 500 mania building.'], ['exp', 'Worth more than most carmakers combined.'], ['exp', 'Peak hype — some call it a bubble.']],
-  ZM: [null, ['exp', 'Hot IPO; sales doubling but barely profitable.'], ['exp', 'Lockdown darling; downloads explode.'], ['exp', 'Sales up 350%+; priced for perfection.'], ['exp', 'Growth cooling; vaccines are coming.'], ['exp', 'Fading fast as offices reopen.']],
-  DAL: [['cheap', 'Cheap; airlines finally profitable.'], ['cheap', 'Strong travel bookings.'], ['cheap', 'Down ~60%; burning $60M a day; Buffett sells.'], ['cheap', 'Still bleeding; planes half-empty.'], ['fair', 'Vaccine reopening hope.'], ['fair', 'Profits still far below normal.']],
-  MRNA: [['exp', 'Tiny biotech; no approved products yet.'], ['exp', 'Now working on a coronavirus vaccine.'], ['exp', 'In the vaccine race; huge hopes, unproven science.'], ['exp', 'Vaccine in final trials; stock soaring.'], ['exp', 'Vaccine authorized — real profits at last.'], ['exp', 'Boosters selling, but what comes after COVID?']],
-  PTON: [null, ['exp', 'Just went public; premium bikes with a screen.'], ['exp', 'Gyms closed — demand is exploding.'], ['exp', "Can't build bikes fast enough."], ['exp', 'Priced as if everyone stays home forever.'], ['cheap', 'Gyms reopen; sales collapse; cheap now — trap or bargain?']],
+  AAPL: [N('fair', 'First sales warning in years, blaming weak China demand.', 'Very profitable; ~$245B cash; growth slowing.'), N('fair', 'Services & AirPods booming; iPhone stabilized.', 'Sales growing again; services a big profit engine.'), N('fair', 'Stores shut worldwide; supply chain disrupted.', 'Still very profitable; cash-rich enough to ride it out.'), N('exp', 'Split 4-for-1; record work-from-home device demand.', 'Device sales at records; profit up sharply.'), N('exp', 'Record holiday quarter — iPhone & services highs.', 'Best quarter ever.'), N('exp', 'Still growing; nothing broken.', 'Profits at all-time highs.')],
+  MSFT: [N('fair', 'Azure cloud growing fast; boringly reliable.', 'Cloud growing ~50%/yr; very profitable.'), N('fair', 'Cloud keeps taking share from Amazon.', 'Azure still growing fast; steady profits.'), N('fair', 'World suddenly needs Teams, Office, Azure.', 'Cloud demand jumps as everyone works from home.'), N('exp', 'Cloud and Xbox surge as the world stays indoors.', 'Cloud + gaming surging; profits strong.'), N('exp', 'Cloud revenue up sharply again.', 'Double-digit growth continues.'), N('exp', 'The boring winner keeps winning.', 'Steady, strong profits.')],
+  TSLA: [N('exp', 'Model 3 production hell; heavy debt; Musk chaos.', 'Revenue ~$21B but LOSES money; low on cash; heavy debt.'), N('exp', 'First profitable quarters; China factory opening.', 'Just turned its first back-to-back profits; thin margins.'), N('exp', 'Factories shut by lockdowns; cash a real worry.', 'Cash burn is the question if shutdowns drag on.'), N('exp', 'Joining the S&P 500; retail traders obsessed.', 'Now consistently profitable; deliveries climbing fast.'), N('exp', 'Worth more than most carmakers combined.', 'Record deliveries; profits real but tiny vs the price.'), N('exp', 'Peak hype; some call it a bubble.', 'Profitable and growing — but priced for perfection.')],
+  ZM: [null, N('exp', 'Hot IPO; a niche business-video app.', 'Sales nearly doubled; barely profitable; small.'), N('exp', '"Zoom" becomes a verb; downloads explode.', 'Usage explodes ~20x; revenue about to spike.'), N('exp', 'Everyone works and schools from Zoom.', 'Revenue up 350%+; now very profitable.'), N('exp', 'Vaccines coming — will the Zooming last?', 'Still growing fast, but decelerating.'), N('exp', 'Fading fast as offices reopen.', 'Growth stalling; the boom is cooling.')],
+  DAL: [N('cheap', 'Record travel; airlines finally profitable.', 'Solidly profitable; cheap vs earnings; carries debt.'), N('cheap', 'Strong bookings into 2020.', 'Steady profits; statistically cheap.'), N('cheap', 'Travel down ~95%; Buffett sells all airlines.', 'Revenue down ~90%; losing ~$60M/day; piling on debt.'), N('cheap', 'Planes still half-empty; survival mode.', 'Still deeply lossmaking; kept alive by debt.'), N('fair', 'Vaccine reopening hopes lift it.', 'Losses narrowing on reopening hopes.'), N('fair', 'Recovery real but slow.', 'Small profits again, far below pre-COVID.')],
+  MRNA: [N('exp', 'Tiny biotech; no approved products.', 'No products yet; burns cash on research.'), N('exp', 'Now racing to make a COVID vaccine.', 'Still no revenue; all promise.'), N('exp', 'Vaccine hopes send the stock flying.', 'Pre-revenue; valued entirely on hope.'), N('exp', 'Vaccine enters final trials; contracts signed.', 'First big government contracts; trials underway.'), N('exp', 'Vaccine authorized — real money at last.', 'Suddenly billions in real revenue; now profitable.'), N('exp', 'Boosters selling; but what after COVID?', 'Very profitable now — almost all from COVID.')],
+  PTON: [null, N('exp', "Just IPO'd; premium bikes with a screen.", 'Fast sales growth; still unprofitable.'), N('exp', 'Gyms closed — demand is exploding.', 'Demand explodes; sold out; briefly profitable.'), N('exp', "Can't build bikes fast enough.", "Sales soaring; supply can't keep up."), N('exp', 'Priced as if everyone stays home forever.', 'Growth huge but priced sky-high.'), N('cheap', 'Gyms reopen; sales collapse.', 'Sales collapsing; back to big losses.')],
 };
 const VAL = { cheap: 'Cheap', fair: 'Fair', exp: 'Expensive' };
+const VAL_WHY = { cheap: 'Priced low versus what it earns — the market expects little.', fair: 'Priced roughly in line with what it earns.', exp: 'Priced high — a lot of optimism is already baked in.' };
+// Per-company research that barely changes over time: the business, and the two sides of the bet.
+const DEEP = {
+  AAPL: { biz: 'Sells iPhones, Macs and a fast-growing services business (App Store, iCloud). Enormous and cash-rich.', bull: 'A brand people never leave, a huge cash pile, services compounding — it grinds higher for years.', bear: 'So big that fast growth is hard; if iPhone sales stall it goes nowhere. Priced for a smooth ride.' },
+  MSFT: { biz: 'Windows, Office and the Azure cloud. Sells software to nearly every business on earth.', bull: 'Cloud is a giant, growing river of recurring revenue; leaving it is painful for customers.', bear: 'Already huge and richly priced — little room for error; cloud rivals are fierce.' },
+  TSLA: { biz: 'Designs and builds electric cars, led by Elon Musk. Also chasing batteries and self-driving.', bull: 'If EVs take over and it keeps its lead, today\'s price could look cheap in ten years.', bear: 'Barely profitable, lots of debt, a wild valuation. One stumble in growth or cash and it could fall 70%+.' },
+  ZM: { biz: 'Cloud software for video meetings, sold mostly to businesses.', bull: 'Best-in-class product; if remote work is permanent it grows into its price.', bear: 'Tiny and priced for perfection; Microsoft and Google can bundle video for free.' },
+  DAL: { biz: 'A major airline carrying passengers and cargo worldwide.', bull: 'When travel is strong it throws off real cash, and the stock looks statistically cheap.', bear: 'Airlines are brutal — huge fixed costs, debt, and demand that vanishes in any crisis.' },
+  MRNA: { biz: 'A biotech using mRNA to make vaccines and drugs. Few products — mostly promise.', bull: 'If mRNA works it could reinvent medicine — and a COVID vaccine would print money.', bear: 'A binary science bet: if trials fail there is little underneath. Losses today, no track record.' },
+  PTON: { biz: 'Sells premium exercise bikes and treadmills with a subscription for live classes.', bull: 'A loyal, subscription-like community; if home fitness sticks, recurring revenue grows.', bear: 'Expensive hardware people buy once; when gyms reopen, demand can evaporate fast.' },
+};
 
 const OPPS = [
   { id: 'ZM', tick: 1, hook: 'Zoom just went public — video calls for businesses.' },
@@ -108,6 +121,8 @@ export default function RunGame() {
   const [port, setPort] = useState({ shares: {}, avg: {}, cash: START });
   const [events, setEvents] = useState([]);   // event queue for current tick
   const [evIdx, setEvIdx] = useState(0);
+  const [expanded, setExpanded] = useState(null); // which company's dossier is open (overview)
+  const [look, setLook] = useState(false);         // "look closer" toggled inside an event
   const [mod, setMod] = useState(MODS[0]);
   const [log, setLog] = useState([]);         // per-tick portfolio snapshots (for reflect)
   const run = useRef({ decisions: 0, offered: new Set(), lifeTick: 3, life: LIFE_POOL[0], debtDone: false, stormNet: 0 });
@@ -168,6 +183,7 @@ export default function RunGame() {
   }
 
   function advance() {
+    setExpanded(null); setLook(false);
     // snapshot current tick for reflection
     const alloc = {}; COMPANIES.forEach((c) => { alloc[c.id] = V > 0 ? sharesOf(c.id) * (prices[c.id] || 0) / V : 0; });
     const nextLog = [...log, { tick, date: TICKS[tick].date, V, alloc, storm: !!TICKS[tick].storm }];
@@ -184,7 +200,7 @@ export default function RunGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const closeEvent = () => { run.current.decisions++; setEvIdx((i) => i + 1); };
+  const closeEvent = () => { run.current.decisions++; setLook(false); setEvIdx((i) => i + 1); };
 
   /* --- start / reset --- */
   function begin(m) {
@@ -343,7 +359,7 @@ export default function RunGame() {
                   </div>
                 </> : <>
                   <h2 className="rn-ev-title">{c.name} is down {sPct(L.g)} since you bought</h2>
-                  <p className="rn-ev-body">Your {fmt(L.pv)} in {c.name} is deep in the red. {info(ev.id) ? info(ev.id)[1] : ''} Cut the loss, hold, or buy more at a lower price?</p>
+                  <p className="rn-ev-body">Your {fmt(L.pv)} in {c.name} is deep in the red. Where it stands now: {info(ev.id)?.news || ''} <em>{info(ev.id)?.num || ''}</em> Cut the loss, hold, or buy more at a lower price?</p>
                   <div className="rn-choices">
                     <button className="rn-choice" onClick={() => { sellAll(ev.id); setEvIdx((i) => i + 1); }}><b>Cut it</b><span>Take the loss, free the cash, move on.</span></button>
                     <button className="rn-choice" onClick={closeEvent}><b>Hold</b><span>Your reasons haven't changed. Wait it out.</span></button>
@@ -353,13 +369,23 @@ export default function RunGame() {
               </div>
             ); })()}
 
-            {ev.type === 'opp' && (() => { const L = compLine(ev.id); const c = COMPANIES.find((x) => x.id === ev.id); const canFund = port.cash >= 1 && canBuyNew(ev.id); return (
+            {ev.type === 'opp' && (() => { const L = compLine(ev.id); const c = COMPANIES.find((x) => x.id === ev.id); const n = info(ev.id); const d = DEEP[ev.id]; const canFund = port.cash >= 1 && canBuyNew(ev.id); const amt = Math.min(Math.max(500, Math.round(V * 0.18 / 100) * 100), port.cash); return (
               <div className="rn-event rn-ev-opp">
                 <span className="rn-ev-kind">✨ A new opportunity</span>
                 <h2 className="rn-ev-title">{c.name} — {c.sector}</h2>
-                <p className="rn-ev-body">{ev.hook} Trading at <b>${L.p}</b>. <span className={'rn-val v-' + info(ev.id)[0]}>{VAL[info(ev.id)[0]]}</span> — {info(ev.id)[1]} You have {fmt(port.cash)} cash.</p>
+                <p className="rn-ev-body">{ev.hook} Trading at <b>${L.p}</b>. Before you decide — look into it:</p>
+                <div className="rn-ev-facets">
+                  <div className="rn-facet"><span className="rn-fk">Valuation</span><span className="rn-fv"><b className={'v-' + n.val}>{VAL[n.val]}.</b> {VAL_WHY[n.val]}</span></div>
+                  <div className="rn-facet"><span className="rn-fk">The numbers</span><span className="rn-fv">{n.num}</span></div>
+                  {look && <>
+                    <div className="rn-facet"><span className="rn-fk">Business</span><span className="rn-fv">{d.biz}</span></div>
+                    <div className="rn-facet"><span className="rn-fk">Bull case</span><span className="rn-fv rn-bull">{d.bull}</span></div>
+                    <div className="rn-facet"><span className="rn-fk">Bear case</span><span className="rn-fv rn-bear">{d.bear}</span></div>
+                  </>}
+                </div>
+                {!look && <button className="rn-look" onClick={() => setLook(true)}>Look closer — the bull &amp; bear case ▾</button>}
                 <div className="rn-choices">
-                  <button className="rn-choice" disabled={!canFund} onClick={() => { doBuy(ev.id, chunk); setEvIdx((i) => i + 1); }}><b>{mod.id === 'cap' && !canBuyNew(ev.id) ? 'No room (4 max)' : port.cash < 1 ? 'No cash' : `Buy ${fmt(Math.min(chunk, port.cash))}`}</b><span>Take a starting position.</span></button>
+                  <button className="rn-choice" disabled={!canFund} onClick={() => { doBuy(ev.id, amt); closeEvent(); }}><b>{!canBuyNew(ev.id) ? 'No room (4 max)' : port.cash < 1 ? 'No cash — pass' : `Buy a position · ${fmt(amt)}`}</b><span>{canFund ? `${Math.round(V > 0 ? amt / V * 100 : 0)}% of your money — you can add more later.` : 'Free up cash first.'}</span></button>
                   <button className="rn-choice" onClick={closeEvent}><b>Pass</b><span>Not every opportunity is yours to take.</span></button>
                 </div>
               </div>
@@ -380,23 +406,39 @@ export default function RunGame() {
               <div className="rn-shape">{COMPANIES.map((c) => { const w = V > 0 ? sharesOf(c.id) * (prices[c.id] || 0) / V : 0; return w > 0.001 ? <div key={c.id} className="rn-seg" style={{ width: w * 100 + '%', background: COLORS[c.id] }} /> : null; })}<div className="rn-seg" style={{ width: (V > 0 ? port.cash / V : 0) * 100 + '%', background: COLORS.CASH }} /></div>
             </div>
 
-            <p className="rn-section">The market</p>
+            <p className="rn-section">The market — tap a company to research it</p>
             {COMPANIES.map((c) => { const L = compLine(c.id); if (!L.p) return (
               <div className="rn-card locked" key={c.id}><div className="rn-card-top"><span className="rn-co"><span className="rn-dot" style={{ background: COLORS[c.id] }} />{c.name}</span><span className="rn-na">not public yet</span></div></div>);
-              const owned = L.pv > 0.5;
+              const owned = L.pv > 0.5; const open = expanded === c.id; const d = DEEP[c.id]; const n = L.n;
+              const tiers = [['Starter', 0.08], ['Position', 0.18], ['Conviction', 0.35]].map(([lbl, f]) => ({ lbl, amt: Math.min(Math.max(500, Math.round(V * f / 100) * 100), port.cash) }));
               return (
-                <div className={'rn-card' + (owned ? ' owned' : '')} key={c.id}>
-                  <div className="rn-card-top">
-                    <span className="rn-co"><span className="rn-dot" style={{ background: COLORS[c.id] }} />{c.name}</span>
-                    <span className="rn-pb"><span className="rn-price">${L.p}</span>{L.mv != null && <span className={'rn-mv ' + cls(L.mv)}>{sPct(L.mv)}</span>}</span>
-                  </div>
-                  <div className="rn-card-mid"><span className={'rn-val v-' + L.n[0]}>{VAL[L.n[0]]}</span><span className="rn-note">{L.n[1]}</span></div>
-                  {owned && <div className="rn-card-own">you own {fmt(L.pv)} · {Math.round(L.w * 100)}% <em className={cls(L.g)}>{sPct(L.g)}</em></div>}
-                  <div className="rn-card-btns">
-                    <button className="rn-mini" disabled={!owned} onClick={() => sellChunk(c.id)}>Sell {fmt(chunk)}</button>
-                    <button className="rn-mini" disabled={!owned} onClick={() => sellAll(c.id)}>All</button>
-                    <button className="rn-mini buy" disabled={port.cash < 1 || !canBuyNew(c.id)} onClick={() => buyChunk(c.id)}>{!canBuyNew(c.id) ? '4 max' : `Buy ${fmt(Math.min(chunk, port.cash))}`}</button>
-                  </div>
+                <div className={'rn-card' + (owned ? ' owned' : '') + (open ? ' open' : '')} key={c.id}>
+                  <button className="rn-card-head" onClick={() => setExpanded(open ? null : c.id)}>
+                    <div className="rn-card-top">
+                      <span className="rn-co"><span className="rn-dot" style={{ background: COLORS[c.id] }} />{c.name}</span>
+                      <span className="rn-pb"><span className="rn-price">${L.p}</span>{L.mv != null && <span className={'rn-mv ' + cls(L.mv)}>{sPct(L.mv)}</span>}</span>
+                    </div>
+                    <div className="rn-card-mid"><span className={'rn-val v-' + n.val}>{VAL[n.val]}</span><span className="rn-note">{n.news}</span></div>
+                    {owned && <div className="rn-card-own">you own {fmt(L.pv)} · {Math.round(L.w * 100)}% <em className={cls(L.g)}>{sPct(L.g)}</em></div>}
+                    <span className="rn-research">{open ? 'Close ▲' : 'Research ▾'}</span>
+                  </button>
+                  {open && (
+                    <div className="rn-dossier">
+                      <div className="rn-facet"><span className="rn-fk">Business</span><span className="rn-fv">{d.biz}</span></div>
+                      <div className="rn-facet"><span className="rn-fk">The numbers</span><span className="rn-fv">{n.num}</span></div>
+                      <div className="rn-facet"><span className="rn-fk">Valuation</span><span className="rn-fv"><b className={'v-' + n.val}>{VAL[n.val]}.</b> {VAL_WHY[n.val]}</span></div>
+                      <div className="rn-facet"><span className="rn-fk">Bull case</span><span className="rn-fv rn-bull">{d.bull}</span></div>
+                      <div className="rn-facet"><span className="rn-fk">Bear case</span><span className="rn-fv rn-bear">{d.bear}</span></div>
+                      <div className="rn-sizing">
+                        <p className="rn-sizing-h">{owned ? 'Add more — how much conviction?' : 'Buy — how much conviction?'}</p>
+                        <div className="rn-tiers">
+                          {tiers.map((t) => <button key={t.lbl} className="rn-tier buy" disabled={t.amt < 1 || !canBuyNew(c.id)} onClick={() => { run.current.decisions++; doBuy(c.id, t.amt); }}><b>{t.lbl}</b><span>{t.amt < 1 ? '—' : fmt(t.amt) + ' · ' + Math.round(V > 0 ? t.amt / V * 100 : 0) + '% of your money'}</span></button>)}
+                        </div>
+                        {owned && <div className="rn-tiers"><button className="rn-tier" onClick={() => sellChunk(c.id)}>Trim {fmt(Math.min(chunk, L.pv))}</button><button className="rn-tier" onClick={() => sellAll(c.id)}>Sell all</button></div>}
+                        <p className="rn-sizing-note">{!canBuyNew(c.id) ? 'You already hold 4 companies (this run caps you at 4). Sell one to make room.' : port.cash < 1 ? 'Out of cash — sell something to buy this.' : `You have ${fmt(port.cash)} cash. A Position here ≈ ${sizeLife(tiers[1].amt)}.`}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
