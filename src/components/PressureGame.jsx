@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 /*
  * PressureGame — "Rent's Due"  (?proto=pressure)
  * ----------------------------------------------
- * Survival pressure + a real 2020–2022 market (crash, mania, bust, real losers)
- * + Cousin Sal, an animated character with a memory (karma).
- * Research gives you REAL, look-up-able facts (money / price / news) that update
- * every period — but it never tells you WHY a stock moved or what to do. You
- * connect the dots and size the bet yourself; the market still rolls the dice.
+ * Dark comic reskin. Cousin Sal is now a big-head, giant-glasses IP character
+ * whose lenses ARE his expression screen, and who breaks the 4th wall: when you
+ * try to sell one of his darlings he pops up and shoves the trade back ("WAIT!!
+ * it's about to bounce!"). Research gives real, look-up-able facts (money/price/
+ * news) that update each period — never the "why". A line chart shows P&L.
  */
 
 const START = 4000;
@@ -34,10 +34,8 @@ const COMPANIES = [
   { id: 'MRNA', name: 'Moderna', biz: "A biotech using new 'mRNA' technology to make vaccines. Very few products so far.", prices: [26, 29, 67, 150, 300, 140] },
   { id: 'PTON', name: 'Peloton', biz: 'Sells premium exercise bikes and a subscription for live workout classes.', prices: [27, 27, 100, 145, 55, 12] },
 ];
-const COLORS = { AAPL: '#3f6fb0', TSLA: '#c9962f', ZM: '#8a5cc0', DAL: '#b23a34', MRNA: '#2b9c8f', PTON: '#d0678f', CASH: '#8a7a5c' };
+const COLORS = { AAPL: '#5b8cff', TSLA: '#f5b13c', ZM: '#b072ff', DAL: '#ff5f6a', MRNA: '#2fd1a8', PTON: '#ff6fa5', CASH: '#8a93a8' };
 
-// Per period: three real, plain, look-up-able facts — money / price / news.
-// No interpretation: never says why it moved or what to do. You decide.
 const INFO = {
   AAPL: [
     { m: 'Earns tens of billions in profit a year; huge cash reserves.', v: 'Priced roughly in line with its profits.', n: 'Warned the China virus could disrupt its factories.' },
@@ -69,7 +67,7 @@ const INFO = {
     { m: 'Still losing money; kept alive by bailouts.', v: 'Cheap, but few profits to value against.', n: 'Planes remain mostly empty.' },
     { m: 'Losses narrowing on reopening hopes.', v: 'Cheap, but still unprofitable.', n: 'Vaccine hopes briefly lift travel stocks.' },
     { m: 'Recovering slowly; still below pre-COVID.', v: 'Cheap, profits far below normal.', n: 'A slow grind back.' },
-    { m: 'Small profits again, far below pre-pandemic.', v: 'Still statistically cheap.', n: "Two years on, below where it started." },
+    { m: 'Small profits again, far below pre-pandemic.', v: 'Still statistically cheap.', n: 'Two years on, below where it started.' },
   ],
   MRNA: [
     { m: 'No approved products; loses money on research.', v: 'Priced on hope — almost no revenue.', n: 'A tiny firm now racing to make a COVID vaccine.' },
@@ -83,7 +81,7 @@ const INFO = {
     { m: 'Sales growing fast; loses money; recently went public.', v: 'Priced high for a company that loses money.', n: 'A pricey bike most people have never tried.' },
     { m: 'Demand jumping as gyms close.', v: 'Expensive, but growth is accelerating.', n: 'Gyms shut nationwide.' },
     { m: 'Bikes sold out for months; briefly profitable.', v: 'Priced for the boom to last for years.', n: 'Everyone stuck at home wants one.' },
-    { m: 'Still growing; can\'t build bikes fast enough.', v: 'Priced as if home fitness replaces gyms forever.', n: 'Home-fitness mania at its peak.' },
+    { m: "Still growing; can't build bikes fast enough.", v: 'Priced as if home fitness replaces gyms forever.', n: 'Home-fitness mania at its peak.' },
     { m: 'Growth stalling; unsold inventory piling up.', v: 'Still priced high as sales slow.', n: 'Gyms are reopening.' },
     { m: 'Sales collapsing; back to heavy losses.', v: 'Crashed to a fraction of its former price.', n: 'Down about 90% from its peak.' },
   ],
@@ -98,7 +96,6 @@ const LEADS = [
   [],
 ];
 
-// Sal base events for periods 0–3. Periods 4 & 5 are chosen by karma at runtime.
 const SAL_BASE = {
   0: { mood: 'hype', line: "Cuz! I dumped my whole bonus into Peloton — everyone's gonna work out at home, we're gonna be RICH. You should get in too!", choices: [{ label: "Thanks, Sal — I'll look into it" }] },
   1: { mood: 'worried', line: "It's bad, cuz — Mom's back in the hospital and I'm wiped out. I need $500 for her meds. Can you spot me?", choices: [{ label: 'Give him $500', need: 500, help: true, eff: { cash: -500 }, note: 'Family. The rent still comes anyway.' }, { label: "I can't right now", refuse: true }] },
@@ -106,55 +103,47 @@ const SAL_BASE = {
   3: { mood: 'greedy', line: "Everyone's getting rich! My guy runs a newsletter — $200 and he hands you the next 10×. He swears Peloton and Zoom go to the moon. In or out?", choices: [{ label: 'Buy the tip ($200)', need: 200, eff: { cash: -200, reveal: ['PTON', 'ZM'] }, note: 'You pay — then research them yourself.' }, { label: 'Pass' }] },
 };
 
+// Cousin Sal: huge head, tiny body, GIANT glasses whose lenses are his expression screen.
 function SalGuy({ mood }) {
-  const ink = '#2a2018';
-  let face;
-  if (mood === 'hype') face = (<>
-    <circle cx="113" cy="133" r="6" fill={ink} /><circle cx="153" cy="133" r="6" fill={ink} />
-    <path d="M96 116 Q110 106 124 113" stroke="#7a5636" strokeWidth="4" fill="none" strokeLinecap="round" />
-    <path d="M138 113 Q152 106 166 116" stroke="#7a5636" strokeWidth="4" fill="none" strokeLinecap="round" />
-    <path d="M104 160 Q131 194 160 160 Q131 176 104 160 Z" fill="#8a3030" /><path d="M116 166 Q131 176 148 166 Z" fill="#fff" />
-    <path d="M92 118 l-7 -6 M96 110 l-3 -8" stroke="#f5c84b" strokeWidth="3" strokeLinecap="round" />
-  </>);
-  else if (mood === 'worried') face = (<>
-    <circle cx="112" cy="130" r="5" fill={ink} /><circle cx="150" cy="130" r="5" fill={ink} />
-    <path d="M98 114 Q112 121 124 115" stroke="#7a5636" strokeWidth="4" fill="none" strokeLinecap="round" />
-    <path d="M138 115 Q150 121 164 114" stroke="#7a5636" strokeWidth="4" fill="none" strokeLinecap="round" />
-    <ellipse cx="131" cy="171" rx="13" ry="10" fill="#8a3030" />
-    <path d="M182 116 q7 15 0 22 q-9 -5 0 -22 Z" fill="#7fc9e8" />
-  </>);
-  else if (mood === 'greedy') face = (<>
-    <text x="111" y="142" fontSize="22" fontWeight="800" fill="#2e8b57" textAnchor="middle">$</text>
-    <text x="151" y="142" fontSize="22" fontWeight="800" fill="#2e8b57" textAnchor="middle">$</text>
-    <path d="M100 158 Q131 192 162 158 Q131 174 100 158 Z" fill="#8a3030" /><path d="M120 170 Q131 182 142 170 Z" fill="#c65" />
-  </>);
-  else if (mood === 'manic') face = (<>
-    <circle cx="111" cy="134" r="3.5" fill={ink} /><circle cx="151" cy="134" r="3.5" fill={ink} />
-    <path d="M96 112 Q110 104 124 111" stroke="#7a5636" strokeWidth="4" fill="none" strokeLinecap="round" />
-    <path d="M138 111 Q152 104 166 112" stroke="#7a5636" strokeWidth="4" fill="none" strokeLinecap="round" />
-    <ellipse cx="131" cy="173" rx="21" ry="15" fill="#7a2828" /><ellipse cx="131" cy="167" rx="15" ry="4" fill="#fff" />
-    <path d="M180 118 q7 15 0 22 q-9 -5 0 -22 Z" fill="#7fc9e8" />
-  </>);
-  else face = (<>
-    <path d="M104 127 l15 15 M119 127 l-15 15" stroke={ink} strokeWidth="3.5" strokeLinecap="round" />
-    <path d="M143 127 l15 15 M158 127 l-15 15" stroke={ink} strokeWidth="3.5" strokeLinecap="round" />
-    <path d="M108 178 Q131 164 154 178" stroke="#7a3030" strokeWidth="5" fill="none" strokeLinecap="round" />
-    <path d="M150 150 q4 15 0 21 q-7 -4 0 -21 Z" fill="#7fc9e8" />
-  </>);
+  const lens = (cx) => {
+    if (mood === 'hype') return <text x={cx} y={151} fontSize="34" fontWeight="900" textAnchor="middle" fill="#f5c84b">★</text>;
+    if (mood === 'greedy') return <text x={cx} y={152} fontSize="32" fontWeight="900" textAnchor="middle" fill="#2fae6a">$</text>;
+    if (mood === 'broke') return <text x={cx} y={152} fontSize="30" fontWeight="900" textAnchor="middle" fill="#c23a3a">✕</text>;
+    if (mood === 'manic') return <React.Fragment><circle cx={cx} cy={140} r="13" fill="#fff" /><circle cx={cx} cy={140} r="3" fill="#161616" /></React.Fragment>;
+    return <React.Fragment><circle cx={cx} cy={140} r="11" fill="#fff" /><circle cx={cx} cy={135} r="4.5" fill="#161616" /></React.Fragment>;
+  };
+  let mouth;
+  if (mood === 'hype') mouth = <path d="M94 200 Q120 236 146 200 Q120 216 94 200 Z" fill="#7a2f2f" />;
+  else if (mood === 'greedy') mouth = <React.Fragment><path d="M98 200 Q120 230 142 200 Q120 214 98 200 Z" fill="#7a2f2f" /><path d="M112 213 Q120 223 128 213 Z" fill="#d1706a" /></React.Fragment>;
+  else if (mood === 'manic') mouth = <React.Fragment><ellipse cx="120" cy="208" rx="23" ry="16" fill="#6e2626" /><ellipse cx="120" cy="201" rx="16" ry="4" fill="#fff" /></React.Fragment>;
+  else if (mood === 'broke') mouth = <path d="M100 216 Q120 202 140 216" stroke="#6e2626" strokeWidth="5" fill="none" strokeLinecap="round" />;
+  else mouth = <ellipse cx="120" cy="207" rx="12" ry="10" fill="#7a2f2f" />;
   return (
-    <svg viewBox="0 0 220 262" className="pg-dave-svg" xmlns="http://www.w3.org/2000/svg">
-      <path d="M34 262 Q36 202 92 194 L130 208 L168 194 Q184 202 186 262 Z" fill="#3f7d8f" />
-      <path d="M168 206 Q206 192 198 160 L184 164 Q190 186 160 196 Z" fill="#3f7d8f" />
-      <circle cx="194" cy="150" r="15" fill="#e8b98f" />
-      <rect x="112" y="176" width="36" height="28" rx="9" fill="#dfa877" />
-      <circle cx="130" cy="136" r="60" fill="#e8b98f" />
-      <circle cx="70" cy="142" r="12" fill="#e8b98f" /><circle cx="190" cy="142" r="12" fill="#e8b98f" />
-      <path d="M76 150 Q88 210 130 214 Q172 210 184 150 Q168 178 130 182 Q92 178 76 150 Z" fill="#b5794a" />
-      <path d="M72 106 Q82 54 130 52 Q178 54 188 106 Q150 92 130 92 Q110 92 72 106 Z" fill="#d1462f" />
-      <path d="M150 100 Q200 96 212 114 Q200 121 150 114 Z" fill="#b03526" />
-      <circle cx="130" cy="56" r="5" fill="#b03526" />
-      <ellipse cx="111" cy="134" rx="15" ry="17" fill="#fff" /><ellipse cx="151" cy="134" rx="15" ry="17" fill="#fff" />
-      {face}
+    <svg viewBox="0 0 240 300" className="pg-dave-svg" xmlns="http://www.w3.org/2000/svg">
+      <path d="M90 300 Q90 256 120 248 Q150 256 150 300 Z" fill="#ece5d3" />
+      <path d="M90 300 Q88 260 104 252 L120 300 Z" fill="#333a4d" />
+      <path d="M150 300 Q152 260 136 252 L120 300 Z" fill="#333a4d" />
+      <path d="M120 252 l-7 22 l7 8 l7 -8 Z" fill="#3a9a5a" />
+      <path d="M150 266 Q198 248 192 210 L172 216 Q180 244 142 254 Z" fill="#333a4d" />
+      <circle cx="188" cy="200" r="17" fill="#e8b98f" />
+      <rect x="106" y="234" width="28" height="24" rx="8" fill="#dfa877" />
+      <circle cx="120" cy="140" r="90" fill="#e8b98f" />
+      <circle cx="34" cy="148" r="13" fill="#e8b98f" /><circle cx="206" cy="148" r="13" fill="#e8b98f" />
+      <path d="M42 160 Q58 228 120 232 Q182 228 198 160 Q178 192 120 196 Q62 192 42 160 Z" fill="#a07040" opacity="0.75" />
+      <path d="M46 92 q-12 -12 0 -24 q3 13 15 15 Z" fill="#5f4230" />
+      <path d="M194 92 q12 -12 0 -24 q-3 13 -15 15 Z" fill="#5f4230" />
+      <path d="M40 92 Q52 32 120 30 Q188 32 200 92 Q160 72 120 72 Q80 72 40 92 Z" fill="#d83a2f" />
+      <path d="M150 84 Q212 78 228 102 Q212 111 150 104 Z" fill="#b52e26" />
+      <text x="118" y="64" fontSize="21" fontWeight="900" textAnchor="middle" fill="#fff">SAL</text>
+      <line x1="112" y1="140" x2="128" y2="140" stroke="#22406e" strokeWidth="6" />
+      <line x1="58" y1="136" x2="34" y2="148" stroke="#22406e" strokeWidth="5" strokeLinecap="round" />
+      <line x1="182" y1="136" x2="206" y2="148" stroke="#22406e" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="84" cy="140" r="35" fill="#eaf2ff" stroke="#22406e" strokeWidth="7" />
+      <circle cx="156" cy="140" r="35" fill="#eaf2ff" stroke="#22406e" strokeWidth="7" />
+      {lens(84)}{lens(156)}
+      <path d="M120 152 q-11 26 -2 34 q11 6 22 0 q9 -8 -2 -34 Z" fill="#e0ac7e" />
+      {mouth}
+      {mood === 'worried' && <path d="M198 152 q8 16 0 24 q-10 -5 0 -24 Z" fill="#7fc9e8" />}
     </svg>
   );
 }
@@ -176,12 +165,27 @@ function SalOverlay({ sal, cash, onPick }) {
   );
 }
 
+// His "绝活": he invades the UI to stop you selling one of his darlings.
+function SalInterject({ name, onHold, onSell }) {
+  return (
+    <div className="pg-dave-overlay">
+      <div className="pg-dave-bubble pg-interject-bubble">
+        <p className="pg-dave-name">Cousin Sal · barging in</p>
+        <p className="pg-dave-line">"WAIT!! Don't sell {name}!! It's about to bounce, cuz, I can FEEL it — just hold a little longer!!"</p>
+        <div className="pg-dave-choices">
+          <button className="pg-dave-btn" onClick={onHold}>…Fine, I'll keep holding<em>Do it Sal's way.</em></button>
+          <button className="pg-dave-btn pg-defy" onClick={onSell}>No — I'm selling anyway<em>Trust your own read.</em></button>
+        </div>
+      </div>
+      <div className="pg-dave-guy pg-dave-burst"><SalGuy mood="manic" /></div>
+    </div>
+  );
+}
+
 const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const sPct = (x) => { const v = x * 100; return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%'; };
 const cls = (x) => (x > 0.005 ? 'up' : x < -0.005 ? 'down' : 'flat');
 
-// Line chart of everyone's story so far — each starts at $100 (only history up to
-// the current period; no peeking at the future). The most intuitive profit/loss view.
 function MarketChart({ upto }) {
   const n = upto + 1;
   if (n < 2) return null;
@@ -222,6 +226,9 @@ export default function PressureGame() {
   const [salDone, setSalDone] = useState({});
   const [helped, setHelped] = useState(0);
   const [refused, setRefused] = useState(0);
+  const [interject, setInterject] = useState(null);
+  const [blocked, setBlocked] = useState({});
+  const [indep, setIndep] = useState(0);
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -231,7 +238,6 @@ export default function PressureGame() {
   const net = cash + holdings;
   const leadIds = new Set((LEADS[t] || []).map((l) => l.id));
 
-  // Sal's appearance this period — periods 4 & 5 branch on how you've treated him.
   function salFor(turn) {
     if (turn === 4) {
       if (refused >= 2) return { mood: 'greedy', line: "Funny thing, cuz — you kept slamming the door on me. So I let myself in and 'borrowed' $700 from your drawer. Guess we're even now.", choices: [{ label: '…Sal.', eff: { steal: 700 } }] };
@@ -240,7 +246,7 @@ export default function PressureGame() {
     }
     if (turn === 5) {
       if (refused >= 2) return { mood: 'broke', line: "Lost everything, cuz — Peloton, Zoom, all of it. …Yeah, I know we're not square after I took your cash. Don't look at me like that.", choices: [{ label: 'Say nothing' }] };
-      if (helped >= 1) return { mood: 'broke', line: "I lost it all, cuz — but you kept me afloat when it mattered. That's worth more than the money. Crashing at Mom's for a while.", choices: [{ label: 'Tell him it\'ll be okay' }] };
+      if (helped >= 1) return { mood: 'broke', line: "I lost it all, cuz — but you kept me afloat when it mattered. That's worth more than the money. Crashing at Mom's for a while.", choices: [{ label: "Tell him it'll be okay" }] };
       return { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything — moving back in with Mom. That newsletter guy? Total fraud.", choices: [{ label: 'Say something kind' }] };
     }
     return SAL_BASE[turn] || null;
@@ -259,7 +265,18 @@ export default function PressureGame() {
     const a = Math.min(amt == null ? pos : amt, pos); let ns = (shares[id] || 0) - a / p; if (ns < 1e-6) ns = 0;
     setShares({ ...shares, [id]: ns }); if (ns === 0) setAvg({ ...avg, [id]: 0 }); setCash(cash + a);
   }
-  function applyTrade(id) { const a = pend[id] || 0; if (a > 0) buy(id, a); else if (a < 0) sell(id, -a); setPend({ ...pend, [id]: 0 }); }
+  function applyTrade(id) {
+    const a = pend[id] || 0;
+    // Sal's 4th-wall block: he won't let you dump his darlings while he's still bullish.
+    if (a < 0 && (id === 'PTON' || id === 'ZM') && t <= 3 && !blocked[t + id] && (shares[id] || 0) * price(id) > 0.5) {
+      setInterject({ id, amt: -a }); return;
+    }
+    if (a > 0) buy(id, a); else if (a < 0) sell(id, -a);
+    setPend({ ...pend, [id]: 0 });
+  }
+  function interjectHold() { setPend({ ...pend, [interject.id]: 0 }); setBlocked({ ...blocked, [t + interject.id]: true }); setInterject(null); }
+  function interjectSell() { sell(interject.id, interject.amt); setPend({ ...pend, [interject.id]: 0 }); setBlocked({ ...blocked, [t + interject.id]: true }); setIndep(indep + 1); setInterject(null); }
+
   function salPick(ch) {
     const e = ch.eff || {};
     let nc = cash;
@@ -283,7 +300,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -294,7 +311,7 @@ export default function PressureGame() {
           <li><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</li>
           <li><b>Time is tight.</b> Each period you get <b>3 moves</b> — investigate a company, or grind a side gig for $300.</li>
           <li><b>Investigate for facts, not answers.</b> You get the real numbers, price and news — you decide what they mean.</li>
-          <li>It's <b>2020–2022</b>: a crash, a mania, and a bust. Not everything survives — and rent won't wait.</li>
+          <li><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</li>
         </ul>
         <button className="pg-btn pg-primary" onClick={() => setPhase('play')}>Start — February 2020 →</button>
       </div></div>
@@ -311,6 +328,7 @@ export default function PressureGame() {
         <p className="pg-lead">{won
           ? `You turned $4,000 into ${fmt(net)} while the bills never stopped — through the crash, the mania, and the bust. Your money now works harder than your rent. That's escape velocity.`
           : `You kept the lights on through a crash, a bubble, and its collapse. You didn't get rich — but you didn't get evicted, and you didn't end up like Sal.`}</p>
+        {indep > 0 && <p className="pg-lead pg-dim">You overruled Sal {indep} time{indep === 1 ? '' : 's'} and trusted your own read. That's the whole point.</p>}
         <button className="pg-btn pg-primary" onClick={restart}>Run it again →</button>
       </div></div>
     );
@@ -337,6 +355,7 @@ export default function PressureGame() {
         <MarketChart upto={t} />
 
         {salEvt && <SalOverlay sal={salEvt} cash={cash} onPick={salPick} />}
+        {interject && <SalInterject name={COMPANIES.find((c) => c.id === interject.id).name} onHold={interjectHold} onSell={interjectSell} />}
 
         <div className="pg-time">
           <span className="pg-time-lbl">Time this period</span>

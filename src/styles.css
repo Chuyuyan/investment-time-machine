@@ -5931,3 +5931,55 @@ body {
 .pg-chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
 .pg-leg { font-size: 12px; color: var(--ink); display: inline-flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
 .pg-leg em { font-style: normal; font-weight: 800; }
+
+/* ============================================================
+   DARK COMIC RESKIN + Sal upgrade (?proto=pressure) — overrides
+   ============================================================ */
+.pg {
+  --paper: #1b2030; --ink: #e7ecf6; --ink2: #8f98ad; --line: #2c3346;
+  --brass: #e0a63a; --brass-d: #a67c1f; --g: #35c07a; --r: #ff5f6a;
+  background: radial-gradient(120% 85% at 50% -8%, #2b3446 0%, #141926 55%, #0c0f18 100%);
+  color: #e7ecf6;
+}
+.pg::before { content: ''; position: fixed; inset: 0; pointer-events: none; box-shadow: inset 0 0 200px rgba(0,0,0,.6); z-index: 0; }
+.pg-col { position: relative; z-index: 1; }
+.pg.pg-storm { background: radial-gradient(120% 85% at 50% -8%, #3a2836 0%, #16121c 55%, #0c0910 100%); }
+.pg-month, .pg-title, .pg-headline { color: #f2f5fb; }
+.pg-kick, .pg-sub, .pg-endsub, .pg-time-lbl, .pg-chart-h { color: #8f98ad; }
+.pg-rules li { background: #1b2030; color: #97a0b6; box-shadow: 0 4px 12px rgba(0,0,0,.4); }
+.pg-final { background: #1b2030; box-shadow: 0 8px 22px rgba(0,0,0,.5); }
+.pg-final span { color: #8f98ad; }
+.pg-dim { color: #8f98ad !important; }
+.pg-rent { background: #1b2030; box-shadow: 0 4px 10px rgba(0,0,0,.45); }
+.pg-stat { background: #1b2030; box-shadow: 0 3px 8px rgba(0,0,0,.4); }
+.pg-flash { background: #2a1720; color: #ff9fa6; border-color: var(--r); }
+.pg-time { background: rgba(255,255,255,.045); border-color: rgba(255,255,255,.09); }
+.pg-gig { background: #2a3145; border-color: #3a4358; color: #e7ecf6; }
+.pg-leads { background: rgba(224,166,58,.1); border-color: rgba(224,166,58,.35); }
+.pg-lead-row { color: #cdd5e6; }
+.pg-lead-row b { color: #fff; }
+.pg-card { background: #1b2030; box-shadow: 0 5px 16px rgba(0,0,0,.4); }
+.pg-own { color: #8f98ad; }
+.pg-dossier { background: #141a27; border-color: #2c3346; }
+.pg-biz { color: #97a0b6; }
+.pg-fk { color: #d0a24a; }
+.pg-fv { color: #e7ecf6; }
+.pg-chart-card { background: #1b2030; box-shadow: 0 5px 16px rgba(0,0,0,.4); }
+.pg-chart-base { stroke: #3a4358; }
+.pg-chart-lbl, .pg-chart-x { fill: #7d879c; }
+.pg-leg { color: #e7ecf6; }
+.pg-slider { background: linear-gradient(90deg, #5a2e37 0%, #2c3346 50%, #1f5a3f 100%); }
+.pg-trade-btn { background: #333c54; color: #cbd3e6; box-shadow: 0 3px 0 #232a3c; }
+
+/* Sal upgrade: pop entrance (not slide) + lively idle; bigger character */
+.pg-dave-guy { position: absolute; bottom: -6px; left: -20px; width: 178px; z-index: 2; animation: salPop .55s cubic-bezier(.2,1.35,.45,1) both; }
+.pg-dave-svg { width: 100%; display: block; transform-origin: 50% 90%; animation: salIdle 2.2s ease-in-out infinite; filter: drop-shadow(0 8px 12px rgba(0,0,0,.55)); }
+@keyframes salPop { 0% { transform: translateY(80px) scale(.3); opacity: 0; } 55% { transform: translateY(-12px) scale(1.07); opacity: 1; } 78% { transform: translateY(0) scale(.97); } 100% { transform: translateY(0) scale(1); } }
+@keyframes salIdle { 0%,100% { transform: rotate(-1.8deg) translateY(0); } 50% { transform: rotate(1.8deg) translateY(-5px); } }
+.pg-dave-burst { animation: salBurst .4s cubic-bezier(.2,1.6,.4,1) both; }
+@keyframes salBurst { 0% { transform: translateY(90px) scale(.2) rotate(-14deg); } 60% { transform: translateY(-14px) scale(1.12) rotate(6deg); } 100% { transform: translateY(0) scale(1) rotate(0); } }
+.pg-dave-bubble { bottom: 200px; }
+.pg-interject-bubble { border: 2px solid var(--r); }
+.pg-interject-bubble .pg-dave-name { color: var(--r); }
+.pg-defy { border-color: #2fae6a !important; }
+.pg-defy:hover:not(:disabled) { border-color: #2fae6a; background: #f2fbf5; }
