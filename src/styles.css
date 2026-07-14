@@ -5912,3 +5912,11 @@ body {
 .pg-dave-btn:active:not(:disabled) { transform: translateY(1px); }
 .pg-dave-btn:disabled { opacity: .45; cursor: default; }
 .pg-dave-btn em { display: block; font-style: normal; font-weight: 400; font-size: 12px; color: #7c6c50; margin-top: 2px; }
+
+/* research dossier — plain facts, no interpretation (money / price / news) */
+.pg-dossier { margin-top: 10px; background: #fbf7ea; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.pg-biz { font-size: 12.5px; color: var(--ink2); margin: 0 0 8px; line-height: 1.45; }
+.pg-fact { display: flex; gap: 10px; padding: 6px 0; border-top: 1px solid #ece2c6; }
+.pg-fact:first-of-type { border-top: none; }
+.pg-fk { flex: none; width: 46px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #a9915c; padding-top: 2px; }
+.pg-fv { font-size: 13px; line-height: 1.45; color: var(--ink); }

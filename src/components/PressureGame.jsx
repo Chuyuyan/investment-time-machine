@@ -3,16 +3,11 @@ import React, { useState } from 'react';
 /*
  * PressureGame — "Rent's Due"  (?proto=pressure)
  * ----------------------------------------------
- * Economic survival pressure (from Do Not Feed the Monkeys) + a real market
- * arc with REAL losers + a recurring character for variety & events.
- *   - RENT every period; miss it and you're evicted.
- *   - Limited TIME (moves): dig a clue, or grind a side gig for survival cash.
- *   - Clues UPDATE every period and explain WHY a stock moved.
- *   - Trade with a free-choice SLIDER (drag left to sell, right to buy).
- *   - Cousin SAL drops in with life shocks, hot tips, and comic relief.
- * Feb 2020 -> Jun 2022: the COVID crash, the mania, and the 2022 bust — so
- * chasing hype and holding into the collapse actually hurts. Real (approx)
- * prices. Goal = ESCAPE ($15k), not a score.
+ * Survival pressure + a real 2020–2022 market (crash, mania, bust, real losers)
+ * + Cousin Sal, an animated character with a memory (karma).
+ * Research gives you REAL, look-up-able facts (money / price / news) that update
+ * every period — but it never tells you WHY a stock moved or what to do. You
+ * connect the dots and size the bet yourself; the market still rolls the dice.
  */
 
 const START = 4000;
@@ -32,64 +27,65 @@ const HEADLINE = [
 ];
 
 const COMPANIES = [
-  { id: 'AAPL', name: 'Apple', prices: [68, 63, 116, 121, 165, 137] },
-  { id: 'TSLA', name: 'Tesla', prices: [133, 102, 430, 700, 1140, 700] },
-  { id: 'ZM', name: 'Zoom', prices: [105, 146, 470, 400, 250, 110] },
-  { id: 'DAL', name: 'Delta', prices: [47, 23, 31, 46, 38, 31] },
-  { id: 'MRNA', name: 'Moderna', prices: [26, 29, 67, 150, 300, 140] },
-  { id: 'PTON', name: 'Peloton', prices: [27, 27, 100, 145, 55, 12] },
+  { id: 'AAPL', name: 'Apple', biz: 'Makes the iPhone, Mac, and services like the App Store. One of the most profitable companies on Earth.', prices: [68, 63, 116, 121, 165, 137] },
+  { id: 'TSLA', name: 'Tesla', biz: 'Builds electric cars, led by Elon Musk. Also batteries and self-driving software.', prices: [133, 102, 430, 700, 1140, 700] },
+  { id: 'ZM', name: 'Zoom', biz: 'Sells easy video-calling software, mostly to businesses. Small and fairly new.', prices: [105, 146, 470, 400, 250, 110] },
+  { id: 'DAL', name: 'Delta', biz: 'A major airline. Airlines carry huge fixed costs and lots of debt.', prices: [47, 23, 31, 46, 38, 31] },
+  { id: 'MRNA', name: 'Moderna', biz: "A biotech using new 'mRNA' technology to make vaccines. Very few products so far.", prices: [26, 29, 67, 150, 300, 140] },
+  { id: 'PTON', name: 'Peloton', biz: 'Sells premium exercise bikes and a subscription for live workout classes.', prices: [27, 27, 100, 145, 55, 12] },
 ];
 const COLORS = { AAPL: '#3f6fb0', TSLA: '#c9962f', ZM: '#8a5cc0', DAL: '#b23a34', MRNA: '#2b9c8f', PTON: '#d0678f', CASH: '#8a7a5c' };
 
-// One clue PER PERIOD, per company — each explains what happened / why it moved.
-const CLUES = {
+// Per period: three real, plain, look-up-able facts — money / price / news.
+// No interpretation: never says why it moved or what to do. You decide.
+const INFO = {
   AAPL: [
-    { t: 'Steady and hugely profitable — but the China virus threatens its factories.', m: 'Strong company; short-term supply risk.' },
-    { t: 'Crashing with everything; stores closing worldwide.', m: 'It fell with the market, not because it broke.' },
-    { t: 'Stuck-at-home demand for Macs and iPads is booming; it split its stock.', m: 'The lockdown is helping its sales.' },
-    { t: 'Record profits; investors treat it as the safe giant amid the mania.', m: 'Boring and reliable while others gamble.' },
-    { t: 'Still growing, but now pricey and everything is frothy.', m: 'Great business, rich price.' },
-    { t: 'Falls with the market as rates rise — but its profits hold up.', m: 'A real business survives the bust, with a dip.' },
+    { m: 'Earns tens of billions in profit a year; huge cash reserves.', v: 'Priced roughly in line with its profits.', n: 'Warned the China virus could disrupt its factories.' },
+    { m: 'Still deeply profitable; online sales continue with stores shut.', v: 'Fell with the market; a bit cheaper than usual.', n: 'Global lockdowns close its retail stores.' },
+    { m: 'Selling record Macs and iPads to people stuck at home.', v: 'Recovered; now priced above its usual level.', n: 'Split its stock 4-for-1; retail traders pile in.' },
+    { m: 'Record profits; services keep growing.', v: 'Expensive versus its own history, but earnings rise.', n: 'Treated as the safe giant amid the mania.' },
+    { m: 'Profits at all-time highs.', v: 'Priced high, like most of the market now.', n: 'Rate-hike worries start hitting the headlines.' },
+    { m: 'Still very profitable; sales holding up.', v: 'Came down toward a normal price.', n: 'Falls as rising rates hit nearly every stock.' },
   ],
   TSLA: [
-    { t: 'Just turned its first tiny profits, but heavy debt; the most-hated stock in America.', m: 'Improving, but fragile.' },
-    { t: 'Crushed in the panic; its factories are shutting.', m: 'Risky names fall the hardest.' },
-    { t: 'Reopens in defiance; deliveries beat; the doubters capitulate.', m: 'The story flips to "unstoppable".' },
-    { t: 'Joins the S&P 500; retail mania at fever pitch.', m: 'Hype and index-buying, not fundamentals.' },
-    { t: 'Now worth more than the next several carmakers combined.', m: 'Enormous expectations are priced in.' },
-    { t: 'Falls hard as rates bite — but it actually makes real money now.', m: 'Even winners drop in a bust; this one earns.' },
+    { m: 'Just turned its first small profits; heavy debt; low on cash.', v: 'Priced far above older carmakers that earn much more.', n: 'The most bet-against stock in America; Musk everywhere.' },
+    { m: 'Barely profitable; shut factories could strain its cash.', v: 'Still priced like a tech giant despite the risks.', n: 'Crushed in the crash with other risky names.' },
+    { m: 'Now posting steady profits; deliveries climbing fast.', v: 'Priced higher than any carmaker in history.', n: 'Reopens in defiance; about to join the S&P 500.' },
+    { m: 'Growing and profitable, but small next to its price.', v: 'Among the most expensive big stocks in the world.', n: 'Retail mania at a fever pitch.' },
+    { m: 'Record deliveries and real profits now.', v: 'Worth more than the next several carmakers combined.', n: 'Peak euphoria across the whole market.' },
+    { m: 'Makes real money now, and a lot of it.', v: 'Still pricey, but far less extreme after the drop.', n: 'Falls hard as rising rates hit high-priced stocks.' },
   ],
   ZM: [
-    { t: 'A tiny video-call app almost nobody used — until lockdowns loomed.', m: 'Small and pricey, but in the right place.' },
-    { t: 'The rare stock RISING in the crash as offices close.', m: 'Its growth explodes while all else falls.' },
-    { t: 'Revenue up 350%+; "to Zoom" is a verb; priced at ~50× sales.', m: 'Real boom — but perfection is priced in.' },
-    { t: 'Growth cooling from insane to merely fast; the price is still sky-high.', m: 'The easy money is already made.' },
-    { t: 'Vaccines mean offices reopen; its growth is stalling.', m: 'The reason it soared is now reversing.' },
-    { t: 'Back near where it started — the whole pandemic bump is gone.', m: 'Chasing it at the top was a trap.' },
+    { m: 'Small; sales nearly doubled last year; barely profitable.', v: 'Priced very high versus how little it earns.', n: 'Almost nobody used it — until the virus appeared.' },
+    { m: 'Usage exploding as offices and schools close.', v: 'Even pricier after rising during the crash.', n: 'One of the only stocks going UP in the crash.' },
+    { m: 'Revenue up 350%+; now clearly profitable.', v: 'About 50× its yearly sales — far above most companies.', n: "'To Zoom' becomes an everyday word." },
+    { m: 'Still growing, but no longer exploding.', v: 'Still priced for very high growth far ahead.', n: 'Vaccines are being announced.' },
+    { m: 'Growth slowing noticeably as reopening nears.', v: 'Very expensive relative to slowing growth.', n: 'Offices begin planning to reopen.' },
+    { m: 'Sales growth has largely stalled.', v: 'Back to a modest price after a huge fall.', n: 'Near where it started before the pandemic.' },
   ],
   DAL: [
-    { t: 'An airline — fine now, but the virus threatens travel.', m: 'Cheap, but very exposed.' },
-    { t: 'Travel down ~95%; burning cash; Buffett dumps every airline.', m: 'Cheap and getting cheaper — real ruin risk.' },
-    { t: 'Bailed out by governments; survives, but planes stay half-empty.', m: "Survival isn't recovery." },
-    { t: 'Reopening hope lifts it, but it is still losing money.', m: 'A bet on travel returning someday.' },
-    { t: 'Travel recovers slowly; still below pre-COVID.', m: 'A grind, not a rocket.' },
-    { t: 'Still below where it started two years ago.', m: '"Cheap" stayed cheap the whole time.' },
+    { m: 'Solidly profitable in good times; lots of debt.', v: 'Priced cheaply versus its profits.', n: 'Record travel demand, for now.' },
+    { m: 'Travel down ~95%; losing roughly $60M a day.', v: 'Cheap on paper — but now losing money fast.', n: 'Warren Buffett sells every airline he owns.' },
+    { m: 'Still losing money; kept alive by bailouts.', v: 'Cheap, but few profits to value against.', n: 'Planes remain mostly empty.' },
+    { m: 'Losses narrowing on reopening hopes.', v: 'Cheap, but still unprofitable.', n: 'Vaccine hopes briefly lift travel stocks.' },
+    { m: 'Recovering slowly; still below pre-COVID.', v: 'Cheap, profits far below normal.', n: 'A slow grind back.' },
+    { m: 'Small profits again, far below pre-pandemic.', v: 'Still statistically cheap.', n: "Two years on, below where it started." },
   ],
   MRNA: [
-    { t: 'A tiny biotech with no products — now racing on a COVID vaccine.', m: 'A pure bet on unproven science.' },
-    { t: 'The pandemic explodes; interest in vaccine makers surges.', m: 'Fear itself is fuel for this one.' },
-    { t: 'Vaccine in trials; first government contracts signed.', m: 'Real progress; it could still fail.' },
-    { t: 'Vaccine authorized — billions in real revenue arrive.', m: 'The gamble paid off.' },
-    { t: 'Minting money from boosters — but what comes after COVID?', m: 'Huge profits, uncertain future.' },
-    { t: 'Fades as the pandemic winds down; profits will shrink.', m: 'A moonshot that round-tripped for latecomers.' },
+    { m: 'No approved products; loses money on research.', v: 'Priced on hope — almost no revenue.', n: 'A tiny firm now racing to make a COVID vaccine.' },
+    { m: 'Still no products or profits.', v: 'Valued entirely on the chance its vaccine works.', n: 'Interest surges as the pandemic explodes.' },
+    { m: 'Signs first big government supply contracts.', v: 'Priced far ahead of any actual profits.', n: 'Its vaccine enters human trials.' },
+    { m: 'Vaccine authorized — billions in real revenue arriving.', v: 'Now has real sales to value against.', n: 'Among the first COVID vaccines approved.' },
+    { m: 'Highly profitable now — almost all from COVID.', v: 'Priced richly on profits that may not last.', n: 'Booster demand is strong.' },
+    { m: 'Still profitable, but sales set to shrink as COVID fades.', v: 'Came down as future profits look smaller.', n: 'The pandemic is winding down.' },
   ],
   PTON: [
-    { t: 'Sells premium exercise bikes; newly public, not yet profitable.', m: 'Cool product, unproven business.' },
-    { t: 'Gyms closing — suddenly everyone wants a home bike.', m: 'Lockdown could be its big break.' },
-    { t: 'Bikes sold out for months; sales exploding.', m: 'The boom is real — for now.' },
-    { t: 'Priced as if everyone works out at home forever.', m: 'Danger: it assumes the boom never ends.' },
-    { t: 'Gyms reopen; growth stalls; unsold inventory piles up.', m: 'The story is breaking.' },
-    { t: 'Collapsed ~90% from its peak as demand vanished.', m: 'The classic "this trend lasts forever" trap.' },
+    { m: 'Sales growing fast; loses money; recently went public.', v: 'Priced high for a company that loses money.', n: 'A pricey bike most people have never tried.' },
+    { m: 'Demand jumping as gyms close.', v: 'Expensive, but growth is accelerating.', n: 'Gyms shut nationwide.' },
+    { m: 'Bikes sold out for months; briefly profitable.', v: 'Priced for the boom to last for years.', n: 'Everyone stuck at home wants one.' },
+    { m: 'Still growing; can\'t build bikes fast enough.', v: 'Priced as if home fitness replaces gyms forever.', n: 'Home-fitness mania at its peak.' },
+    { m: 'Growth stalling; unsold inventory piling up.', v: 'Still priced high as sales slow.', n: 'Gyms are reopening.' },
+    { m: 'Sales collapsing; back to heavy losses.', v: 'Crashed to a fraction of its former price.', n: 'Down about 90% from its peak.' },
   ],
 };
 
@@ -97,23 +93,19 @@ const LEADS = [
   [{ id: 'ZM', why: 'Downloads exploding as offices close.' }],
   [{ id: 'DAL', why: 'Airlines in free-fall — bargain, or trap?' }, { id: 'MRNA', why: 'A vaccine race is starting; one tiny firm is in it.' }],
   [{ id: 'TSLA', why: 'It bounced hard off the bottom — momentum building.' }],
-  [{ id: 'PTON', why: 'Home-fitness mania — is it real or a fad?' }],
+  [{ id: 'PTON', why: 'Home-fitness mania — real, or a fad?' }],
   [{ id: 'TSLA', why: 'Everything is euphoric. Is this the top?' }],
   [],
 ];
 
-// Cousin Sal — a recurring Crazy-Dave-style character who pops in from the side.
-const SAL = [
-  { mood: 'hype', line: "Cuz! I dumped my whole bonus into Peloton — everyone's gonna work out at home, we're gonna be RICH. You should get in too!", choices: [{ label: "Thanks, Sal — I'll look into it" }] },
-  { mood: 'worried', line: "It's bad, cuz — Mom's back in the hospital and I'm wiped out. I need $500 for her meds. Can you spot me?", choices: [{ label: 'Give him $500', need: 500, eff: { cash: -500 }, note: 'Family. The rent still comes anyway.' }, { label: "I can't right now", eff: {} }] },
-  null,
-  { mood: 'greedy', line: "Everyone's getting rich! My guy runs a newsletter — $200 and he hands you the next 10×. He swears Peloton and Zoom are going to the moon. In or out?", choices: [{ label: 'Buy the tip ($200)', need: 200, eff: { cash: -200, reveal: ['PTON', 'ZM'] }, note: 'You pay — then actually research them yourself.' }, { label: 'Pass', eff: {} }] },
-  { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. We're gonna be legends, cuz!!", choices: [{ label: 'Sal… please be careful' }, { label: 'Nice, me too' }] },
-  { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything — moving back in with Mom. That newsletter guy? Total fraud.", choices: [{ label: 'Say something kind' }] },
-];
+// Sal base events for periods 0–3. Periods 4 & 5 are chosen by karma at runtime.
+const SAL_BASE = {
+  0: { mood: 'hype', line: "Cuz! I dumped my whole bonus into Peloton — everyone's gonna work out at home, we're gonna be RICH. You should get in too!", choices: [{ label: "Thanks, Sal — I'll look into it" }] },
+  1: { mood: 'worried', line: "It's bad, cuz — Mom's back in the hospital and I'm wiped out. I need $500 for her meds. Can you spot me?", choices: [{ label: 'Give him $500', need: 500, help: true, eff: { cash: -500 }, note: 'Family. The rent still comes anyway.' }, { label: "I can't right now", refuse: true }] },
+  2: { mood: 'worried', line: "My tank's bone dry and payday's not 'til Friday, cuz. Float me $150? I'm good for it, I swear.", choices: [{ label: 'Lend him $150', need: 150, help: true, eff: { cash: -150 } }, { label: 'Not this time', refuse: true }] },
+  3: { mood: 'greedy', line: "Everyone's getting rich! My guy runs a newsletter — $200 and he hands you the next 10×. He swears Peloton and Zoom go to the moon. In or out?", choices: [{ label: 'Buy the tip ($200)', need: 200, eff: { cash: -200, reveal: ['PTON', 'ZM'] }, note: 'You pay — then research them yourself.' }, { label: 'Pass' }] },
+};
 
-// An original, animated SVG character in the spirit of Crazy Dave: pops in from
-// the side, bobs, and pulls a different face for each mood.
 function SalGuy({ mood }) {
   const ink = '#2a2018';
   let face;
@@ -143,7 +135,7 @@ function SalGuy({ mood }) {
     <ellipse cx="131" cy="173" rx="21" ry="15" fill="#7a2828" /><ellipse cx="131" cy="167" rx="15" ry="4" fill="#fff" />
     <path d="M180 118 q7 15 0 22 q-9 -5 0 -22 Z" fill="#7fc9e8" />
   </>);
-  else face = (<> {/* broke */}
+  else face = (<>
     <path d="M104 127 l15 15 M119 127 l-15 15" stroke={ink} strokeWidth="3.5" strokeLinecap="round" />
     <path d="M143 127 l15 15 M158 127 l-15 15" stroke={ink} strokeWidth="3.5" strokeLinecap="round" />
     <path d="M108 178 Q131 164 154 178" stroke="#7a3030" strokeWidth="5" fill="none" strokeLinecap="round" />
@@ -198,6 +190,9 @@ export default function PressureGame() {
   const [dug, setDug] = useState({});
   const [pend, setPend] = useState({});
   const [salDone, setSalDone] = useState({});
+  const [helped, setHelped] = useState(0);
+  const [refused, setRefused] = useState(0);
+  const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
 
@@ -205,7 +200,22 @@ export default function PressureGame() {
   const holdings = COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * price(c.id), 0);
   const net = cash + holdings;
   const leadIds = new Set((LEADS[t] || []).map((l) => l.id));
-  const sal = SAL[t] && !salDone[t] ? SAL[t] : null;
+
+  // Sal's appearance this period — periods 4 & 5 branch on how you've treated him.
+  function salFor(turn) {
+    if (turn === 4) {
+      if (refused >= 2) return { mood: 'greedy', line: "Funny thing, cuz — you kept slamming the door on me. So I let myself in and 'borrowed' $700 from your drawer. Guess we're even now.", choices: [{ label: '…Sal.', eff: { steal: 700 } }] };
+      if (helped >= 1 && roll < 0.8) return { mood: 'worried', line: "Cuz, you always spot me when I'm down — so straight up: I'm in deep on Peloton and Zoom, but something feels wrong. Get out while you can. And here, take this back.", choices: [{ label: 'Thanks, Sal — you too', eff: { cash: 600, reveal: ['PTON', 'ZM'] }, note: 'He pays you back — and hands you a real warning.' }] };
+      return { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. We're gonna be legends, cuz!!", choices: [{ label: 'Sal… please be careful' }, { label: 'Nice, me too' }] };
+    }
+    if (turn === 5) {
+      if (refused >= 2) return { mood: 'broke', line: "Lost everything, cuz — Peloton, Zoom, all of it. …Yeah, I know we're not square after I took your cash. Don't look at me like that.", choices: [{ label: 'Say nothing' }] };
+      if (helped >= 1) return { mood: 'broke', line: "I lost it all, cuz — but you kept me afloat when it mattered. That's worth more than the money. Crashing at Mom's for a while.", choices: [{ label: 'Tell him it\'ll be okay' }] };
+      return { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything — moving back in with Mom. That newsletter guy? Total fraud.", choices: [{ label: 'Say something kind' }] };
+    }
+    return SAL_BASE[turn] || null;
+  }
+  const salEvt = !salDone[t] ? salFor(t) : null;
 
   function dig(id) { if (acts <= 0 || dug[id]) return; setDug({ ...dug, [id]: true }); setActs(acts - 1); }
   function gig() { if (acts <= 0) return; setCash(cash + GIG); setActs(acts - 1); }
@@ -222,8 +232,13 @@ export default function PressureGame() {
   function applyTrade(id) { const a = pend[id] || 0; if (a > 0) buy(id, a); else if (a < 0) sell(id, -a); setPend({ ...pend, [id]: 0 }); }
   function salPick(ch) {
     const e = ch.eff || {};
-    if (e.cash) setCash(cash + e.cash);
+    let nc = cash;
+    if (e.cash) nc += e.cash;
+    if (e.steal) nc -= Math.min(e.steal, cash);
+    if (nc !== cash) setCash(nc);
     if (e.reveal) { const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd); }
+    if (ch.help) setHelped(helped + 1);
+    if (ch.refuse) setRefused(refused + 1);
     setSalDone({ ...salDone, [t]: true });
   }
 
@@ -238,7 +253,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -247,8 +262,8 @@ export default function PressureGame() {
         <h1 className="pg-title">You're broke. Rent is due. Don't get evicted — get free.</h1>
         <ul className="pg-rules">
           <li><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</li>
-          <li><b>Time is tight.</b> Each period you get <b>3 moves</b> — dig up a clue, or grind a side gig for $300.</li>
-          <li><b>Invest to escape.</b> Grinding keeps you alive; only investing well gets you <b>free</b> ({fmt(FREEDOM)}).</li>
+          <li><b>Time is tight.</b> Each period you get <b>3 moves</b> — investigate a company, or grind a side gig for $300.</li>
+          <li><b>Investigate for facts, not answers.</b> You get the real numbers, price and news — you decide what they mean.</li>
           <li>It's <b>2020–2022</b>: a crash, a mania, and a bust. Not everything survives — and rent won't wait.</li>
         </ul>
         <button className="pg-btn pg-primary" onClick={() => setPhase('play')}>Start — February 2020 →</button>
@@ -289,7 +304,7 @@ export default function PressureGame() {
         <p className="pg-headline">{HEADLINE[t]}</p>
         {flash && <p className="pg-flash">{flash}</p>}
 
-        {sal && <SalOverlay sal={sal} cash={cash} onPick={salPick} />}
+        {salEvt && <SalOverlay sal={salEvt} cash={cash} onPick={salPick} />}
 
         <div className="pg-time">
           <span className="pg-time-lbl">Time this period</span>
@@ -307,7 +322,7 @@ export default function PressureGame() {
         {COMPANIES.map((c) => {
           const p = price(c.id); const prev = t > 0 ? c.prices[t - 1] : null; const mv = prev ? p / prev - 1 : null;
           const pos = (shares[c.id] || 0) * p; const g = (shares[c.id] || 0) > 0 && (avg[c.id] || 0) > 0 ? p / avg[c.id] - 1 : 0;
-          const researched = dug[c.id]; const clue = CLUES[c.id][t];
+          const researched = dug[c.id]; const info = INFO[c.id][t];
           const pd = pend[c.id] || 0; const canTrade = pos >= 1 || cash >= 1;
           return (
             <div className={'pg-card' + (leadIds.has(c.id) ? ' lead' : '')} key={c.id}>
@@ -318,8 +333,13 @@ export default function PressureGame() {
               {pos > 0.5 && <div className="pg-own">you hold {fmt(pos)} <em className={cls(g)}>{sPct(g)}</em></div>}
 
               {researched
-                ? <div className="pg-clues"><div className="pg-clue"><p className="pg-clue-t">{clue.t}</p><p className="pg-clue-m">→ {clue.m}</p></div></div>
-                : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : mv != null ? `Investigate — why did it move ${sPct(mv)}? (1 move)` : 'Investigate (1 move)'}</button>}
+                ? <div className="pg-dossier">
+                    <p className="pg-biz">{c.biz}</p>
+                    <div className="pg-fact"><span className="pg-fk">Money</span><span className="pg-fv">{info.m}</span></div>
+                    <div className="pg-fact"><span className="pg-fk">Price</span><span className="pg-fv">{info.v}</span></div>
+                    <div className="pg-fact"><span className="pg-fk">News</span><span className="pg-fv">{info.n}</span></div>
+                  </div>
+                : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : 'Investigate (1 move)'}</button>}
 
               <div className="pg-tradebox">
                 <input type="range" className="pg-slider" min={-Math.round(pos)} max={Math.round(cash)} step="50" value={pd} disabled={!canTrade}
