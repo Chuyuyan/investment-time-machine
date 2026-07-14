@@ -5920,3 +5920,14 @@ body {
 .pg-fact:first-of-type { border-top: none; }
 .pg-fk { flex: none; width: 46px; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: #a9915c; padding-top: 2px; }
 .pg-fv { font-size: 13px; line-height: 1.45; color: var(--ink); }
+
+/* market line chart — intuitive profit/loss (everyone starts at $100) */
+.pg-chart-card { background: var(--paper); border-radius: 12px; padding: 12px 14px; margin: 0 0 14px; box-shadow: 0 5px 14px rgba(0,0,0,.28); }
+.pg-chart-h { font-size: 11px; color: var(--ink2); margin: 0 0 8px; text-transform: uppercase; letter-spacing: .03em; }
+.pg-chart { width: 100%; height: auto; display: block; overflow: visible; }
+.pg-chart-base { stroke: #cbb98f; stroke-width: 1; stroke-dasharray: 3 3; }
+.pg-chart-lbl { font-size: 8px; fill: #a9915c; }
+.pg-chart-x { font-size: 8px; fill: #a9915c; }
+.pg-chart-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
+.pg-leg { font-size: 12px; color: var(--ink); display: inline-flex; align-items: center; gap: 5px; font-variant-numeric: tabular-nums; }
+.pg-leg em { font-style: normal; font-weight: 800; }

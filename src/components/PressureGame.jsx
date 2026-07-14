@@ -180,6 +180,36 @@ const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const sPct = (x) => { const v = x * 100; return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%'; };
 const cls = (x) => (x > 0.005 ? 'up' : x < -0.005 ? 'down' : 'flat');
 
+// Line chart of everyone's story so far — each starts at $100 (only history up to
+// the current period; no peeking at the future). The most intuitive profit/loss view.
+function MarketChart({ upto }) {
+  const n = upto + 1;
+  if (n < 2) return null;
+  const series = COMPANIES.map((c) => ({ id: c.id, name: c.name, vals: c.prices.slice(0, n).map((p) => (p / c.prices[0]) * 100) }));
+  const all = series.flatMap((s) => s.vals).concat([100]);
+  const min = Math.min(...all), max = Math.max(...all);
+  const W = 360, H = 148, pL = 6, pR = 6, pT = 8, pB = 16;
+  const X = (i) => pL + (i / (n - 1)) * (W - pL - pR);
+  const Y = (v) => pT + (1 - (v - min) / ((max - min) || 1)) * (H - pT - pB);
+  const sorted = series.slice().sort((a, b) => b.vals[n - 1] - a.vals[n - 1]);
+  return (
+    <div className="pg-chart-card">
+      <p className="pg-chart-h">Every company since Feb 2020 — as if you'd put $100 in each</p>
+      <svg viewBox={`0 0 ${W} ${H}`} className="pg-chart">
+        <line className="pg-chart-base" x1={pL} x2={W - pR} y1={Y(100)} y2={Y(100)} />
+        <text className="pg-chart-lbl" x={pL} y={Y(100) - 3}>$100</text>
+        {series.map((s) => <polyline key={s.id} points={s.vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')} fill="none" stroke={COLORS[s.id]} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />)}
+        {series.map((s) => <circle key={s.id} cx={X(n - 1)} cy={Y(s.vals[n - 1])} r="3" fill={COLORS[s.id]} />)}
+        <text className="pg-chart-x" x={pL} y={H - 3}>{DATES[0]}</text>
+        <text className="pg-chart-x" x={W - pR} y={H - 3} textAnchor="end">{DATES[upto]}</text>
+      </svg>
+      <div className="pg-chart-legend">
+        {sorted.map((s) => { const chg = s.vals[n - 1] / 100 - 1; return <span key={s.id} className="pg-leg"><span className="pg-dot" style={{ background: COLORS[s.id] }} />{s.name} <em className={cls(chg)}>{sPct(chg)}</em></span>; })}
+      </div>
+    </div>
+  );
+}
+
 export default function PressureGame() {
   const [phase, setPhase] = useState('intro');
   const [t, setT] = useState(0);
@@ -303,6 +333,8 @@ export default function PressureGame() {
 
         <p className="pg-headline">{HEADLINE[t]}</p>
         {flash && <p className="pg-flash">{flash}</p>}
+
+        <MarketChart upto={t} />
 
         {salEvt && <SalOverlay sal={salEvt} cash={cash} onPick={salPick} />}
 
