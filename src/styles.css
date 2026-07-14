@@ -5866,3 +5866,49 @@ body {
 .pg-t:hover:not(:disabled) { background: #e0d2a8; }
 .pg-t.sell { background: #efe3cc; }
 .pg-t:disabled { opacity: .4; cursor: default; }
+
+/* free-choice trade slider (replaces fixed buy/sell buttons) */
+.pg-tradebox { margin-top: 12px; }
+.pg-slider { width: 100%; -webkit-appearance: none; appearance: none; height: 7px; border-radius: 4px; outline: none; background: linear-gradient(90deg, #d9b7b2 0%, #ddd0b0 50%, #b7d3bf 100%); }
+.pg-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 24px; height: 24px; border-radius: 50%; background: var(--brass); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); cursor: pointer; }
+.pg-slider::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: var(--brass); border: 3px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,.35); cursor: pointer; }
+.pg-slider:disabled { opacity: .35; }
+.pg-slider-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--ink2); margin-top: 5px; font-variant-numeric: tabular-nums; }
+.pg-trade-btn { width: 100%; margin-top: 8px; padding: 11px; font-size: 14px; font-weight: 800; border: none; border-radius: 9px; background: #c9bd9a; color: #6a5c3a; box-shadow: 0 3px 0 #a99e7d; cursor: pointer; transition: transform .06s, box-shadow .06s; }
+.pg-trade-btn.buy { background: var(--g); color: #fff; box-shadow: 0 3px 0 #1f5637; }
+.pg-trade-btn.sell { background: var(--r); color: #fff; box-shadow: 0 3px 0 #7e2722; }
+.pg-trade-btn:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+.pg-trade-btn:disabled { opacity: .6; cursor: default; box-shadow: none; }
+
+/* Cousin Sal — recurring character */
+.pg-sal { background: #efe6cf; border: 2px solid var(--brass); border-radius: 14px; padding: 14px 15px; margin-bottom: 14px; box-shadow: 0 8px 22px rgba(0,0,0,.4); animation: salpop .35s ease; }
+@keyframes salpop { from { opacity: 0; transform: scale(.96) translateY(-6px); } to { opacity: 1; transform: none; } }
+.pg-sal-top { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.pg-sal-av { font-size: 30px; line-height: 1; }
+.pg-sal-name { font-family: Georgia, serif; font-weight: 800; font-size: 16px; color: var(--ink); }
+.pg-sal-line { font-size: 15px; line-height: 1.5; font-style: italic; color: #3a2f1c; margin: 0 0 12px; }
+.pg-sal-choices { display: flex; flex-direction: column; gap: 8px; }
+.pg-sal-btn { text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; font-size: 14px; font-weight: 700; color: var(--ink); cursor: pointer; transition: border-color .12s, transform .05s; }
+.pg-sal-btn:hover:not(:disabled) { border-color: var(--brass); }
+.pg-sal-btn:active:not(:disabled) { transform: translateY(1px); }
+.pg-sal-btn:disabled { opacity: .45; cursor: default; }
+.pg-sal-btn em { display: block; font-style: normal; font-weight: 400; font-size: 12px; color: var(--ink2); margin-top: 2px; }
+
+/* Cousin Sal — animated character overlay (Crazy-Dave style: pops in from the side, bobs, talks) */
+.pg-dave-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(20,12,6,.55); animation: pgfade .2s ease; }
+@keyframes pgfade { from { opacity: 0; } to { opacity: 1; } }
+.pg-dave-guy { position: absolute; bottom: -8px; left: -16px; width: 168px; z-index: 2; animation: salIn .55s cubic-bezier(.18,1.5,.5,1) both; }
+.pg-dave-svg { width: 100%; display: block; transform-origin: 50% 90%; animation: salBob 1.4s ease-in-out infinite; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
+@keyframes salIn { from { transform: translateX(-150%) translateY(30px) rotate(-8deg); } to { transform: translateX(0) translateY(0) rotate(0); } }
+@keyframes salBob { 0%,100% { transform: translateY(0) rotate(-2.5deg); } 50% { transform: translateY(-8px) rotate(2.5deg); } }
+.pg-dave-bubble { position: absolute; left: 14px; right: 14px; bottom: 172px; background: #fff; color: #24201a; border-radius: 18px; padding: 16px 18px 15px; box-shadow: 0 14px 36px rgba(0,0,0,.55); animation: salBubble .3s .18s both; }
+@keyframes salBubble { from { opacity: 0; transform: translateY(10px) scale(.96); } to { opacity: 1; transform: none; } }
+.pg-dave-bubble::after { content: ''; position: absolute; left: 46px; bottom: -16px; width: 0; height: 0; border: 16px solid transparent; border-top-color: #fff; border-bottom: 0; filter: drop-shadow(0 6px 4px rgba(0,0,0,.15)); }
+.pg-dave-name { font-family: Georgia, serif; font-weight: 800; font-size: 15px; margin: 0 0 6px; color: #b03526; }
+.pg-dave-line { font-size: 16px; line-height: 1.5; font-style: italic; margin: 0 0 13px; }
+.pg-dave-choices { display: flex; flex-direction: column; gap: 8px; }
+.pg-dave-btn { text-align: left; background: #f4efe2; border: 1px solid #e2d7bb; border-radius: 11px; padding: 12px 15px; font-size: 14px; font-weight: 700; color: #33291b; cursor: pointer; transition: border-color .12s, transform .05s, background .12s; }
+.pg-dave-btn:hover:not(:disabled) { border-color: var(--brass); background: #fff; }
+.pg-dave-btn:active:not(:disabled) { transform: translateY(1px); }
+.pg-dave-btn:disabled { opacity: .45; cursor: default; }
+.pg-dave-btn em { display: block; font-style: normal; font-weight: 400; font-size: 12px; color: #7c6c50; margin-top: 2px; }
