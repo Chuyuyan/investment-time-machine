@@ -110,12 +110,14 @@ function SalGuy({ mood }) {
     if (mood === 'greedy') return <text x={cx} y={152} fontSize="32" fontWeight="900" textAnchor="middle" fill="#2fae6a">$</text>;
     if (mood === 'broke') return <text x={cx} y={152} fontSize="30" fontWeight="900" textAnchor="middle" fill="#c23a3a">✕</text>;
     if (mood === 'manic') return <React.Fragment><circle cx={cx} cy={140} r="13" fill="#fff" /><circle cx={cx} cy={140} r="3" fill="#161616" /></React.Fragment>;
+    if (mood === 'panic') return <React.Fragment><circle cx={cx} cy={140} r="13" fill="#fff" /><circle cx={cx + (cx < 120 ? -6 : 6)} cy={141} r="3.5" fill="#161616" /></React.Fragment>;
     return <React.Fragment><circle cx={cx} cy={140} r="11" fill="#fff" /><circle cx={cx} cy={135} r="4.5" fill="#161616" /></React.Fragment>;
   };
   let mouth;
   if (mood === 'hype') mouth = <path d="M94 200 Q120 236 146 200 Q120 216 94 200 Z" fill="#7a2f2f" />;
   else if (mood === 'greedy') mouth = <React.Fragment><path d="M98 200 Q120 230 142 200 Q120 214 98 200 Z" fill="#7a2f2f" /><path d="M112 213 Q120 223 128 213 Z" fill="#d1706a" /></React.Fragment>;
   else if (mood === 'manic') mouth = <React.Fragment><ellipse cx="120" cy="208" rx="23" ry="16" fill="#6e2626" /><ellipse cx="120" cy="201" rx="16" ry="4" fill="#fff" /></React.Fragment>;
+  else if (mood === 'panic') mouth = <ellipse cx="120" cy="212" rx="19" ry="21" fill="#5e2020" />;
   else if (mood === 'broke') mouth = <path d="M100 216 Q120 202 140 216" stroke="#6e2626" strokeWidth="5" fill="none" strokeLinecap="round" />;
   else mouth = <ellipse cx="120" cy="207" rx="12" ry="10" fill="#7a2f2f" />;
   return (
@@ -144,6 +146,7 @@ function SalGuy({ mood }) {
       <path d="M120 152 q-11 26 -2 34 q11 6 22 0 q9 -8 -2 -34 Z" fill="#e0ac7e" />
       {mouth}
       {mood === 'worried' && <path d="M198 152 q8 16 0 24 q-10 -5 0 -24 Z" fill="#7fc9e8" />}
+      {mood === 'panic' && <React.Fragment><path d="M40 150 q7 15 0 22 q-9 -5 0 -22 Z" fill="#7fc9e8" /><path d="M202 148 q7 15 0 22 q-9 -5 0 -22 Z" fill="#7fc9e8" /><path d="M120 24 l-4 -12 M120 24 l0 -14 M120 24 l4 -12" stroke="#5f4230" strokeWidth="3" strokeLinecap="round" /></React.Fragment>}
     </svg>
   );
 }
@@ -229,6 +232,7 @@ export default function PressureGame() {
   const [interject, setInterject] = useState(null);
   const [blocked, setBlocked] = useState({});
   const [indep, setIndep] = useState(0);
+  const [wiseFinal, setWiseFinal] = useState(false);
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -245,9 +249,11 @@ export default function PressureGame() {
       return { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. We're gonna be legends, cuz!!", choices: [{ label: 'Sal… please be careful' }, { label: 'Nice, me too' }] };
     }
     if (turn === 5) {
-      if (refused >= 2) return { mood: 'broke', line: "Lost everything, cuz — Peloton, Zoom, all of it. …Yeah, I know we're not square after I took your cash. Don't look at me like that.", choices: [{ label: 'Say nothing' }] };
-      if (helped >= 1) return { mood: 'broke', line: "I lost it all, cuz — but you kept me afloat when it mattered. That's worth more than the money. Crashing at Mom's for a while.", choices: [{ label: "Tell him it'll be okay" }] };
-      return { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything — moving back in with Mom. That newsletter guy? Total fraud.", choices: [{ label: 'Say something kind' }] };
+      // The final crisis — Sal panics. This is the growth-arc reversal.
+      return { mood: 'panic', line: "IT'S ALL CRASHING, CUZ!! Peloton, Zoom — everything's going to ZERO!! SELL IT ALL, RIGHT NOW!! Don't think — just DUMP EVERYTHING!!", choices: [
+        { label: 'Panic — dump everything', eff: { dumpAll: true }, note: 'Do it Sal\'s way. Sell it all at the bottom.' },
+        { label: "No — I'll trust my own read", wise: true, note: 'Stay calm. Stick to your own analysis.' },
+      ] };
     }
     return SAL_BASE[turn] || null;
   }
@@ -279,13 +285,19 @@ export default function PressureGame() {
 
   function salPick(ch) {
     const e = ch.eff || {};
-    let nc = cash;
-    if (e.cash) nc += e.cash;
-    if (e.steal) nc -= Math.min(e.steal, cash);
-    if (nc !== cash) setCash(nc);
+    if (e.dumpAll) {
+      const hv = COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * price(c.id), 0);
+      setShares({}); setAvg({}); setCash(cash + hv);
+    } else {
+      let nc = cash;
+      if (e.cash) nc += e.cash;
+      if (e.steal) nc -= Math.min(e.steal, cash);
+      if (nc !== cash) setCash(nc);
+    }
     if (e.reveal) { const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd); }
     if (ch.help) setHelped(helped + 1);
     if (ch.refuse) setRefused(refused + 1);
+    if (ch.wise) setWiseFinal(true);
     setSalDone({ ...salDone, [t]: true });
   }
 
@@ -300,7 +312,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -320,11 +332,22 @@ export default function PressureGame() {
 
   if (phase === 'end') {
     const won = free || net >= FREEDOM;
+    let epi;
+    if (wiseFinal) epi = { mood: 'worried', line: indep > 0 ? "…Wait. You didn't panic. You've been tuning me out all year, cuz — and you were right, every single time. …Huh. Maybe I should've been listening to YOU." : "…Wait. You didn't panic. You just looked at it and decided for yourself. …Huh. Maybe I should've been listening to you this whole time." };
+    else if (refused >= 2) epi = { mood: 'broke', line: "I lost it all, cuz. …And no, we're not square after I took your cash. Don't look at me like that." };
+    else if (helped >= 1) epi = { mood: 'broke', line: "I lost it all — but you kept me afloat when it mattered. That's worth more than money. Crashing at Mom's for a while." };
+    else epi = { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything. That newsletter guy was a fraud. Moving back in with Mom." };
     return (
       <div className="pg"><div className="pg-col pg-mid">
         <p className="pg-kick">{won ? 'You made it out' : 'June 2022'}</p>
         <h1 className="pg-title">{won ? "You're free." : 'You survived to the other side.'}</h1>
         <div className="pg-final"><span>Net worth</span><b className={cls(net / START - 1)}>{fmt(net)}</b></div>
+
+        <div className="pg-epilogue">
+          <div className="pg-epi-guy"><SalGuy mood={epi.mood} /></div>
+          <div className="pg-epi-bubble"><p className="pg-dave-name">Cousin Sal</p><p className="pg-epi-line">"{epi.line}"</p></div>
+        </div>
+
         <p className="pg-lead">{won
           ? `You turned $4,000 into ${fmt(net)} while the bills never stopped — through the crash, the mania, and the bust. Your money now works harder than your rent. That's escape velocity.`
           : `You kept the lights on through a crash, a bubble, and its collapse. You didn't get rich — but you didn't get evicted, and you didn't end up like Sal.`}</p>

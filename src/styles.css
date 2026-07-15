@@ -5983,3 +5983,11 @@ body {
 .pg-interject-bubble .pg-dave-name { color: var(--r); }
 .pg-defy { border-color: #2fae6a !important; }
 .pg-defy:hover:not(:disabled) { border-color: #2fae6a; background: #f2fbf5; }
+
+/* end-screen Sal epilogue (the growth-arc reversal payoff) */
+.pg-epilogue { display: flex; align-items: flex-end; gap: 6px; margin: 18px 0 20px; }
+.pg-epi-guy { flex: none; width: 118px; }
+.pg-epi-guy .pg-dave-svg { width: 100%; display: block; animation: salIdle 2.4s ease-in-out infinite; transform-origin: 50% 90%; filter: drop-shadow(0 6px 10px rgba(0,0,0,.5)); }
+.pg-epi-bubble { flex: 1; background: #fff; color: #24201a; border-radius: 16px; padding: 13px 15px; box-shadow: 0 10px 26px rgba(0,0,0,.5); position: relative; margin-bottom: 20px; }
+.pg-epi-bubble::after { content: ''; position: absolute; left: -13px; bottom: 18px; width: 0; height: 0; border: 13px solid transparent; border-right-color: #fff; border-left: 0; }
+.pg-epi-line { font-size: 14.5px; line-height: 1.5; font-style: italic; margin: 5px 0 0; }
