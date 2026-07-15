@@ -104,7 +104,7 @@ const SAL_BASE = {
 };
 
 // Cousin Sal: huge head, tiny body, GIANT glasses whose lenses are his expression screen.
-function SalGuy({ mood }) {
+function SalGuy({ mood, thief }) {
   const lens = (cx) => {
     if (mood === 'hype') return <text x={cx} y={151} fontSize="34" fontWeight="900" textAnchor="middle" fill="#f5c84b">★</text>;
     if (mood === 'greedy') return <text x={cx} y={152} fontSize="32" fontWeight="900" textAnchor="middle" fill="#2fae6a">$</text>;
@@ -137,6 +137,7 @@ function SalGuy({ mood }) {
       <path d="M40 92 Q52 32 120 30 Q188 32 200 92 Q160 72 120 72 Q80 72 40 92 Z" fill="#d83a2f" />
       <path d="M150 84 Q212 78 228 102 Q212 111 150 104 Z" fill="#b52e26" />
       <text x="118" y="64" fontSize="21" fontWeight="900" textAnchor="middle" fill="#fff">SAL</text>
+      {thief && <React.Fragment><path d="M26 126 Q120 110 214 126 L214 154 Q120 142 26 154 Z" fill="#14161d" /><path d="M60 118 Q120 108 180 118 L180 108 Q120 98 60 108 Z" fill="#14161d" /></React.Fragment>}
       <line x1="112" y1="140" x2="128" y2="140" stroke="#22406e" strokeWidth="6" />
       <line x1="58" y1="136" x2="34" y2="148" stroke="#22406e" strokeWidth="5" strokeLinecap="round" />
       <line x1="182" y1="136" x2="206" y2="148" stroke="#22406e" strokeWidth="5" strokeLinecap="round" />
@@ -153,7 +154,7 @@ function SalGuy({ mood }) {
 
 function SalOverlay({ sal, cash, onPick }) {
   return (
-    <div className="pg-dave-overlay">
+    <div className={'pg-dave-overlay' + (sal.mood === 'panic' ? ' pg-panic-overlay' : '')}>
       <div className="pg-dave-bubble">
         <p className="pg-dave-name">Cousin Sal</p>
         <p className="pg-dave-line">"{sal.line}"</p>
@@ -235,6 +236,7 @@ export default function PressureGame() {
   const [indep, setIndep] = useState(0);
   const [wiseFinal, setWiseFinal] = useState(false);
   const [robbing, setRobbing] = useState(0);
+  const [rentWarn, setRentWarn] = useState(null);
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -279,9 +281,13 @@ export default function PressureGame() {
     if (a < 0 && (id === 'PTON' || id === 'ZM') && t <= 3 && !blocked[t + id] && (shares[id] || 0) * price(id) > 0.5) {
       setInterject({ id, amt: -a }); return;
     }
+    // Rent guard: warn before a buy that would leave you short for rent.
+    if (a > 0 && cash - Math.min(a, cash) < RENT) { setRentWarn({ id, amt: a }); return; }
     if (a > 0) buy(id, a); else if (a < 0) sell(id, -a);
     setPend({ ...pend, [id]: 0 });
   }
+  function confirmRentBuy() { buy(rentWarn.id, rentWarn.amt); setPend({ ...pend, [rentWarn.id]: 0 }); setRentWarn(null); }
+  function cancelRentBuy() { setPend({ ...pend, [rentWarn.id]: 0 }); setRentWarn(null); }
   function interjectHold() { setPend({ ...pend, [interject.id]: 0 }); setBlocked({ ...blocked, [t + interject.id]: true }); setInterject(null); }
   function interjectSell() { sell(interject.id, interject.amt); setPend({ ...pend, [interject.id]: 0 }); setBlocked({ ...blocked, [t + interject.id]: true }); setIndep(indep + 1); setInterject(null); }
 
@@ -314,7 +320,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -361,14 +367,14 @@ export default function PressureGame() {
 
   const rentDanger = cash < RENT;
   return (
-    <div className={'pg' + (t === 1 ? ' pg-storm' : '')}>
+    <div className={'pg' + (t === 1 ? ' pg-storm' : '') + (salEvt && salEvt.mood === 'panic' ? ' pg-panicking' : '')}>
       <div className="pg-col">
         <div className="pg-bar">
           <div className="pg-bar-l"><span className="pg-month">{DATES[t]}</span><span className="pg-sub">Period {t + 1} of {DATES.length}</span></div>
           <div className={'pg-rent' + (rentDanger ? ' danger' : '')}><span>Rent due</span><b>{fmt(RENT)}</b></div>
         </div>
         <div className="pg-stats">
-          <div className={'pg-stat' + (robbing ? ' robbed' : '')}><span>Cash</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b>{robbing ? <React.Fragment><span className="pg-rob-amt">−{fmt(robbing)}</span><span className="pg-rob-hand">✋</span></React.Fragment> : null}</div>
+          <div className={'pg-stat' + (robbing ? ' robbed' : '')}><span>Cash</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b>{robbing ? <span className="pg-rob-amt">−{fmt(robbing)}</span> : null}</div>
           <div className="pg-stat"><span>Invested</span><b>{fmt(holdings)}</b></div>
           <div className="pg-stat"><span>Net worth</span><b>{fmt(net)}</b></div>
           <div className="pg-stat pg-freedom"><span>Freedom</span><b>{Math.round(net / FREEDOM * 100)}%</b></div>
@@ -379,8 +385,26 @@ export default function PressureGame() {
 
         <MarketChart upto={t} />
 
+        {rentWarn && (
+          <div className="pg-rentwarn">
+            <p>⚠️ That buy would leave you <b>{fmt(Math.max(0, cash - rentWarn.amt))}</b> — under this period's <b>{fmt(RENT)}</b> rent. Miss rent and you're evicted.</p>
+            <div className="pg-rentwarn-btns">
+              <button className="pg-rw-cancel" onClick={cancelRentBuy}>Never mind</button>
+              <button className="pg-rw-go" onClick={confirmRentBuy}>Buy anyway</button>
+            </div>
+          </div>
+        )}
+
         {salEvt && <SalOverlay sal={salEvt} cash={cash} onPick={salPick} />}
         {interject && <SalInterject name={COMPANIES.find((c) => c.id === interject.id).name} onHold={interjectHold} onSell={interjectSell} />}
+        {robbing ? (
+          <div className="pg-heist">
+            <div className="pg-heist-guy"><SalGuy mood="greedy" thief /></div>
+            <span className="pg-heist-cash c1">💵</span>
+            <span className="pg-heist-cash c2">💵</span>
+            <span className="pg-heist-cash c3">💵</span>
+          </div>
+        ) : null}
 
         <div className="pg-time">
           <span className="pg-time-lbl">Time this period</span>

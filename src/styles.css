@@ -6009,3 +6009,49 @@ body {
 .pg-dave-choices { position: relative; }
 .pg-point { position: absolute; left: -4px; top: 4px; font-size: 27px; z-index: 3; pointer-events: none; animation: jab .5s ease-in-out infinite; }
 @keyframes jab { 0%,100% { transform: translateX(0); } 50% { transform: translateX(11px); } }
+
+/* ---- Sal FLIES up and cheekily heists your cash (thief hat + flying bills) ---- */
+.pg-heist { position: fixed; inset: 0; z-index: 70; pointer-events: none; overflow: hidden; }
+.pg-heist-guy { position: absolute; left: 0; top: 0; width: 150px; animation: heistFly 1.7s ease-in-out both; }
+.pg-heist-guy .pg-dave-svg { width: 100%; display: block; filter: drop-shadow(0 8px 14px rgba(0,0,0,.6)); }
+@keyframes heistFly {
+  0% { transform: translate(38vw, 100vh) scale(.5) rotate(12deg); opacity: 0; }
+  16% { transform: translate(3vw, 5vh) scale(.92) rotate(-8deg); opacity: 1; }
+  34% { transform: translate(1vw, 3vh) scale(.98) rotate(6deg); }
+  40% { transform: translate(4vw, 3vh) scale(.98) rotate(-6deg); }
+  58% { transform: translate(8vw, 8vh) scale(.9) rotate(-6deg); opacity: 1; }
+  100% { transform: translate(90vw, 108vh) scale(.36) rotate(38deg); opacity: 0; }
+}
+.pg-heist-cash { position: absolute; font-size: 28px; left: 7vw; top: 6vh; opacity: 0; }
+.pg-heist-cash.c1 { animation: cashFly 1.3s ease-out .38s both; }
+.pg-heist-cash.c2 { left: 14vw; animation: cashFly 1.3s ease-out .52s both; }
+.pg-heist-cash.c3 { left: 2vw; animation: cashFly 1.3s ease-out .64s both; }
+@keyframes cashFly { 0% { opacity: 0; transform: translate(0,0) rotate(0); } 18% { opacity: 1; } 100% { opacity: 0; transform: translate(62vw, 96vh) rotate(200deg); } }
+.pg-rob-amt { z-index: 71; }
+
+/* ---- Panic: Sal careens across the WHOLE screen; he shoves your sliders (no real sell) ---- */
+.pg-panic-overlay { background: rgba(16,11,7,.3) !important; }
+.pg-panic-overlay .pg-dave-bubble { z-index: 5; }
+.pg-panic-overlay .pg-dave-guy { z-index: 2; }
+.pg-frantic { animation: salFrantic 1.05s ease-in-out infinite !important; }
+@keyframes salFrantic {
+  0% { transform: translate(0,0) rotate(-10deg); }
+  13% { transform: translate(60vw,-34vh) rotate(24deg); }
+  27% { transform: translate(8vw,-64vh) rotate(-18deg); }
+  41% { transform: translate(66vw,-48vh) rotate(26deg); }
+  57% { transform: translate(-4vw,-22vh) rotate(-24deg); }
+  72% { transform: translate(50vw,-60vh) rotate(18deg); }
+  87% { transform: translate(6vw,-32vh) rotate(-12deg); }
+  100% { transform: translate(0,0) rotate(-10deg); }
+}
+.pg-panicking .pg-slider { animation: sliderWobble .26s ease-in-out infinite; }
+@keyframes sliderWobble { 0%,100% { transform: translateX(0) rotate(0); } 25% { transform: translateX(-8px) rotate(-1.2deg); } 75% { transform: translateX(8px) rotate(1.2deg); } }
+
+/* ---- rent guard warning ---- */
+.pg-rentwarn { background: #3a2f12; border: 1px solid var(--brass); border-radius: 12px; padding: 13px 15px; margin: 0 0 14px; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+.pg-rentwarn p { font-size: 13.5px; color: #f0e2c0; margin: 0 0 10px; line-height: 1.5; }
+.pg-rentwarn b { color: #fff; }
+.pg-rentwarn-btns { display: flex; gap: 8px; }
+.pg-rw-cancel, .pg-rw-go { flex: 1; padding: 11px; font-size: 13px; font-weight: 800; border-radius: 9px; cursor: pointer; }
+.pg-rw-cancel { background: #2a3145; color: #cbd3e6; border: 1px solid #3a4358; }
+.pg-rw-go { background: var(--brass); color: #241a08; border: none; }
