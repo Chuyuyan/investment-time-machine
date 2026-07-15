@@ -383,8 +383,6 @@ export default function PressureGame() {
         <p className="pg-headline">{HEADLINE[t]}</p>
         {flash && <p className="pg-flash">{flash}</p>}
 
-        <MarketChart upto={t} />
-
         {rentWarn && (
           <div className="pg-rentwarn">
             <p>⚠️ That buy would leave you <b>{fmt(Math.max(0, cash - rentWarn.amt))}</b> — under this period's <b>{fmt(RENT)}</b> rent. Miss rent and you're evicted.</p>
@@ -419,7 +417,11 @@ export default function PressureGame() {
           </div>
         )}
 
-        {COMPANIES.map((c) => {
+        {/* the monitor on your desk — the market lives on its screen */}
+        <div className="pg-monitor">
+          <div className="pg-monitor-screen">
+            <MarketChart upto={t} />
+            {COMPANIES.map((c) => {
           const p = price(c.id); const prev = t > 0 ? c.prices[t - 1] : null; const mv = prev ? p / prev - 1 : null;
           const pos = (shares[c.id] || 0) * p; const g = (shares[c.id] || 0) > 0 && (avg[c.id] || 0) > 0 ? p / avg[c.id] - 1 : 0;
           const researched = dug[c.id]; const info = INFO[c.id][t];
@@ -451,7 +453,12 @@ export default function PressureGame() {
               </div>
             </div>
           );
-        })}
+            })}
+          </div>
+          <div className="pg-monitor-foot"><span className="pg-monitor-led" /></div>
+          <div className="pg-monitor-stand" />
+          <div className="pg-monitor-base" />
+        </div>
 
         <button className={'pg-btn pg-primary pg-end' + (rentDanger ? ' danger' : '')} onClick={endMonth}>
           {rentDanger ? `Pay rent ${fmt(RENT)} — you're short` : `End period · pay ${fmt(RENT)} rent →`}

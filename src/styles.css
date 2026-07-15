@@ -6055,3 +6055,65 @@ body {
 .pg-rw-cancel, .pg-rw-go { flex: 1; padding: 11px; font-size: 13px; font-weight: 800; border-radius: 9px; cursor: pointer; }
 .pg-rw-cancel { background: #2a3145; color: #cbd3e6; border: 1px solid #3a4358; }
 .pg-rw-go { background: var(--brass); color: #241a08; border: none; }
+
+/* ============================================================
+   DESK WORLD (?proto=pressure) — every panel is an object on your desk
+   ============================================================ */
+.pg {
+  background:
+    radial-gradient(72% 30% at 50% 20%, rgba(96,150,255,.13), transparent 72%),
+    repeating-linear-gradient(94deg, rgba(255,255,255,.014) 0 3px, transparent 3px 8px),
+    linear-gradient(180deg, #2c2319 0%, #211a12 55%, #171209 100%);
+}
+.pg.pg-storm {
+  background:
+    radial-gradient(72% 30% at 50% 20%, rgba(255,110,90,.14), transparent 72%),
+    repeating-linear-gradient(94deg, rgba(255,255,255,.012) 0 3px, transparent 3px 8px),
+    linear-gradient(180deg, #2e1d17 0%, #21140f 55%, #150b08 100%);
+}
+
+/* the monitor */
+.pg-monitor { margin: 0 0 16px; }
+.pg-monitor-screen {
+  position: relative;
+  background: linear-gradient(180deg, #0d1017 0%, #11151e 100%);
+  border: 9px solid #1a1e28;
+  border-radius: 11px;
+  padding: 12px 10px 14px;
+  box-shadow: 0 0 55px rgba(96,150,255,.16), 0 18px 40px rgba(0,0,0,.7), inset 0 0 46px rgba(0,0,0,.55);
+}
+.pg-monitor-screen::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; border-radius: 3px;
+  background: repeating-linear-gradient(180deg, rgba(255,255,255,.015) 0 2px, transparent 2px 4px);
+}
+.pg-monitor-foot { height: 15px; margin: -1px 14px 0; background: #1a1e28; border-radius: 0 0 9px 9px; display: flex; align-items: center; justify-content: center; }
+.pg-monitor-led { width: 5px; height: 5px; border-radius: 50%; background: #4ad07a; box-shadow: 0 0 8px #4ad07a; }
+.pg-monitor-stand { width: 76px; height: 14px; margin: 0 auto; background: linear-gradient(180deg, #1c2029, #12161e); }
+.pg-monitor-base { width: 132px; height: 7px; margin: 0 auto; background: #161a23; border-radius: 5px; box-shadow: 0 8px 18px rgba(0,0,0,.65); }
+/* chart + cards sit ON the screen: flatten their standalone shadows */
+.pg-monitor .pg-chart-card, .pg-monitor .pg-card { box-shadow: 0 2px 8px rgba(0,0,0,.5); }
+
+/* desk calendar (the date) */
+.pg-bar-l { position: relative; background: #f3eee1; border-radius: 4px; padding: 9px 13px 8px; transform: rotate(-1deg); box-shadow: 0 8px 16px rgba(0,0,0,.55); }
+.pg-bar-l::before { content: ''; position: absolute; top: -4px; left: 12px; right: 12px; height: 4px; background: repeating-linear-gradient(90deg, #98a0b4 0 3px, transparent 3px 11px); }
+.pg-monthined, .pg-bar-l .pg-month { color: #241d12; }
+.pg-bar-l .pg-sub { color: #8a7c5e; }
+
+/* rent bill on the desk */
+.pg-rent { background: #efe4cf; color: #3a2a18; transform: rotate(1.6deg); border-radius: 2px; box-shadow: 0 8px 16px rgba(0,0,0,.55); }
+.pg-rent span { color: #8a6a44; }
+.pg-rent b { color: #b23a34; }
+.pg-rent.danger { background: #f6d9d2; border-color: var(--r); }
+
+/* newspaper clipping (the headline) */
+.pg-headline {
+  background: #e8e2d2; color: #241d12 !important; font-family: Georgia, 'Times New Roman', serif;
+  padding: 12px 14px; margin: 0 0 14px; border-top: 3px double #241d12; border-bottom: 3px double #241d12;
+  transform: rotate(-.4deg); box-shadow: 0 10px 20px rgba(0,0,0,.5);
+}
+
+/* sticky note (the leads) */
+.pg-leads { background: #f2d96a !important; border: none !important; border-radius: 2px; transform: rotate(-1.4deg); box-shadow: 0 9px 18px rgba(0,0,0,.45); }
+.pg-leads-h { color: #6a5a1c !important; }
+.pg-lead-row { color: #4a3d10 !important; }
+.pg-lead-row b { color: #2b2308 !important; }
