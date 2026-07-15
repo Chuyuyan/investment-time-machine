@@ -158,12 +158,13 @@ function SalOverlay({ sal, cash, onPick }) {
         <p className="pg-dave-name">Cousin Sal</p>
         <p className="pg-dave-line">"{sal.line}"</p>
         <div className="pg-dave-choices">
+          {sal.mood === 'panic' && <span className="pg-point">👉</span>}
           {sal.choices.map((ch, i) => { const cant = ch.need && cash < ch.need; return (
             <button key={i} className="pg-dave-btn" disabled={cant} onClick={() => onPick(ch)}>{cant ? `${ch.label} — can't afford it` : ch.label}{ch.note && !cant && <em>{ch.note}</em>}</button>
           ); })}
         </div>
       </div>
-      <div className="pg-dave-guy"><SalGuy mood={sal.mood} /></div>
+      <div className={'pg-dave-guy' + (sal.mood === 'panic' ? ' pg-frantic' : '')}><SalGuy mood={sal.mood} /></div>
     </div>
   );
 }
@@ -233,6 +234,7 @@ export default function PressureGame() {
   const [blocked, setBlocked] = useState({});
   const [indep, setIndep] = useState(0);
   const [wiseFinal, setWiseFinal] = useState(false);
+  const [robbing, setRobbing] = useState(0);
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -291,7 +293,7 @@ export default function PressureGame() {
     } else {
       let nc = cash;
       if (e.cash) nc += e.cash;
-      if (e.steal) nc -= Math.min(e.steal, cash);
+      if (e.steal) { const amt = Math.min(e.steal, cash); nc -= amt; setRobbing(amt); setTimeout(() => setRobbing(0), 1600); }
       if (nc !== cash) setCash(nc);
     }
     if (e.reveal) { const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd); }
@@ -312,7 +314,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -366,7 +368,7 @@ export default function PressureGame() {
           <div className={'pg-rent' + (rentDanger ? ' danger' : '')}><span>Rent due</span><b>{fmt(RENT)}</b></div>
         </div>
         <div className="pg-stats">
-          <div className="pg-stat"><span>Cash</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b></div>
+          <div className={'pg-stat' + (robbing ? ' robbed' : '')}><span>Cash</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b>{robbing ? <React.Fragment><span className="pg-rob-amt">−{fmt(robbing)}</span><span className="pg-rob-hand">✋</span></React.Fragment> : null}</div>
           <div className="pg-stat"><span>Invested</span><b>{fmt(holdings)}</b></div>
           <div className="pg-stat"><span>Net worth</span><b>{fmt(net)}</b></div>
           <div className="pg-stat pg-freedom"><span>Freedom</span><b>{Math.round(net / FREEDOM * 100)}%</b></div>

@@ -5991,3 +5991,21 @@ body {
 .pg-epi-bubble { flex: 1; background: #fff; color: #24201a; border-radius: 16px; padding: 13px 15px; box-shadow: 0 10px 26px rgba(0,0,0,.5); position: relative; margin-bottom: 20px; }
 .pg-epi-bubble::after { content: ''; position: absolute; left: -13px; bottom: 18px; width: 0; height: 0; border: 13px solid transparent; border-right-color: #fff; border-left: 0; }
 .pg-epi-line { font-size: 14.5px; line-height: 1.5; font-style: italic; margin: 5px 0 0; }
+
+/* Sal's hand robbing your Cash */
+.pg-stat { position: relative; overflow: visible; }
+.pg-stat.robbed { animation: robShake .1s linear 8; }
+@keyframes robShake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.pg-rob-hand { position: absolute; left: 50%; bottom: -8px; font-size: 42px; transform: translateX(-50%); pointer-events: none; animation: robGrab 1.5s ease both; }
+@keyframes robGrab { 0% { transform: translate(-50%, 64px) rotate(-25deg); opacity: 0; } 22% { transform: translate(-50%, -4px) rotate(0); opacity: 1; } 52% { transform: translate(-50%, -4px) rotate(0); opacity: 1; } 100% { transform: translate(-50%, 64px) rotate(-25deg); opacity: 0; } }
+.pg-rob-amt { position: absolute; left: 50%; top: -2px; transform: translateX(-50%); color: #ff6b74; font-weight: 800; font-size: 15px; pointer-events: none; animation: robFloat 1.5s ease both; }
+@keyframes robFloat { 0% { opacity: 0; transform: translate(-50%, 14px); } 35% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -34px); } }
+
+/* Panic: Sal careens across the screen + a finger jabbing at "sell" */
+.pg-frantic { animation: salFrantic .7s ease-in-out infinite !important; }
+.pg-frantic .pg-dave-svg { animation: salShake .1s linear infinite !important; }
+@keyframes salFrantic { 0% { transform: translate(0,0); } 22% { transform: translate(150px,-8px); } 45% { transform: translate(300px,4px); } 68% { transform: translate(70px,-10px); } 100% { transform: translate(0,0); } }
+@keyframes salShake { 0%,100% { transform: rotate(-6deg); } 50% { transform: rotate(6deg); } }
+.pg-dave-choices { position: relative; }
+.pg-point { position: absolute; left: -4px; top: 4px; font-size: 27px; z-index: 3; pointer-events: none; animation: jab .5s ease-in-out infinite; }
+@keyframes jab { 0%,100% { transform: translateX(0); } 50% { transform: translateX(11px); } }
