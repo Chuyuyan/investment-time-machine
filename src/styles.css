@@ -6117,3 +6117,21 @@ body {
 .pg-leads-h { color: #6a5a1c !important; }
 .pg-lead-row { color: #4a3d10 !important; }
 .pg-lead-row b { color: #2b2308 !important; }
+
+/* ---- watchlist unlocks: the rest of the market ---- */
+.pg-insight { margin-left: auto; font-size: 12px; font-weight: 800; color: #e7d08a; background: rgba(224,166,58,.12); border: 1px solid rgba(224,166,58,.3); border-radius: 999px; padding: 3px 9px; font-variant-numeric: tabular-nums; }
+.pg-time .pg-gig { margin-left: 0; }
+.pg-locked-wrap { margin-top: 16px; padding-top: 14px; border-top: 1px dashed #2c3346; }
+.pg-locked-h { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: #7d879c; margin: 0 0 10px; }
+.pg-locked { background: #141a27; border: 1px dashed #39415a; border-radius: 11px; padding: 12px 14px; margin: 8px 0; }
+.pg-locked-top { display: flex; justify-content: space-between; align-items: center; }
+.pg-locked .pg-co { opacity: .75; }
+.pg-lockchip { font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: #7d879c; border: 1px solid #39415a; border-radius: 999px; padding: 2px 8px; }
+.pg-teaser { font-size: 13px; line-height: 1.45; color: #97a0b6; font-style: italic; margin: 9px 0 12px; }
+.pg-locked-btns { display: flex; gap: 8px; }
+.pg-unlock { flex: 1; padding: 10px 8px; font-size: 12.5px; font-weight: 800; border-radius: 9px; cursor: pointer; background: var(--brass); color: #241a08; border: none; box-shadow: 0 3px 0 var(--brass-d); }
+.pg-unlock:active:not(:disabled) { transform: translateY(2px); box-shadow: none; }
+.pg-unlock.xp { background: transparent; color: #e7d08a; border: 1px solid #6a5a2c; box-shadow: none; }
+.pg-unlock.xp:hover:not(:disabled) { background: rgba(224,166,58,.12); }
+.pg-unlock:disabled { opacity: .38; cursor: default; box-shadow: none; }
+.pg-locked-warn { font-size: 11.5px; color: #e0a63a; margin: 8px 0 0; font-style: italic; }

@@ -26,13 +26,19 @@ const HEADLINE = [
   'The reckoning. Rates jump, the bubble bursts, and the high-flyers of 2021 collapse.',
 ];
 
+// You start following only the household names. The rest of the market has to be
+// unlocked — with scarce cash, or with insight you earn by actually researching.
+const START_WATCH = ['AAPL', 'TSLA', 'DAL'];
 const COMPANIES = [
   { id: 'AAPL', name: 'Apple', biz: 'Makes the iPhone, Mac, and services like the App Store. One of the most profitable companies on Earth.', prices: [68, 63, 116, 121, 165, 137] },
   { id: 'TSLA', name: 'Tesla', biz: 'Builds electric cars, led by Elon Musk. Also batteries and self-driving software.', prices: [133, 102, 430, 700, 1140, 700] },
-  { id: 'ZM', name: 'Zoom', biz: 'Sells easy video-calling software, mostly to businesses. Small and fairly new.', prices: [105, 146, 470, 400, 250, 110] },
+  { id: 'ZM', name: 'Zoom', biz: 'Sells easy video-calling software, mostly to businesses. Small and fairly new.', prices: [105, 146, 470, 400, 250, 110],
+    teaser: 'Your whole office suddenly mentions some video-call app. You have never used it.', cost: 150, xp: 4 },
   { id: 'DAL', name: 'Delta', biz: 'A major airline. Airlines carry huge fixed costs and lots of debt.', prices: [47, 23, 31, 46, 38, 31] },
-  { id: 'MRNA', name: 'Moderna', biz: "A biotech using new 'mRNA' technology to make vaccines. Very few products so far.", prices: [26, 29, 67, 150, 300, 140] },
-  { id: 'PTON', name: 'Peloton', biz: 'Sells premium exercise bikes and a subscription for live workout classes.', prices: [27, 27, 100, 145, 55, 12] },
+  { id: 'MRNA', name: 'Moderna', biz: "A biotech using new 'mRNA' technology to make vaccines. Very few products so far.", prices: [26, 29, 67, 150, 300, 140],
+    teaser: 'Somewhere in the vaccine race there is a tiny biotech nobody has heard of.', cost: 250, xp: 6 },
+  { id: 'PTON', name: 'Peloton', biz: 'Sells premium exercise bikes and a subscription for live workout classes.', prices: [27, 27, 100, 145, 55, 12],
+    teaser: 'Sal will not stop talking about some exercise-bike company.', cost: 200, xp: 5 },
 ];
 const COLORS = { AAPL: '#5b8cff', TSLA: '#f5b13c', ZM: '#b072ff', DAL: '#ff5f6a', MRNA: '#2fd1a8', PTON: '#ff6fa5', CASH: '#8a93a8' };
 
@@ -191,10 +197,10 @@ const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const sPct = (x) => { const v = x * 100; return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%'; };
 const cls = (x) => (x > 0.005 ? 'up' : x < -0.005 ? 'down' : 'flat');
 
-function MarketChart({ upto }) {
+function MarketChart({ upto, watch }) {
   const n = upto + 1;
   if (n < 2) return null;
-  const series = COMPANIES.map((c) => ({ id: c.id, name: c.name, vals: c.prices.slice(0, n).map((p) => (p / c.prices[0]) * 100) }));
+  const series = COMPANIES.filter((c) => watch.includes(c.id)).map((c) => ({ id: c.id, name: c.name, vals: c.prices.slice(0, n).map((p) => (p / c.prices[0]) * 100) }));
   const all = series.flatMap((s) => s.vals).concat([100]);
   const min = Math.min(...all), max = Math.max(...all);
   const W = 360, H = 148, pL = 6, pR = 6, pT = 8, pB = 16;
@@ -237,6 +243,8 @@ export default function PressureGame() {
   const [wiseFinal, setWiseFinal] = useState(false);
   const [robbing, setRobbing] = useState(0);
   const [rentWarn, setRentWarn] = useState(null);
+  const [unlocked, setUnlocked] = useState(START_WATCH);
+  const [insight, setInsight] = useState(0);
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -263,7 +271,10 @@ export default function PressureGame() {
   }
   const salEvt = !salDone[t] ? salFor(t) : null;
 
-  function dig(id) { if (acts <= 0 || dug[id]) return; setDug({ ...dug, [id]: true }); setActs(acts - 1); }
+  // Researching is what earns insight — the game rewards the habit it wants.
+  function dig(id) { if (acts <= 0 || dug[id]) return; setDug({ ...dug, [id]: true }); setActs(acts - 1); setInsight(insight + 1); }
+  function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); }
+  function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); }
   function gig() { if (acts <= 0) return; setCash(cash + GIG); setActs(acts - 1); }
   function buy(id, amt) {
     const p = price(id); const a = Math.min(amt, cash); if (a < 1) return;
@@ -302,7 +313,10 @@ export default function PressureGame() {
       if (e.steal) { const amt = Math.min(e.steal, cash); nc -= amt; setRobbing(amt); setTimeout(() => setRobbing(0), 1600); }
       if (nc !== cash) setCash(nc);
     }
-    if (e.reveal) { const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd); }
+    if (e.reveal) {
+      const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd);
+      setUnlocked((u) => [...new Set([...u, ...e.reveal])]);
+    }
     if (ch.help) setHelped(helped + 1);
     if (ch.refuse) setRefused(refused + 1);
     if (ch.wise) setWiseFinal(true);
@@ -320,7 +334,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -407,6 +421,7 @@ export default function PressureGame() {
         <div className="pg-time">
           <span className="pg-time-lbl">Time this period</span>
           <span className="pg-pips">{Array.from({ length: ACTIONS }).map((_, i) => <span key={i} className={'pg-pip' + (i < acts ? ' on' : '')} />)}</span>
+          <span className="pg-insight" title="Earned by investigating. Spend it to follow new companies.">💡 {insight}</span>
           <button className="pg-gig" disabled={acts <= 0} onClick={gig}>Side gig +{fmt(GIG)}</button>
         </div>
 
@@ -420,8 +435,8 @@ export default function PressureGame() {
         {/* the monitor on your desk — the market lives on its screen */}
         <div className="pg-monitor">
           <div className="pg-monitor-screen">
-            <MarketChart upto={t} />
-            {COMPANIES.map((c) => {
+            <MarketChart upto={t} watch={unlocked} />
+            {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
           const p = price(c.id); const prev = t > 0 ? c.prices[t - 1] : null; const mv = prev ? p / prev - 1 : null;
           const pos = (shares[c.id] || 0) * p; const g = (shares[c.id] || 0) > 0 && (avg[c.id] || 0) > 0 ? p / avg[c.id] - 1 : 0;
           const researched = dug[c.id]; const info = INFO[c.id][t];
@@ -454,6 +469,29 @@ export default function PressureGame() {
             </div>
           );
             })}
+
+            {COMPANIES.filter((c) => !unlocked.includes(c.id)).length > 0 && (
+              <div className="pg-locked-wrap">
+                <p className="pg-locked-h">The rest of the market — you don't follow these yet</p>
+                {COMPANIES.filter((c) => !unlocked.includes(c.id)).map((c) => {
+                  const tight = cash >= c.cost && cash - c.cost < RENT;
+                  return (
+                    <div className="pg-locked" key={c.id}>
+                      <div className="pg-locked-top">
+                        <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}</span>
+                        <span className="pg-lockchip">not following</span>
+                      </div>
+                      <p className="pg-teaser">{c.teaser}</p>
+                      <div className="pg-locked-btns">
+                        <button className="pg-unlock" disabled={cash < c.cost} onClick={() => unlockCash(c)}>Subscribe · {fmt(c.cost)}</button>
+                        <button className="pg-unlock xp" disabled={insight < c.xp} onClick={() => unlockXp(c)}>Use {c.xp} insight</button>
+                      </div>
+                      {tight && <p className="pg-locked-warn">Paying leaves you short for rent.</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
           <div className="pg-monitor-foot"><span className="pg-monitor-led" /></div>
           <div className="pg-monitor-stand" />
