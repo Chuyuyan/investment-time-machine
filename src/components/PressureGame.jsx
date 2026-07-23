@@ -93,6 +93,42 @@ const INFO = {
   ],
 };
 
+// ---- The market map ----------------------------------------------------
+// Forces are the real things moving the world. You meet them in the news, then
+// YOU draw the links yourself — and you can draw them wrong.
+const FORCES = [
+  { id: 'LOCK', name: 'Lockdown', icon: '🦠', at: [1, 2], blurb: 'Offices, gyms and airports shut overnight.' },
+  { id: 'VAX', name: 'The vaccine race', icon: '💉', at: [1, 2], blurb: 'Governments will pay almost anything for a vaccine.' },
+  { id: 'OPEN', name: 'Reopening', icon: '🚪', at: [3, 4, 5], blurb: 'Vaccines arrive and life restarts.' },
+  { id: 'RATES', name: 'Rate hikes', icon: '🏦', at: [4, 5], blurb: 'Inflation forces the Fed to make money expensive.' },
+];
+
+// What was actually true about the world. Note: being RIGHT here does not mean
+// the trade paid — the market may have priced it in long before you got there.
+const TRUTH = {
+  LOCK: {
+    DAL: { dir: 'hurts', note: 'Planes emptied. It fell ~50% in weeks.' },
+    ZM: { dir: 'helps', note: 'It rose while everything else crashed.' },
+    PTON: { dir: 'helps', note: 'Gyms shut; the bikes sold out for months.' },
+    AAPL: { dir: 'helps', note: 'People stuck at home bought record Macs and iPads.' },
+  },
+  VAX: {
+    MRNA: { dir: 'helps', note: 'A tiny biotech nobody knew became a household name.' },
+  },
+  OPEN: {
+    DAL: { dir: 'helps', note: 'You were right about the world — and Delta still fell. The hope was already in the price.' },
+    ZM: { dir: 'hurts', note: 'The exact thing that made it soar went into reverse.' },
+    PTON: { dir: 'hurts', note: 'Gyms reopened and demand vanished. Down ~90%.' },
+  },
+  RATES: {
+    TSLA: { dir: 'hurts', note: 'Expensive growth fell hardest — even a real business.' },
+    ZM: { dir: 'hurts', note: 'Priced for perfection, then repriced brutally.' },
+    PTON: { dir: 'hurts', note: 'Already broken; rates finished it.' },
+    AAPL: { dir: 'hurts', note: 'Even the safest giant fell when money got expensive.' },
+  },
+};
+const TRUE_LINKS = Object.values(TRUTH).reduce((s, m) => s + Object.keys(m).length, 0);
+
 const LEADS = [
   [{ id: 'ZM', why: 'Downloads exploding as offices close.' }],
   [{ id: 'DAL', why: 'Airlines in free-fall — bargain, or trap?' }, { id: 'MRNA', why: 'A vaccine race is starting; one tiny firm is in it.' }],
@@ -245,6 +281,8 @@ export default function PressureGame() {
   const [rentWarn, setRentWarn] = useState(null);
   const [unlocked, setUnlocked] = useState(START_WATCH);
   const [insight, setInsight] = useState(0);
+  const [myLinks, setMyLinks] = useState([]);   // your own hypotheses: { force, company, dir, status }
+  const [verdicts, setVerdicts] = useState([]); // last period's map judgments
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -275,6 +313,17 @@ export default function PressureGame() {
   function dig(id) { if (acts <= 0 || dug[id]) return; setDug({ ...dug, [id]: true }); setActs(acts - 1); setInsight(insight + 1); }
   function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); }
   function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); }
+
+  // Draw / redraw / erase one of YOUR causal links (a force → a company, helps or hurts).
+  function setLink(force, company, dir) {
+    setMyLinks((ls) => {
+      const rest = ls.filter((l) => !(l.force === force && l.company === company));
+      const existing = ls.find((l) => l.force === force && l.company === company);
+      if (existing && existing.dir === dir) return rest;               // tap again to erase
+      return [...rest, { force, company, dir, status: 'guess' }];
+    });
+  }
+  const linkOf = (force, company) => myLinks.find((l) => l.force === force && l.company === company);
   function gig() { if (acts <= 0) return; setCash(cash + GIG); setActs(acts - 1); }
   function buy(id, amt) {
     const p = price(id); const a = Math.min(amt, cash); if (a < 1) return;
@@ -327,6 +376,23 @@ export default function PressureGame() {
     if (cash < RENT) { setFlash(`You're ${fmt(RENT - cash)} short on rent. Sell a holding to cover it — or you're out.`); return; }
     const afterRent = cash - RENT;
     const nt = t + 1;
+    const ending = nt > DATES.length - 1;
+
+    // The market judges every link whose force runs its course this period.
+    const resolved = [];
+    const nextLinks = myLinks.map((l) => {
+      if (l.status !== 'guess') return l;
+      const f = FORCES.find((x) => x.id === l.force);
+      if (!(f.at.includes(t) && (ending || !f.at.includes(nt)))) return l;   // force still unfolding — wait
+      const truth = TRUTH[l.force] && TRUTH[l.force][l.company];
+      const ok = !!(truth && truth.dir === l.dir);
+      const co = COMPANIES.find((c) => c.id === l.company);
+      resolved.push({ force: f, name: co.name, dir: l.dir, ok,
+        note: truth ? truth.note : "The world never really connected those two — that hunch didn't hold." });
+      return { ...l, status: ok ? 'proven' : 'broken' };
+    });
+    setMyLinks(nextLinks);
+    setVerdicts(resolved);
     if (nt > DATES.length - 1) { setCash(afterRent); setPhase('end'); return; }
     const nextNet = afterRent + COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * c.prices[nt], 0);
     setCash(afterRent); setT(nt); setActs(ACTIONS); setDug({}); setPend({}); setFlash('');
@@ -334,7 +400,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks([]); setVerdicts([]); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -380,6 +446,11 @@ export default function PressureGame() {
   }
 
   const rentDanger = cash < RENT;
+  const metForces = FORCES.filter((f) => f.at.some((p) => p <= t));
+  const activeForces = FORCES.filter((f) => f.at.includes(t));
+  const provenCount = myLinks.filter((l) => l.status === 'proven').length;
+  const mapAlerts = [];
+  activeForces.forEach((f) => myLinks.forEach((l) => { if (l.force === f.id && l.status !== 'broken' && unlocked.includes(l.company)) mapAlerts.push({ f, l }); }));
   return (
     <div className={'pg' + (t === 1 ? ' pg-storm' : '') + (salEvt && salEvt.mood === 'panic' ? ' pg-panicking' : '')}>
       <div className="pg-col">
@@ -396,6 +467,27 @@ export default function PressureGame() {
 
         <p className="pg-headline">{HEADLINE[t]}</p>
         {flash && <p className="pg-flash">{flash}</p>}
+
+        {verdicts.length > 0 && (
+          <div className="pg-verdicts">
+            <p className="pg-verdicts-h">🗺️ The market tested your map</p>
+            {verdicts.map((v, i) => (
+              <div className={'pg-verdict ' + (v.ok ? 'ok' : 'no')} key={i}>
+                <span className="pg-verdict-tag">{v.ok ? '✓ held up' : '✗ wrong'}</span>
+                <p>You said <b>{v.force.name}</b> {v.dir === 'helps' ? 'helps' : 'hurts'} <b>{v.name}</b>. {v.note}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {mapAlerts.length > 0 && (
+          <div className="pg-mapalert">
+            <span className="pg-mapalert-h">🗺️ Your map is live</span>
+            {mapAlerts.map(({ f, l }, i) => (
+              <p key={i}>{f.icon} <b>{f.name}</b> is moving the market — your map says it {l.dir === 'helps' ? '📈 helps' : '📉 hurts'} <b>{COMPANIES.find((c) => c.id === l.company).name}</b>.</p>
+            ))}
+          </div>
+        )}
 
         {rentWarn && (
           <div className="pg-rentwarn">
@@ -487,6 +579,40 @@ export default function PressureGame() {
                         <button className="pg-unlock xp" disabled={insight < c.xp} onClick={() => unlockXp(c)}>Use {c.xp} insight</button>
                       </div>
                       {tight && <p className="pg-locked-warn">Paying leaves you short for rent.</p>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {metForces.length > 0 && (
+              <div className="pg-map">
+                <div className="pg-map-head">
+                  <span className="pg-map-title">🗺️ Your market map</span>
+                  <span className="pg-map-score">{provenCount} proven · {metForces.length}/{FORCES.length} forces met</span>
+                </div>
+                <p className="pg-map-sub">What moves the world, and who it hits — your call. You can be wrong.</p>
+                {metForces.map((f) => {
+                  const live = activeForces.includes(f);
+                  return (
+                    <div className={'pg-force' + (live ? ' live' : '')} key={f.id}>
+                      <div className="pg-force-top"><span className="pg-force-name">{f.icon} {f.name}{live && <span className="pg-force-live">live now</span>}</span></div>
+                      <p className="pg-force-blurb">{f.blurb}</p>
+                      {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
+                        const l = linkOf(f.id, c.id);
+                        return (
+                          <div className="pg-link" key={c.id}>
+                            <span className="pg-link-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}
+                              {l && l.status === 'proven' && <em className="pg-link-badge ok">✓</em>}
+                              {l && l.status === 'broken' && <em className="pg-link-badge no">✗</em>}
+                            </span>
+                            <span className="pg-link-btns">
+                              <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'helps')}>📈 helps</button>
+                              <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'hurts')}>📉 hurts</button>
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
