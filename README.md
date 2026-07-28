@@ -12,6 +12,12 @@ control, and self-awareness**, and to feel the question:
 Investing is simply the arena where those decisions happen. The real subject is
 life.
 
+<p align="center">
+  <img src="docs/screenshot.png" width="720" alt="A decision in the AI-Boom campaign: NVIDIA spikes 24% and the player must choose what to do with $10,000, weighing bullish hype, analyst caution, and a veteran's warning." />
+</p>
+
+<p align="center"><em>Day 1 of the AI-Boom campaign — the same information a real investor had in May 2023, and no idea yet how it ends.</em></p>
+
 ---
 
 ## Core philosophy
