@@ -233,6 +233,22 @@ const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const sPct = (x) => { const v = x * 100; return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%'; };
 const cls = (x) => (x > 0.005 ? 'up' : x < -0.005 ? 'down' : 'flat');
 
+// The pouch (锦囊) — a little drawstring bag that holds your market map.
+function PouchIcon() {
+  return (
+    <svg viewBox="0 0 64 64" width="60" height="60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M15 28 Q8 54 32 57 Q56 54 49 28 Q42 21 32 21 Q22 21 15 28 Z" fill="#a8352c" />
+      <path d="M15 28 Q32 37 49 28 Q42 21 32 21 Q22 21 15 28 Z" fill="#8f2b24" />
+      <path d="M26 12 Q32 7 38 12 L36 20 L28 20 Z" fill="#a8352c" />
+      <rect x="20" y="18" width="24" height="7" rx="3.5" fill="#e0a63a" />
+      <path d="M27 27 q-4 7 0 12 M37 27 q4 7 0 12" stroke="#e0a63a" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <circle cx="27" cy="41" r="2.3" fill="#e0a63a" />
+      <circle cx="37" cy="41" r="2.3" fill="#e0a63a" />
+      <circle cx="32" cy="45" r="6" fill="none" stroke="#e0a63a" strokeWidth="1.5" opacity="0.5" />
+    </svg>
+  );
+}
+
 function MarketChart({ upto, watch }) {
   const n = upto + 1;
   if (n < 2) return null;
@@ -283,6 +299,7 @@ export default function PressureGame() {
   const [insight, setInsight] = useState(0);
   const [myLinks, setMyLinks] = useState([]);   // your own hypotheses: { force, company, dir, status }
   const [verdicts, setVerdicts] = useState([]); // last period's map judgments
+  const [pouchOpen, setPouchOpen] = useState(false);
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -400,7 +417,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks([]); setVerdicts([]); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks([]); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -447,6 +464,7 @@ export default function PressureGame() {
 
   const rentDanger = cash < RENT;
   const metForces = FORCES.filter((f) => f.at.some((p) => p <= t));
+  const newForces = FORCES.filter((f) => Math.min(...f.at) === t);
   const activeForces = FORCES.filter((f) => f.at.includes(t));
   const provenCount = myLinks.filter((l) => l.status === 'proven').length;
   const mapAlerts = [];
@@ -468,9 +486,15 @@ export default function PressureGame() {
         <p className="pg-headline">{HEADLINE[t]}</p>
         {flash && <p className="pg-flash">{flash}</p>}
 
+        {newForces.length > 0 && (
+          <button className="pg-newforce" onClick={() => setPouchOpen(true)}>
+            🧧 Something new just landed in your pouch: {newForces.map((f) => f.icon + ' ' + f.name).join(' · ')} — open it
+          </button>
+        )}
+
         {verdicts.length > 0 && (
           <div className="pg-verdicts">
-            <p className="pg-verdicts-h">🗺️ The market tested your map</p>
+            <p className="pg-verdicts-h">🧧 The market tested your pouch</p>
             {verdicts.map((v, i) => (
               <div className={'pg-verdict ' + (v.ok ? 'ok' : 'no')} key={i}>
                 <span className="pg-verdict-tag">{v.ok ? '✓ held up' : '✗ wrong'}</span>
@@ -482,7 +506,7 @@ export default function PressureGame() {
 
         {mapAlerts.length > 0 && (
           <div className="pg-mapalert">
-            <span className="pg-mapalert-h">🗺️ Your map is live</span>
+            <span className="pg-mapalert-h">🧧 Your pouch is glowing</span>
             {mapAlerts.map(({ f, l }, i) => (
               <p key={i}>{f.icon} <b>{f.name}</b> is moving the market — your map says it {l.dir === 'helps' ? '📈 helps' : '📉 hurts'} <b>{COMPANIES.find((c) => c.id === l.company).name}</b>.</p>
             ))}
@@ -585,44 +609,61 @@ export default function PressureGame() {
               </div>
             )}
 
-            {metForces.length > 0 && (
-              <div className="pg-map">
-                <div className="pg-map-head">
-                  <span className="pg-map-title">🗺️ Your market map</span>
-                  <span className="pg-map-score">{provenCount} proven · {metForces.length}/{FORCES.length} forces met</span>
-                </div>
-                <p className="pg-map-sub">What moves the world, and who it hits — your call. You can be wrong.</p>
-                {metForces.map((f) => {
-                  const live = activeForces.includes(f);
-                  return (
-                    <div className={'pg-force' + (live ? ' live' : '')} key={f.id}>
-                      <div className="pg-force-top"><span className="pg-force-name">{f.icon} {f.name}{live && <span className="pg-force-live">live now</span>}</span></div>
-                      <p className="pg-force-blurb">{f.blurb}</p>
-                      {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
-                        const l = linkOf(f.id, c.id);
-                        return (
-                          <div className="pg-link" key={c.id}>
-                            <span className="pg-link-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}
-                              {l && l.status === 'proven' && <em className="pg-link-badge ok">✓</em>}
-                              {l && l.status === 'broken' && <em className="pg-link-badge no">✗</em>}
-                            </span>
-                            <span className="pg-link-btns">
-                              <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'helps')}>📈 helps</button>
-                              <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'hurts')}>📉 hurts</button>
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
           <div className="pg-monitor-foot"><span className="pg-monitor-led" /></div>
           <div className="pg-monitor-stand" />
           <div className="pg-monitor-base" />
         </div>
+
+        {/* the pouch (锦囊) — your market map lives in a little bag on the desk */}
+        <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => setPouchOpen(true)} aria-label="Open your market map">
+          <PouchIcon />
+          {activeForces.length > 0 && <span className="pg-pouch-badge">{activeForces.length}</span>}
+        </button>
+
+        {pouchOpen && (
+          <div className="pg-pouch-wrap" onClick={() => setPouchOpen(false)}>
+            <div className="pg-pouch-panel" onClick={(e) => e.stopPropagation()}>
+              <div className="pg-map-head">
+                <span className="pg-map-title">🧧 Your pouch — the market map</span>
+                <span className="pg-map-score">{provenCount} proven · {metForces.length}/{FORCES.length} forces met</span>
+              </div>
+              <p className="pg-map-sub">What moves the world, and who it hits — your call. You can be wrong.</p>
+              {metForces.length === 0 && <p className="pg-pouch-empty">Empty so far. Forces show up in the news — read the headlines, and they'll land in here.</p>}
+              {metForces.map((f) => {
+                const live = activeForces.includes(f);
+                return (
+                  <div className={'pg-force' + (live ? ' live' : '')} key={f.id}>
+                    <div className="pg-force-top"><span className="pg-force-name">{f.icon} {f.name}{live && <span className="pg-force-live">live now</span>}</span></div>
+                    <p className="pg-force-blurb">{f.blurb}</p>
+                    {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
+                      const l = linkOf(f.id, c.id);
+                      return (
+                        <div className="pg-link" key={c.id}>
+                          <span className="pg-link-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}
+                            {l && l.status === 'proven' && <em className="pg-link-badge ok">✓</em>}
+                            {l && l.status === 'broken' && <em className="pg-link-badge no">✗</em>}
+                          </span>
+                          <span className="pg-link-btns">
+                            <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'helps')}>📈 helps</button>
+                            <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'hurts')}>📉 hurts</button>
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+              {FORCES.filter((f) => !f.at.some((p) => p <= t)).map((f) => (
+                <div className="pg-force pg-force-unmet" key={f.id}>
+                  <span className="pg-force-name">❓ ???</span>
+                  <p className="pg-force-blurb">A force you haven't met yet. Keep reading the news — it's coming.</p>
+                </div>
+              ))}
+              <button className="pg-pouch-x" onClick={() => setPouchOpen(false)}>Close the pouch</button>
+            </div>
+          </div>
+        )}
 
         <button className={'pg-btn pg-primary pg-end' + (rentDanger ? ' danger' : '')} onClick={endMonth}>
           {rentDanger ? `Pay rent ${fmt(RENT)} — you're short` : `End period · pay ${fmt(RENT)} rent →`}
