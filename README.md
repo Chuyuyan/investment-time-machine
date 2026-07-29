@@ -41,7 +41,16 @@ right, but now I understand my decision better"*?
 
 ---
 
-## Run it
+## Tech stack
+
+| Layer   | Tools |
+|---------|-------|
+| UI      | React, Vite |
+| Engine  | Pure-function modules (money, scoring, behavioral DNA) — no UI imports |
+| Content | `campaign.json` + `whys.json` — data-driven scenarios |
+| Testing | `node --test` over the engine |
+
+## Running it locally
 
 ```bash
 npm install
