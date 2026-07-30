@@ -6209,3 +6209,6 @@ body {
 .pg-vwin { color: #6fe0a0 !important; }
 .pg-tradecall { background: rgba(96,150,255,.1); border-left: 3px solid #5b8cff; border-radius: 0 8px 8px 0; padding: 8px 11px; font-size: 12.5px; line-height: 1.45; color: #dfe6f6; margin: 10px 0 0; }
 .pg-tradecall.sal { border-left-color: #d83a2f; }
+
+/* legend footnote */
+.pg-chart-note { font-size: 11px; color: #7d879c; font-style: italic; margin: 8px 0 0; line-height: 1.4; }

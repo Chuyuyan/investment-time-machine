@@ -284,6 +284,7 @@ function MarketChart({ upto, watch }) {
       <div className="pg-chart-legend">
         {sorted.map((s) => { const chg = s.vals[n - 1] / 100 - 1; return <span key={s.id} className="pg-leg"><span className="pg-dot" style={{ background: COLORS[s.id] }} />{s.name} <em className={cls(chg)}>{sPct(chg)}</em></span>; })}
       </div>
+      <p className="pg-chart-note">Each company has its own colour — the dot on a card just matches its line up here. Nothing more.</p>
     </div>
   );
 }
@@ -450,7 +451,7 @@ export default function PressureGame() {
         <ul className="pg-rules">
           <li><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</li>
           <li><b>Time is tight.</b> Each period you get <b>3 moves</b> — investigate a company, or grind a side gig for $300.</li>
-          <li><b>Investigate for facts, not answers.</b> You get the real numbers, price and news — you decide what they mean.</li>
+          <li><b>Investigate for facts, not answers.</b> You get the real numbers, price and news — you decide what they mean. Each investigation also earns <b>💡 insight</b>, which you spend to follow new companies and to stake links in your pouch.</li>
           <li><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</li>
           {myLinks.length > 0 && <li><b>🧧 Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> from past runs — what you've proven about the world stays with you.</li>}
         </ul>
@@ -583,13 +584,13 @@ export default function PressureGame() {
         <div className="pg-time">
           <span className="pg-time-lbl">Time this period</span>
           <span className="pg-pips">{Array.from({ length: ACTIONS }).map((_, i) => <span key={i} className={'pg-pip' + (i < acts ? ' on' : '')} />)}</span>
-          <span className="pg-insight" title="Earned by investigating. Spend it to follow new companies.">💡 {insight}</span>
+          <span className="pg-insight" title="Earned by investigating. Spend it to follow new companies and to stake links in your pouch.">💡 {insight} insight</span>
           <button className="pg-gig" disabled={acts <= 0} onClick={gig}>Side gig +{fmt(GIG)}</button>
         </div>
 
         {(LEADS[t] || []).length > 0 && (
           <div className="pg-leads">
-            <span className="pg-leads-h">📣 Leads worth a look</span>
+            <span className="pg-leads-h">📣 Leads — worth investigating, not buy tips</span>
             {LEADS[t].map((l, i) => <p key={i} className="pg-lead-row"><b>{COMPANIES.find((c) => c.id === l.id).name}</b> — {l.why}</p>)}
           </div>
         )}
