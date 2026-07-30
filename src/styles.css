@@ -6193,3 +6193,19 @@ body {
 .pg-force-unmet .pg-force-blurb { margin-bottom: 2px; }
 .pg-newforce { display: block; width: 100%; text-align: left; background: rgba(224,166,58,.12); border: 1px solid rgba(224,166,58,.4); color: #f0dfae; border-radius: 11px; padding: 11px 14px; font-size: 13px; font-weight: 700; margin: 0 0 14px; cursor: pointer; line-height: 1.45; }
 .pg-newforce:hover { background: rgba(224,166,58,.18); }
+
+/* ---- pouch v2: a proper hanging 锦囊, front and centre in the top bar ---- */
+.pg-bar { align-items: flex-start; }
+.pg-pouch { position: relative; right: auto; bottom: auto; width: 96px; height: 114px; margin: -16px -4px -30px; transform-origin: 50% 4px; animation: pouchSway 4.2s ease-in-out infinite; }
+.pg-pouch:hover { transform: rotate(-5deg) scale(1.04); animation: none; }
+.pg-pouch:active { transform: scale(.95); }
+.pg-pouch.hot { animation: pouchSwing 1.2s ease-in-out infinite; }
+@keyframes pouchSway { 0%,100% { transform: rotate(-2deg); } 50% { transform: rotate(2deg); } }
+@keyframes pouchSwing { 0%,100% { transform: rotate(-10deg); } 50% { transform: rotate(10deg); } }
+.pg-pouch-badge { top: 20px; right: 2px; }
+.pg-pouch-need { font-size: 12.5px; color: #e0a63a; font-style: italic; margin: 0 0 10px; }
+.pg-map-sub b { color: #e7d08a; }
+.pg-link-salmark { font-style: normal; font-size: 13px; }
+.pg-vwin { color: #6fe0a0 !important; }
+.pg-tradecall { background: rgba(96,150,255,.1); border-left: 3px solid #5b8cff; border-radius: 0 8px 8px 0; padding: 8px 11px; font-size: 12.5px; line-height: 1.45; color: #dfe6f6; margin: 10px 0 0; }
+.pg-tradecall.sal { border-left-color: #d83a2f; }

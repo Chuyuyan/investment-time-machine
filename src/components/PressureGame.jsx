@@ -233,21 +233,32 @@ const fmt = (n) => '$' + Math.round(n).toLocaleString('en-US');
 const sPct = (x) => { const v = x * 100; return (v >= 0 ? '+' : '−') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + '%'; };
 const cls = (x) => (x > 0.005 ? 'up' : x < -0.005 ? 'down' : 'flat');
 
-// The pouch (锦囊) — a little drawstring bag that holds your market map.
+// The pouch (锦囊) — a proper brocade bag: bulbous body, cinched neck with a
+// gold cord, ruffled top, tassels, and brocade motifs. Hangs from a cord.
 function PouchIcon() {
   return (
-    <svg viewBox="0 0 64 64" width="60" height="60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <path d="M15 28 Q8 54 32 57 Q56 54 49 28 Q42 21 32 21 Q22 21 15 28 Z" fill="#a8352c" />
-      <path d="M15 28 Q32 37 49 28 Q42 21 32 21 Q22 21 15 28 Z" fill="#8f2b24" />
-      <path d="M26 12 Q32 7 38 12 L36 20 L28 20 Z" fill="#a8352c" />
-      <rect x="20" y="18" width="24" height="7" rx="3.5" fill="#e0a63a" />
-      <path d="M27 27 q-4 7 0 12 M37 27 q4 7 0 12" stroke="#e0a63a" strokeWidth="2" fill="none" strokeLinecap="round" />
-      <circle cx="27" cy="41" r="2.3" fill="#e0a63a" />
-      <circle cx="37" cy="41" r="2.3" fill="#e0a63a" />
-      <circle cx="32" cy="45" r="6" fill="none" stroke="#e0a63a" strokeWidth="1.5" opacity="0.5" />
+    <svg viewBox="0 0 96 116" width="94" height="112" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M48 0 v24" stroke="#8f6a1f" strokeWidth="3" />
+      <path d="M34 30 Q29 17 38 24 Q40 13 48 21 Q56 13 58 24 Q67 17 62 30 Z" fill="#8f2b24" />
+      <path d="M48 30 C 20 34 10 58 14 76 C 18 96 32 107 48 107 C 64 107 78 96 82 76 C 86 58 76 34 48 30 Z" fill="#b03526" />
+      <path d="M48 30 C 30 33 18 44 15 58 Q 48 50 81 58 C 78 44 66 33 48 30 Z" fill="#9c2f27" />
+      <rect x="30" y="27" width="36" height="9" rx="4.5" fill="#e8b64a" />
+      <circle cx="48" cy="32" r="4" fill="#c9962f" />
+      <path d="M44 36 q-8 12 -2 22 M52 36 q8 12 2 22" stroke="#e8b64a" strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <circle cx="41" cy="61" r="2.8" fill="#e8b64a" />
+      <circle cx="55" cy="61" r="2.8" fill="#e8b64a" />
+      <path d="M41 64 l-3 9 M41 64 v10 M41 64 l3 9 M55 64 l-3 9 M55 64 v10 M55 64 l3 9" stroke="#e8b64a" strokeWidth="1.6" strokeLinecap="round" />
+      <circle cx="33" cy="83" r="4.5" fill="none" stroke="#e8b64a" strokeWidth="1.6" opacity="0.7" />
+      <circle cx="63" cy="87" r="6" fill="none" stroke="#e8b64a" strokeWidth="1.6" opacity="0.55" />
+      <path d="M42 90 l6 -6 l6 6 l-6 6 Z" fill="none" stroke="#e8b64a" strokeWidth="1.6" opacity="0.7" />
     </svg>
   );
 }
+
+// The pouch survives runs — proven (and broken) links are earned knowledge.
+const POUCH_KEY = 'itm_pouch_v1';
+const loadPouch = () => { try { return JSON.parse(localStorage.getItem(POUCH_KEY)) || []; } catch { return []; } };
+const savePouch = (links) => { try { localStorage.setItem(POUCH_KEY, JSON.stringify(links)); } catch (e) { /* private mode */ } };
 
 function MarketChart({ upto, watch }) {
   const n = upto + 1;
@@ -297,7 +308,7 @@ export default function PressureGame() {
   const [rentWarn, setRentWarn] = useState(null);
   const [unlocked, setUnlocked] = useState(START_WATCH);
   const [insight, setInsight] = useState(0);
-  const [myLinks, setMyLinks] = useState([]);   // your own hypotheses: { force, company, dir, status }
+  const [myLinks, setMyLinks] = useState(loadPouch);   // your hypotheses: { force, company, dir, status, sal? } — resolved ones survive runs
   const [verdicts, setVerdicts] = useState([]); // last period's map judgments
   const [pouchOpen, setPouchOpen] = useState(false);
   const [roll] = useState(Math.random());
@@ -313,7 +324,7 @@ export default function PressureGame() {
     if (turn === 4) {
       if (refused >= 2) return { mood: 'greedy', line: "Funny thing, cuz — you kept slamming the door on me. So I let myself in and 'borrowed' $700 from your drawer. Guess we're even now.", choices: [{ label: '…Sal.', eff: { steal: 700 } }] };
       if (helped >= 1 && roll < 0.8) return { mood: 'worried', line: "Cuz, you always spot me when I'm down — so straight up: I'm in deep on Peloton and Zoom, but something feels wrong. Get out while you can. And here, take this back.", choices: [{ label: 'Thanks, Sal — you too', eff: { cash: 600, reveal: ['PTON', 'ZM'] }, note: 'He pays you back — and hands you a real warning.' }] };
-      return { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. We're gonna be legends, cuz!!", choices: [{ label: 'Sal… please be careful' }, { label: 'Nice, me too' }] };
+      return { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. And write this in that little bag of yours, cuz: rate hikes can't touch us — they HELP Tesla!!", choices: [{ label: "Write Sal's line in the pouch", eff: { plant: { force: 'RATES', company: 'TSLA', dir: 'helps' } }, note: "His call, in your pouch. Free — but it's HIS." }, { label: 'Sal… please be careful' }] };
     }
     if (turn === 5) {
       // The final crisis — Sal panics. This is the growth-arc reversal.
@@ -331,16 +342,22 @@ export default function PressureGame() {
   function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); }
   function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); }
 
-  // Draw / redraw / erase one of YOUR causal links (a force → a company, helps or hurts).
-  function setLink(force, company, dir) {
-    setMyLinks((ls) => {
-      const rest = ls.filter((l) => !(l.force === force && l.company === company));
-      const existing = ls.find((l) => l.force === force && l.company === company);
-      if (existing && existing.dir === dir) return rest;               // tap again to erase
-      return [...rest, { force, company, dir, status: 'guess' }];
-    });
-  }
+  // Draw / flip / erase one of YOUR causal links. Drawing STAKES 1 insight —
+  // proven pays 2 back, broken loses it. Conviction should cost something.
   const linkOf = (force, company) => myLinks.find((l) => l.force === force && l.company === company);
+  function setLink(force, company, dir) {
+    const existing = linkOf(force, company);
+    if (existing && existing.status !== 'guess') return;
+    if (existing && existing.dir === dir) {                                    // tap again to erase
+      setMyLinks(myLinks.filter((l) => !(l.force === force && l.company === company)));
+      if (!existing.sal) setInsight(insight + 1);                              // stake back
+      return;
+    }
+    if (existing) { setMyLinks(myLinks.map((l) => (l.force === force && l.company === company ? { ...l, dir } : l))); return; }
+    if (insight < 1) return;
+    setInsight(insight - 1);
+    setMyLinks([...myLinks, { force, company, dir, status: 'guess' }]);
+  }
   function gig() { if (acts <= 0) return; setCash(cash + GIG); setActs(acts - 1); }
   function buy(id, amt) {
     const p = price(id); const a = Math.min(amt, cash); if (a < 1) return;
@@ -383,6 +400,9 @@ export default function PressureGame() {
       const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd);
       setUnlocked((u) => [...new Set([...u, ...e.reveal])]);
     }
+    if (e.plant && !linkOf(e.plant.force, e.plant.company)) {
+      setMyLinks([...myLinks, { ...e.plant, status: 'guess', sal: true }]);   // his line, no stake
+    }
     if (ch.help) setHelped(helped + 1);
     if (ch.refuse) setRefused(refused + 1);
     if (ch.wise) setWiseFinal(true);
@@ -404,12 +424,15 @@ export default function PressureGame() {
       const truth = TRUTH[l.force] && TRUTH[l.force][l.company];
       const ok = !!(truth && truth.dir === l.dir);
       const co = COMPANIES.find((c) => c.id === l.company);
-      resolved.push({ force: f, name: co.name, dir: l.dir, ok,
+      resolved.push({ force: f, name: co.name, dir: l.dir, ok, sal: l.sal,
         note: truth ? truth.note : "The world never really connected those two — that hunch didn't hold." });
       return { ...l, status: ok ? 'proven' : 'broken' };
     });
     setMyLinks(nextLinks);
     setVerdicts(resolved);
+    savePouch(nextLinks.filter((l) => l.status !== 'guess'));   // earned knowledge survives runs
+    const won = resolved.filter((r) => r.ok && !r.sal).length * 2;
+    if (won) setInsight(insight + won);                          // stake pays double when proven
     if (nt > DATES.length - 1) { setCash(afterRent); setPhase('end'); return; }
     const nextNet = afterRent + COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * c.prices[nt], 0);
     setCash(afterRent); setT(nt); setActs(ACTIONS); setDug({}); setPend({}); setFlash('');
@@ -417,7 +440,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks([]); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -429,6 +452,7 @@ export default function PressureGame() {
           <li><b>Time is tight.</b> Each period you get <b>3 moves</b> — investigate a company, or grind a side gig for $300.</li>
           <li><b>Investigate for facts, not answers.</b> You get the real numbers, price and news — you decide what they mean.</li>
           <li><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</li>
+          {myLinks.length > 0 && <li><b>🧧 Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> from past runs — what you've proven about the world stays with you.</li>}
         </ul>
         <button className="pg-btn pg-primary" onClick={() => setPhase('play')}>Start — February 2020 →</button>
       </div></div>
@@ -447,6 +471,18 @@ export default function PressureGame() {
         <p className="pg-kick">{won ? 'You made it out' : 'June 2022'}</p>
         <h1 className="pg-title">{won ? "You're free." : 'You survived to the other side.'}</h1>
         <div className="pg-final"><span>Net worth</span><b className={cls(net / START - 1)}>{fmt(net)}</b></div>
+        {verdicts.length > 0 && (
+          <div className="pg-verdicts">
+            <p className="pg-verdicts-h">🧧 The market's final word on your pouch</p>
+            {verdicts.map((v, i) => (
+              <div className={'pg-verdict ' + (v.ok ? 'ok' : 'no')} key={i}>
+                <span className="pg-verdict-tag">{v.ok ? '✓ held up' : '✗ wrong'}</span>
+                <p>{v.sal ? <b>Sal said</b> : 'You said'} <b>{v.force.name}</b> {v.dir === 'helps' ? 'helps' : 'hurts'} <b>{v.name}</b>. {v.note}
+                  {!v.ok && v.sal && <em>That line came straight from Sal's mouth. Worth remembering where you get your lines.</em>}</p>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="pg-epilogue">
           <div className="pg-epi-guy"><SalGuy mood={epi.mood} /></div>
@@ -457,6 +493,9 @@ export default function PressureGame() {
           ? `You turned $4,000 into ${fmt(net)} while the bills never stopped — through the crash, the mania, and the bust. Your money now works harder than your rent. That's escape velocity.`
           : `You kept the lights on through a crash, a bubble, and its collapse. You didn't get rich — but you didn't get evicted, and you didn't end up like Sal.`}</p>
         {indep > 0 && <p className="pg-lead pg-dim">You overruled Sal {indep} time{indep === 1 ? '' : 's'} and trusted your own read. That's the whole point.</p>}
+        {myLinks.filter((l) => l.status !== 'guess').length > 0 && (
+          <p className="pg-lead pg-dim">🧧 Your pouch keeps its {myLinks.filter((l) => l.status !== 'guess').length} tested link{myLinks.filter((l) => l.status !== 'guess').length > 1 ? 's' : ''}. The money resets — what you learned about the world doesn't.</p>
+        )}
         <button className="pg-btn pg-primary" onClick={restart}>Run it again →</button>
       </div></div>
     );
@@ -474,6 +513,10 @@ export default function PressureGame() {
       <div className="pg-col">
         <div className="pg-bar">
           <div className="pg-bar-l"><span className="pg-month">{DATES[t]}</span><span className="pg-sub">Period {t + 1} of {DATES.length}</span></div>
+          <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => setPouchOpen(true)} aria-label="Open your market map">
+            <PouchIcon />
+            {activeForces.length > 0 && <span className="pg-pouch-badge">{activeForces.length}</span>}
+          </button>
           <div className={'pg-rent' + (rentDanger ? ' danger' : '')}><span>Rent due</span><b>{fmt(RENT)}</b></div>
         </div>
         <div className="pg-stats">
@@ -498,7 +541,10 @@ export default function PressureGame() {
             {verdicts.map((v, i) => (
               <div className={'pg-verdict ' + (v.ok ? 'ok' : 'no')} key={i}>
                 <span className="pg-verdict-tag">{v.ok ? '✓ held up' : '✗ wrong'}</span>
-                <p>You said <b>{v.force.name}</b> {v.dir === 'helps' ? 'helps' : 'hurts'} <b>{v.name}</b>. {v.note}</p>
+                <p>{v.sal ? <b>Sal said</b> : 'You said'} <b>{v.force.name}</b> {v.dir === 'helps' ? 'helps' : 'hurts'} <b>{v.name}</b>. {v.note}
+                  {v.ok && !v.sal && <em className="pg-vwin">Your stake pays: +2 💡</em>}
+                  {!v.ok && v.sal && <em>That line came straight from Sal's mouth. Worth remembering where you get your lines.</em>}
+                  {!v.ok && !v.sal && <em>Stake lost — conviction has a price.</em>}</p>
               </div>
             ))}
           </div>
@@ -574,6 +620,10 @@ export default function PressureGame() {
                   </div>
                 : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : 'Investigate (1 move)'}</button>}
 
+              {mapAlerts.filter((a) => a.l.company === c.id).map((a, i) => (
+                <p className={'pg-tradecall' + (a.l.sal ? ' sal' : '')} key={i}>🧧 Your pouch: {a.f.icon} <b>{a.f.name}</b> {a.l.dir === 'helps' ? '📈 helps' : '📉 hurts'} <b>{c.name}</b>{a.l.status === 'proven' ? ' — proven.' : a.l.sal ? " — Sal's line, not yours." : ' — your call, unproven.'}</p>
+              ))}
+
               <div className="pg-tradebox">
                 <input type="range" className="pg-slider" min={-Math.round(pos)} max={Math.round(cash)} step="50" value={pd} disabled={!canTrade}
                   onChange={(e) => setPend({ ...pend, [c.id]: +e.target.value })} />
@@ -615,21 +665,16 @@ export default function PressureGame() {
           <div className="pg-monitor-base" />
         </div>
 
-        {/* the pouch (锦囊) — your market map lives in a little bag on the desk */}
-        <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => setPouchOpen(true)} aria-label="Open your market map">
-          <PouchIcon />
-          {activeForces.length > 0 && <span className="pg-pouch-badge">{activeForces.length}</span>}
-        </button>
-
         {pouchOpen && (
           <div className="pg-pouch-wrap" onClick={() => setPouchOpen(false)}>
             <div className="pg-pouch-panel" onClick={(e) => e.stopPropagation()}>
               <div className="pg-map-head">
                 <span className="pg-map-title">🧧 Your pouch — the market map</span>
-                <span className="pg-map-score">{provenCount} proven · {metForces.length}/{FORCES.length} forces met</span>
+                <span className="pg-map-score">{provenCount} proven · {metForces.length}/{FORCES.length} forces · 💡 {insight}</span>
               </div>
-              <p className="pg-map-sub">What moves the world, and who it hits — your call. You can be wrong.</p>
+              <p className="pg-map-sub">Your call on what moves whom — you can be wrong. Drawing a link stakes <b>1 💡</b>: proven pays back <b>2</b>, broken loses it. Proven links survive into your next run.</p>
               {metForces.length === 0 && <p className="pg-pouch-empty">Empty so far. Forces show up in the news — read the headlines, and they'll land in here.</p>}
+              {metForces.length > 0 && insight < 1 && <p className="pg-pouch-need">You're out of 💡 insight — investigate companies to earn more before drawing new links.</p>}
               {metForces.map((f) => {
                 const live = activeForces.includes(f);
                 return (
@@ -641,12 +686,13 @@ export default function PressureGame() {
                       return (
                         <div className="pg-link" key={c.id}>
                           <span className="pg-link-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}
+                            {l && l.sal && <em className="pg-link-salmark" title="Sal's line, not yours">🧢</em>}
                             {l && l.status === 'proven' && <em className="pg-link-badge ok">✓</em>}
                             {l && l.status === 'broken' && <em className="pg-link-badge no">✗</em>}
                           </span>
                           <span className="pg-link-btns">
-                            <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'helps')}>📈 helps</button>
-                            <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={l && l.status !== 'guess'} onClick={() => setLink(f.id, c.id, 'hurts')}>📉 hurts</button>
+                            <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={(l && l.status !== 'guess') || (!l && insight < 1)} onClick={() => setLink(f.id, c.id, 'helps')}>📈 helps</button>
+                            <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={(l && l.status !== 'guess') || (!l && insight < 1)} onClick={() => setLink(f.id, c.id, 'hurts')}>📉 hurts</button>
                           </span>
                         </div>
                       );
