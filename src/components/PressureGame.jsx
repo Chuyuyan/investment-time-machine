@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { itmAudio } from '../audio.js';
 
 /*
  * PressureGame — "Rent's Due"  (?proto=pressure)
@@ -17,6 +18,7 @@ const GIG = 300;
 const FREEDOM = 15000;
 
 const DATES = ['Feb 2020', 'Mar 2020', 'Sep 2020', 'Feb 2021', 'Nov 2021', 'Jun 2022'];
+const MUSIC_MOODS = ['calm', 'storm', 'boom', 'boom', 'tense', 'storm'];
 const HEADLINE = [
   'Markets near record highs. A strange new virus is spreading in China — almost no one is worried.',
   'THE CRASH. Lockdowns hit and the market falls faster than at any time in history.',
@@ -333,6 +335,8 @@ export default function PressureGame() {
   const [myLinks, setMyLinks] = useState(loadPouch);   // your hypotheses: { force, company, dir, status, sal? } — resolved ones survive runs
   const [verdicts, setVerdicts] = useState([]); // last period's map judgments
   const [pouchOpen, setPouchOpen] = useState(false);
+  const [soundOn, setSoundOn] = useState(() => { try { return localStorage.getItem('itm_sound') !== '0'; } catch (e) { return true; } });
+  const lastVoice = useRef('');
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -359,10 +363,30 @@ export default function PressureGame() {
   }
   const salEvt = !salDone[t] ? salFor(t) : null;
 
+  // sound: music follows the market's mood; Sal babbles gibberish when he pops in
+  useEffect(() => { if (phase === 'play') itmAudio.music(MUSIC_MOODS[t] || 'calm'); }, [phase, t]);
+  useEffect(() => {
+    const key = phase === 'play' && salEvt ? t + ':' + salEvt.mood : interject ? 'ij' + t + interject.id : '';
+    if (key && lastVoice.current !== key) {
+      lastVoice.current = key;
+      itmAudio.pop();
+      itmAudio.babble(salEvt ? salEvt.mood : 'manic');
+    }
+  }, [phase, t, salEvt, interject]);
+
+  function toggleSound() {
+    const on = !soundOn;
+    setSoundOn(on);
+    try { localStorage.setItem('itm_sound', on ? '1' : '0'); } catch (e) { /* private mode */ }
+    itmAudio.setMuted(!on);
+    if (on) itmAudio.tick();
+  }
+  const muteBtn = <button className="pg-mute" onClick={toggleSound} aria-label="Sound on or off">{soundOn ? '🔊' : '🔇'}</button>;
+
   // Researching is what earns insight — the game rewards the habit it wants.
-  function dig(id) { if (acts <= 0 || dugAt[id] === t) return; setDugAt({ ...dugAt, [id]: t }); setActs(acts - 1); setInsight(insight + 1); }
-  function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); }
-  function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); }
+  function dig(id) { if (acts <= 0 || dugAt[id] === t) return; setDugAt({ ...dugAt, [id]: t }); setActs(acts - 1); setInsight(insight + 1); itmAudio.scribble(); }
+  function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); itmAudio.unlock(); }
+  function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); itmAudio.unlock(); }
 
   // Draw / flip / erase one of YOUR causal links. Drawing STAKES 1 insight —
   // proven pays 2 back, broken loses it. Conviction should cost something.
@@ -379,17 +403,20 @@ export default function PressureGame() {
     if (insight < 1) return;
     setInsight(insight - 1);
     setMyLinks([...myLinks, { force, company, dir, status: 'guess' }]);
+    itmAudio.tick();
   }
-  function gig() { if (acts <= 0) return; setCash(cash + GIG); setActs(acts - 1); }
+  function gig() { if (acts <= 0) return; setCash(cash + GIG); setActs(acts - 1); itmAudio.coin(); }
   function buy(id, amt) {
     const p = price(id); const a = Math.min(amt, cash); if (a < 1) return;
     const ns = (shares[id] || 0) + a / p; const na = ns > 0 ? (((shares[id] || 0) * (avg[id] || 0)) + a) / ns : 0;
     setShares({ ...shares, [id]: ns }); setAvg({ ...avg, [id]: na }); setCash(cash - a);
+    itmAudio.buy();
   }
   function sell(id, amt) {
     const p = price(id); const pos = (shares[id] || 0) * p; if (pos <= 0) return;
     const a = Math.min(amt == null ? pos : amt, pos); let ns = (shares[id] || 0) - a / p; if (ns < 1e-6) ns = 0;
     setShares({ ...shares, [id]: ns }); if (ns === 0) setAvg({ ...avg, [id]: 0 }); setCash(cash + a);
+    itmAudio.sell();
   }
   function applyTrade(id) {
     const a = pend[id] || 0;
@@ -415,7 +442,7 @@ export default function PressureGame() {
     } else {
       let nc = cash;
       if (e.cash) nc += e.cash;
-      if (e.steal) { const amt = Math.min(e.steal, cash); nc -= amt; setRobbing(amt); setTimeout(() => setRobbing(0), 1600); }
+      if (e.steal) { const amt = Math.min(e.steal, cash); nc -= amt; setRobbing(amt); setTimeout(() => setRobbing(0), 1600); itmAudio.sneak(); } else { itmAudio.tick(); }
       if (nc !== cash) setCash(nc);
     }
     if (e.reveal) {
@@ -455,10 +482,13 @@ export default function PressureGame() {
     savePouch(nextLinks.filter((l) => l.status !== 'guess'));   // earned knowledge survives runs
     const won = resolved.filter((r) => r.ok && !r.sal).length * 2;
     if (won) setInsight(insight + won);                          // stake pays double when proven
-    if (nt > DATES.length - 1) { setCash(afterRent); setPhase('end'); return; }
+    itmAudio.kaching();
+    if (resolved.length) setTimeout(() => itmAudio.verdict(resolved.filter((r) => r.ok).length, resolved.filter((r) => !r.ok).length), 500);
+    if (nt > DATES.length - 1) { setCash(afterRent); setPhase('end'); itmAudio.win(); return; }
     const nextNet = afterRent + COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * c.prices[nt], 0);
     setCash(afterRent); setT(nt); setActs(ACTIONS); setPend({}); setFlash('');   // dugAt persists — old intel stays, marked stale
-    if (nextNet >= FREEDOM) { setFree(true); setPhase('end'); return; }
+    if (nextNet >= FREEDOM) { setFree(true); setPhase('end'); itmAudio.win(); return; }
+    if (nt === 1) setTimeout(() => itmAudio.alarm(), 600);   // the crash hits
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -466,7 +496,7 @@ export default function PressureGame() {
 
   if (phase === 'intro') {
     return (
-      <div className="pg"><div className="pg-col pg-mid">
+      <div className="pg"><div className="pg-col pg-mid">{muteBtn}
         <p className="pg-kick">Investment Time Machine · rent's due</p>
         <h1 className="pg-title">You're broke. Rent is due. Don't get evicted — get free.</h1>
         <ul className="pg-rules">
@@ -476,7 +506,7 @@ export default function PressureGame() {
           <li><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</li>
           {myLinks.length > 0 && <li><b>🧧 Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> from past runs — what you've proven about the world stays with you.</li>}
         </ul>
-        <button className="pg-btn pg-primary" onClick={() => setPhase('play')}>Start — February 2020 →</button>
+        <button className="pg-btn pg-primary" onClick={() => { itmAudio.start(soundOn); setPhase('play'); }}>Start — February 2020 →</button>
       </div></div>
     );
   }
@@ -489,7 +519,7 @@ export default function PressureGame() {
     else if (helped >= 1) epi = { mood: 'broke', line: "I lost it all — but you kept me afloat when it mattered. That's worth more than money. Crashing at Mom's for a while." };
     else epi = { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything. That newsletter guy was a fraud. Moving back in with Mom." };
     return (
-      <div className="pg"><div className="pg-col pg-mid">
+      <div className="pg"><div className="pg-col pg-mid">{muteBtn}
         <p className="pg-kick">{won ? 'You made it out' : 'June 2022'}</p>
         <h1 className="pg-title">{won ? "You're free." : 'You survived to the other side.'}</h1>
         <div className="pg-final"><span>Net worth</span><b className={cls(net / START - 1)}>{fmt(net)}</b></div>
@@ -533,9 +563,10 @@ export default function PressureGame() {
   return (
     <div className={'pg' + (t === 1 ? ' pg-storm' : '') + (salEvt && salEvt.mood === 'panic' ? ' pg-panicking' : '')}>
       <div className="pg-col">
+        {muteBtn}
         <div className="pg-bar">
           <div className="pg-bar-l"><span className="pg-month">{DATES[t]}</span><span className="pg-sub">Period {t + 1} of {DATES.length}</span></div>
-          <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => setPouchOpen(true)} aria-label="Open your market map">
+          <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => { setPouchOpen(true); itmAudio.pouch(); }} aria-label="Open your market map">
             <PouchIcon />
             {activeForces.length > 0 && <span className="pg-pouch-badge">{activeForces.length}</span>}
           </button>
