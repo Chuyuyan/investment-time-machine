@@ -49,27 +49,65 @@ function noise(at, dur, { gain = 0.15, freq = 1800, q = 0.8, type = 'bandpass' }
   src.start(at);
 }
 
-// ---- Sal's gibberish voice ----
+// ---- Sal's gibberish voice v2: formant synthesis, not beeps ----
+// Each syllable = a sawtooth "glottis" with pitch glide + vibrato, pushed
+// through 2-3 bandpass FORMANT filters shaped like real vowels (a/e/i/o/u),
+// with occasional consonant noise onsets and Minion-style syllable repeats.
+const VOWELS = [[700, 1220], [530, 1840], [320, 2250], [500, 900], [380, 940]];
 const VOICES = {
-  hype:    { base: 340, spread: 180, syl: 11, gap: 0.085, dur: 0.07,  type: 'square',   drift: 60 },
-  worried: { base: 230, spread: 70,  syl: 8,  gap: 0.11,  dur: 0.09,  type: 'square',   drift: -40 },
-  greedy:  { base: 280, spread: 120, syl: 9,  gap: 0.095, dur: 0.08,  type: 'sawtooth', drift: 20 },
-  manic:   { base: 400, spread: 230, syl: 14, gap: 0.06,  dur: 0.055, type: 'square',   drift: 80 },
-  panic:   { base: 430, spread: 260, syl: 16, gap: 0.05,  dur: 0.05,  type: 'square',   drift: 90 },
-  broke:   { base: 170, spread: 40,  syl: 6,  gap: 0.16,  dur: 0.12,  type: 'triangle', drift: -50 },
+  hype:    { pitch: 235, syl: 9,  dur: 0.11, gap: 0.045, arc: 0.22,  tract: 1.25, jitter: 0.05 },
+  worried: { pitch: 175, syl: 8,  dur: 0.13, gap: 0.06,  arc: -0.18, tract: 1.1,  jitter: 0.03 },
+  greedy:  { pitch: 200, syl: 9,  dur: 0.12, gap: 0.05,  arc: 0.08,  tract: 1.15, jitter: 0.04 },
+  manic:   { pitch: 270, syl: 12, dur: 0.085, gap: 0.03, arc: 0.28,  tract: 1.3,  jitter: 0.07 },
+  panic:   { pitch: 300, syl: 14, dur: 0.075, gap: 0.025, arc: 0.3,  tract: 1.35, jitter: 0.09 },
+  broke:   { pitch: 135, syl: 6,  dur: 0.17, gap: 0.09,  arc: -0.25, tract: 1.0,  jitter: 0.025 },
 };
+
+function syllable(t, dur, pitch, vowel, P, out) {
+  const src = ctx.createOscillator();
+  src.type = 'sawtooth';
+  const upTurn = P.arc > 0 && Math.random() < 0.3;
+  src.frequency.setValueAtTime(pitch * (1.06 + Math.random() * 0.08), t);
+  src.frequency.exponentialRampToValueAtTime(pitch * (upTurn ? 1.18 : 0.88 + Math.random() * 0.08), t + dur);
+  const vib = ctx.createOscillator();
+  vib.frequency.value = 5.5 + Math.random() * 3;
+  const vibG = ctx.createGain();
+  vibG.gain.value = pitch * P.jitter;
+  vib.connect(vibG); vibG.connect(src.frequency);
+  const env = ctx.createGain();
+  env.gain.setValueAtTime(0.0001, t);
+  env.gain.exponentialRampToValueAtTime(1, t + 0.022);
+  env.gain.setValueAtTime(1, Math.max(t + 0.024, t + dur - 0.055));
+  env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  src.connect(env);
+  const bands = [[vowel[0], 7, 1], [vowel[1], 9, 0.4], [2700, 11, 0.1]];
+  bands.forEach(([fc, q, g]) => {
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = fc * P.tract; bp.Q.value = q;
+    const gg = ctx.createGain(); gg.gain.value = g;
+    env.connect(bp); bp.connect(gg); gg.connect(out);
+  });
+  src.start(t); src.stop(t + dur + 0.03);
+  vib.start(t); vib.stop(t + dur + 0.03);
+}
+
 function babble(mood) {
   if (!ensure() || muted) return;
   const P = VOICES[mood] || VOICES.hype;
-  const bp = ctx.createBiquadFilter();
-  bp.type = 'bandpass'; bp.frequency.value = P.base * 2.2; bp.Q.value = 1.1;
-  const out = ctx.createGain(); out.gain.value = 0.16;
-  bp.connect(out); out.connect(master);
+  const out = ctx.createGain();
+  out.gain.value = 0.55;
+  out.connect(master);
   let t = ctx.currentTime + 0.03;
+  let vowel = VOWELS[Math.floor(Math.random() * VOWELS.length)];
   for (let i = 0; i < P.syl; i++) {
-    const f = P.base + (Math.random() - 0.35) * P.spread + (i / P.syl) * P.drift;
-    tone(f, t, P.dur, { type: P.type, gain: 1, to: f * 0.82, dest: bp });
-    t += P.dur + P.gap * (0.6 + Math.random() * 0.8);
+    const pos = i / (P.syl - 1);
+    const phrase = 1 + P.arc * Math.sin(pos * Math.PI) + (pos > 0.7 ? P.arc * 0.5 * (pos - 0.7) / 0.3 : 0);
+    if (Math.random() > 0.28) vowel = VOWELS[Math.floor(Math.random() * VOWELS.length)];  // ~28%: repeat = "ba-ba"
+    const last = i === P.syl - 1;
+    const dur = P.dur * (last ? 1.7 : 0.7 + Math.random() * 0.6);
+    if (Math.random() < 0.4) noise(t - 0.012, 0.028, { gain: 0.05, freq: 2800 + Math.random() * 2600, q: 1.4 });  // consonant onset
+    syllable(t, dur, P.pitch * phrase * (0.95 + Math.random() * 0.1), vowel, P, out);
+    t += dur + P.gap * (0.5 + Math.random());
   }
 }
 
