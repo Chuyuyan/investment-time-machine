@@ -6212,3 +6212,14 @@ body {
 
 /* legend footnote */
 .pg-chart-note { font-size: 11px; color: #7d879c; font-style: italic; margin: 8px 0 0; line-height: 1.4; }
+
+/* pouch onboarding guide + stale intel + locked-card price */
+.pg-pouch-guide { background: rgba(224,166,58,.09); border: 1px solid rgba(224,166,58,.32); border-radius: 11px; padding: 12px 14px; margin: 0 0 12px; }
+.pg-pouch-guide-h { font-size: 12px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: #e7d08a; margin: 0 0 7px; }
+.pg-pouch-guide p { font-size: 13px; line-height: 1.5; color: #dfe6f6; margin: 4px 0; }
+.pg-pouch-guide b { color: #fff; }
+.pg-dossier.stale { opacity: .75; border-style: dashed; }
+.pg-stale-tag { font-size: 11.5px; font-weight: 700; color: #e0a63a; margin: 0 0 8px; }
+.pg-redig { margin-top: 10px; }
+.pg-locked .pg-pb b { color: #cbd3e6; }
+.pg-locked .pg-lockchip { margin-left: 7px; }

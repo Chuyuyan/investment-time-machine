@@ -32,13 +32,34 @@ const START_WATCH = ['AAPL', 'TSLA', 'DAL'];
 const COMPANIES = [
   { id: 'AAPL', name: 'Apple', biz: 'Makes the iPhone, Mac, and services like the App Store. One of the most profitable companies on Earth.', prices: [68, 63, 116, 121, 165, 137] },
   { id: 'TSLA', name: 'Tesla', biz: 'Builds electric cars, led by Elon Musk. Also batteries and self-driving software.', prices: [133, 102, 430, 700, 1140, 700] },
-  { id: 'ZM', name: 'Zoom', biz: 'Sells easy video-calling software, mostly to businesses. Small and fairly new.', prices: [105, 146, 470, 400, 250, 110],
-    teaser: 'Your whole office suddenly mentions some video-call app. You have never used it.', cost: 150, xp: 4 },
+  { id: 'ZM', name: 'Zoom', biz: 'Sells easy video-calling software, mostly to businesses. Small and fairly new.', prices: [105, 146, 470, 400, 250, 110], cost: 150, xp: 4,
+    teasers: [
+      'Your whole office suddenly mentions some video-call app. You have never used it.',
+      'That video-call app is one of the only things RISING through the crash.',
+      "It's a verb now — 'let's Zoom'. The stock has tripled since spring.",
+      'Everyone on earth seems to use it now. The question is what that is worth.',
+      'Whispers that its growth is cooling as offices plan to reopen.',
+      'The lockdown darling has fallen hard from its peak.',
+    ] },
   { id: 'DAL', name: 'Delta', biz: 'A major airline. Airlines carry huge fixed costs and lots of debt.', prices: [47, 23, 31, 46, 38, 31] },
-  { id: 'MRNA', name: 'Moderna', biz: "A biotech using new 'mRNA' technology to make vaccines. Very few products so far.", prices: [26, 29, 67, 150, 300, 140],
-    teaser: 'Somewhere in the vaccine race there is a tiny biotech nobody has heard of.', cost: 250, xp: 6 },
-  { id: 'PTON', name: 'Peloton', biz: 'Sells premium exercise bikes and a subscription for live workout classes.', prices: [27, 27, 100, 145, 55, 12],
-    teaser: 'Sal will not stop talking about some exercise-bike company.', cost: 200, xp: 5 },
+  { id: 'MRNA', name: 'Moderna', biz: "A biotech using new 'mRNA' technology to make vaccines. Very few products so far.", prices: [26, 29, 67, 150, 300, 140], cost: 250, xp: 6,
+    teasers: [
+      'A tiny biotech is quietly working on a new kind of vaccine technology.',
+      'Somewhere in the vaccine race there is a tiny biotech nobody has heard of.',
+      'That little vaccine firm just signed its first government contracts.',
+      'Its name is suddenly in every headline — the vaccine is real.',
+      'Now a household name, minting money from boosters.',
+      'The vaccine winner — but the pandemic itself is fading.',
+    ] },
+  { id: 'PTON', name: 'Peloton', biz: 'Sells premium exercise bikes and a subscription for live workout classes.', prices: [27, 27, 100, 145, 55, 12], cost: 200, xp: 5,
+    teasers: [
+      'Sal will not stop talking about some exercise-bike company.',
+      'Gyms are shut — and that bike company is sold out for months.',
+      'Those bikes are the hottest product in America, Sal says.',
+      'Priced as if home fitness replaces gyms forever.',
+      'Gyms reopened. The bikes are piling up unsold, apparently.',
+      'Down about 90% from the top. Sal has gone quiet about it.',
+    ] },
 ];
 const COLORS = { AAPL: '#5b8cff', TSLA: '#f5b13c', ZM: '#b072ff', DAL: '#ff5f6a', MRNA: '#2fd1a8', PTON: '#ff6fa5', CASH: '#8a93a8' };
 
@@ -296,7 +317,7 @@ export default function PressureGame() {
   const [shares, setShares] = useState({});
   const [avg, setAvg] = useState({});
   const [acts, setActs] = useState(ACTIONS);
-  const [dug, setDug] = useState({});
+  const [dugAt, setDugAt] = useState({});   // company -> period you last investigated (intel persists, then goes stale)
   const [pend, setPend] = useState({});
   const [salDone, setSalDone] = useState({});
   const [helped, setHelped] = useState(0);
@@ -339,7 +360,7 @@ export default function PressureGame() {
   const salEvt = !salDone[t] ? salFor(t) : null;
 
   // Researching is what earns insight — the game rewards the habit it wants.
-  function dig(id) { if (acts <= 0 || dug[id]) return; setDug({ ...dug, [id]: true }); setActs(acts - 1); setInsight(insight + 1); }
+  function dig(id) { if (acts <= 0 || dugAt[id] === t) return; setDugAt({ ...dugAt, [id]: t }); setActs(acts - 1); setInsight(insight + 1); }
   function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); }
   function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); }
 
@@ -398,7 +419,7 @@ export default function PressureGame() {
       if (nc !== cash) setCash(nc);
     }
     if (e.reveal) {
-      const nd = { ...dug }; e.reveal.forEach((id) => { nd[id] = true; }); setDug(nd);
+      const nd = { ...dugAt }; e.reveal.forEach((id) => { nd[id] = t; }); setDugAt(nd);
       setUnlocked((u) => [...new Set([...u, ...e.reveal])]);
     }
     if (e.plant && !linkOf(e.plant.force, e.plant.company)) {
@@ -436,12 +457,12 @@ export default function PressureGame() {
     if (won) setInsight(insight + won);                          // stake pays double when proven
     if (nt > DATES.length - 1) { setCash(afterRent); setPhase('end'); return; }
     const nextNet = afterRent + COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * c.prices[nt], 0);
-    setCash(afterRent); setT(nt); setActs(ACTIONS); setDug({}); setPend({}); setFlash('');
+    setCash(afterRent); setT(nt); setActs(ACTIONS); setPend({}); setFlash('');   // dugAt persists — old intel stays, marked stale
     if (nextNet >= FREEDOM) { setFree(true); setPhase('end'); return; }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDug({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDugAt({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setPhase('intro'); }
 
   if (phase === 'intro') {
     return (
@@ -602,7 +623,8 @@ export default function PressureGame() {
             {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
           const p = price(c.id); const prev = t > 0 ? c.prices[t - 1] : null; const mv = prev ? p / prev - 1 : null;
           const pos = (shares[c.id] || 0) * p; const g = (shares[c.id] || 0) > 0 && (avg[c.id] || 0) > 0 ? p / avg[c.id] - 1 : 0;
-          const researched = dug[c.id]; const info = INFO[c.id][t];
+          const dugP = dugAt[c.id]; const freshIntel = dugP === t;
+          const info = dugP != null ? INFO[c.id][dugP] : null;
           const pd = pend[c.id] || 0; const canTrade = pos >= 1 || cash >= 1;
           return (
             <div className={'pg-card' + (leadIds.has(c.id) ? ' lead' : '')} key={c.id}>
@@ -612,12 +634,14 @@ export default function PressureGame() {
               </div>
               {pos > 0.5 && <div className="pg-own">you hold {fmt(pos)} <em className={cls(g)}>{sPct(g)}</em></div>}
 
-              {researched
-                ? <div className="pg-dossier">
+              {info
+                ? <div className={'pg-dossier' + (freshIntel ? '' : ' stale')}>
+                    {!freshIntel && <p className="pg-stale-tag">📁 Intel from {DATES[dugP]} — the story has moved on since.</p>}
                     <p className="pg-biz">{c.biz}</p>
                     <div className="pg-fact"><span className="pg-fk">Money</span><span className="pg-fv">{info.m}</span></div>
                     <div className="pg-fact"><span className="pg-fk">Price</span><span className="pg-fv">{info.v}</span></div>
                     <div className="pg-fact"><span className="pg-fk">News</span><span className="pg-fv">{info.n}</span></div>
+                    {!freshIntel && <button className="pg-dig pg-redig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : `Update intel — what's new in ${DATES[t]}? (1 move)`}</button>}
                   </div>
                 : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : 'Investigate (1 move)'}</button>}
 
@@ -642,13 +666,14 @@ export default function PressureGame() {
                 <p className="pg-locked-h">The rest of the market — you don't follow these yet</p>
                 {COMPANIES.filter((c) => !unlocked.includes(c.id)).map((c) => {
                   const tight = cash >= c.cost && cash - c.cost < RENT;
+                  const lp = c.prices[t]; const lprev = t > 0 ? c.prices[t - 1] : null; const lmv = lprev ? lp / lprev - 1 : null;
                   return (
                     <div className="pg-locked" key={c.id}>
                       <div className="pg-locked-top">
-                        <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}</span>
-                        <span className="pg-lockchip">not following</span>
+                        <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name} <span className="pg-lockchip">not following</span></span>
+                        <span className="pg-pb"><b>${lp}</b>{lmv != null && <span className={'pg-mv ' + cls(lmv)}>{sPct(lmv)}</span>}</span>
                       </div>
-                      <p className="pg-teaser">{c.teaser}</p>
+                      <p className="pg-teaser">{c.teasers[t]}</p>
                       <div className="pg-locked-btns">
                         <button className="pg-unlock" disabled={cash < c.cost} onClick={() => unlockCash(c)}>Subscribe · {fmt(c.cost)}</button>
                         <button className="pg-unlock xp" disabled={insight < c.xp} onClick={() => unlockXp(c)}>Use {c.xp} insight</button>
@@ -675,6 +700,15 @@ export default function PressureGame() {
               </div>
               <p className="pg-map-sub">Your call on what moves whom — you can be wrong. Drawing a link stakes <b>1 💡</b>: proven pays back <b>2</b>, broken loses it. Proven links survive into your next run.</p>
               {metForces.length === 0 && <p className="pg-pouch-empty">Empty so far. Forces show up in the news — read the headlines, and they'll land in here.</p>}
+              {metForces.length > 0 && myLinks.length === 0 && (
+                <div className="pg-pouch-guide">
+                  <p className="pg-pouch-guide-h">How the pouch works</p>
+                  <p><b>1.</b> Big forces (a lockdown, a rate hike…) land in here when they hit the news.</p>
+                  <p><b>2.</b> For each force, tap <b>📈 helps</b> or <b>📉 hurts</b> on a company — that's your read on the world. Each call stakes <b>1 💡</b>.</p>
+                  <p><b>3.</b> While that force is moving the market, your pouch buzzes and your call appears on the company's card — before you trade.</p>
+                  <p><b>4.</b> When the force plays out, the market grades you: right pays back <b>2 💡</b>, wrong loses the stake. Proven calls stay with you in every future run.</p>
+                </div>
+              )}
               {metForces.length > 0 && insight < 1 && <p className="pg-pouch-need">You're out of 💡 insight — investigate companies to earn more before drawing new links.</p>}
               {metForces.map((f) => {
                 const live = activeForces.includes(f);
