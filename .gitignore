@@ -14,3 +14,6 @@ dist-ssr
 
 # local agent/tooling config (contains machine-specific absolute paths)
 .claude
+
+# Local env
+.env.local

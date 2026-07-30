@@ -122,8 +122,13 @@ export default function App() {
     return (
       <>
         <AccountBar user={user} onUser={setUser} />
-        <Autopsy results={results} campaign={campaign} onRestart={startGame} />
-        <Leaderboard user={user} refreshKey={savedRuns} />
+        <Autopsy
+          results={results}
+          campaign={campaign}
+          onRestart={startGame}
+          // Shown at the end of the last act, once the reflection is done.
+          footer={<Leaderboard user={user} refreshKey={savedRuns} />}
+        />
       </>
     );
   }

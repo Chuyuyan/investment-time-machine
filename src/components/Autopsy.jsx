@@ -11,7 +11,9 @@ function track(event, props) {
 // The Decision Autopsy — the product's signature moment. Five sequential,
 // full-screen acts, then reaction capture + share. Consumes the computed
 // `results` from App (engine output); all copy comes from campaign.json.
-export default function Autopsy({ results, campaign, onRestart }) {
+// `footer` is an optional node rendered at the very end of the last act — used
+// for things the Autopsy itself shouldn't know about (e.g. the leaderboard).
+export default function Autopsy({ results, campaign, onRestart, footer = null }) {
   const [act, setAct] = useState(0);
   const A = campaign.autopsy;
 
@@ -42,6 +44,7 @@ export default function Autopsy({ results, campaign, onRestart }) {
         dqRounded={dqRounded}
         results={{ history, run, dnaAveraged, finalValue, returnPct, dqScore, riskBucket }}
         onRestart={onRestart}
+        footer={footer}
       />
     ),
   ];
@@ -187,7 +190,7 @@ function ActReframe({ A, v, dqRounded, archetype }) {
 }
 
 /* --------------------- Final: Reaction capture + Share + dev -------------------- */
-function ActShare({ A, v, dqRounded, results, onRestart }) {
+function ActShare({ A, v, dqRounded, results, onRestart, footer = null }) {
   const rc = A.reaction_capture;
   const sc = A.share_card;
   const [surprised, setSurprised] = useState(null);
@@ -277,6 +280,8 @@ function ActShare({ A, v, dqRounded, results, onRestart }) {
           <button onClick={submitEmail}>Notify me</button>
         </div>
       </div>
+
+      {footer}
 
       <button className="secondary-btn" onClick={onRestart}>
         Play again

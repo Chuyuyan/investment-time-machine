@@ -6227,3 +6227,172 @@ body {
 /* sound toggle */
 .pg-mute { position: fixed; right: 12px; bottom: 12px; z-index: 45; width: 44px; height: 44px; border-radius: 50%; background: #1b2030; border: 1px solid #2c3346; font-size: 19px; cursor: pointer; box-shadow: 0 6px 14px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
 .pg-mute:hover { background: #222a3c; }
+
+/* ── Accounts (playkit) ────────────────────────────────────────────────
+   Optional sign-in. Sits above the game without competing with it. */
+.account-bar {
+  position: fixed;
+  top: 10px;
+  right: 12px;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.account-who {
+  color: var(--muted);
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-link {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  padding: 4px 2px;
+  text-decoration: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+}
+.account-link:hover { color: var(--text); }
+
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 232px;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.account-tabs { display: flex; gap: 4px; margin-bottom: 2px; }
+
+.account-tab {
+  flex: 1;
+  padding: 5px 6px;
+  font: inherit;
+  font-size: 11px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.account-tab.is-on {
+  color: var(--text);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+.account-input {
+  padding: 7px 9px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.account-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.account-actions { display: flex; align-items: center; gap: 8px; }
+
+.account-submit {
+  flex: 1;
+  padding: 7px 10px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.account-submit:hover:not(:disabled) { background: var(--accent-press); }
+.account-submit:disabled { opacity: 0.6; cursor: default; }
+
+.account-error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--red);
+}
+
+.account-note {
+  margin: 2px 0 0;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── Decision-quality leaderboard ─────────────────────────────────── */
+.leaderboard {
+  width: 100%;
+  margin: 18px 0 4px;
+  padding: 16px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.lb-loading {
+  margin: 18px 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.lb-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lb-sub {
+  margin: 3px 0 12px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.lb-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lb-row {
+  display: grid;
+  grid-template-columns: 26px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+}
+.lb-row:first-child { border-top: none; }
+.lb-row.is-me { color: var(--accent); font-weight: 600; }
+
+.lb-rank { color: var(--muted); text-align: right; }
+.lb-row.is-me .lb-rank { color: var(--accent); }
+.lb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb-score { font-variant-numeric: tabular-nums; }
+
+.lb-mine {
+  margin: 10px 0 0;
+  padding-top: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
