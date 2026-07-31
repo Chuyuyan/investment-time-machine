@@ -1,20 +1,22 @@
 // Vendored from the playkit SDK — do not edit here.
-// Source: playkit/sdk/src/index.ts  (regenerate with: npm run build in playkit/sdk,
-// then copy playkit/sdk/dist/playkit.js to this path)
+// Source: playkit/sdk/src/index.ts  (rebuild with: npm run build in playkit/sdk)
 // src/index.ts
 var PlaykitError = class extends Error {
+  status;
+  code;
   constructor(message, status, code) {
     super(message);
+    this.name = "PlaykitError";
     this.status = status;
     this.code = code;
-    this.name = "PlaykitError";
   }
 };
 var SaveConflictError = class extends PlaykitError {
+  currentVersion;
   constructor(message, currentVersion) {
     super(message, 409, "version_conflict");
-    this.currentVersion = currentVersion;
     this.name = "SaveConflictError";
+    this.currentVersion = currentVersion;
   }
 };
 function createPlaykit(options) {
