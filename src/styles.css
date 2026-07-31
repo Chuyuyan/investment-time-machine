@@ -6494,3 +6494,75 @@ body {
   cursor: pointer;
 }
 .acct-skip:hover { color: var(--text); }
+
+/* ============================================================
+   CORE RESKIN — bring ?proto=core into the Rent's Due dark-comic look
+   (palette remap via scoped CSS variables + targeted overrides)
+   ============================================================ */
+.core {
+  --accent: #e0a63a;
+  --accent-press: #c9942f;
+  --surface: #1b2030;
+  --surface-2: #222a3c;
+  --border: #2c3346;
+  --text: #e7ecf6;
+  --muted: #8f98ad;
+  --green: #35c07a;
+  --red: #ff5f6a;
+  --amber: #e0a63a;
+  --amber-dim: rgba(224, 166, 58, 0.12);
+  color: var(--text);
+}
+body:has(.core) {
+  background:
+    radial-gradient(120% 85% at 50% -8%, #2b3446 0%, #141926 55%, #0c0f18 100%);
+  background-attachment: fixed;
+}
+
+/* serif display voice, same as Rent's Due */
+.core-h1, .cs-loud, .career-name, .bust-line {
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #f2f5fb;
+}
+
+/* primary button: chunky brass with the 3D press */
+.core-primary {
+  color: #241a08;
+  font-weight: 800;
+  border-radius: 12px;
+  box-shadow: 0 4px 0 #a67c1f;
+  transition: transform 0.06s, box-shadow 0.06s, filter 0.15s;
+}
+.core-primary:hover { background: var(--accent); filter: brightness(1.06); }
+.core-primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #a67c1f; }
+.core-primary:disabled { opacity: 0.4; box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25); }
+
+/* secondary buttons: slate panel look */
+.core-skip, .tape-resume, .career-reset {
+  background: #2a3145;
+  border: 1px solid #3a4358;
+  color: #e7ecf6;
+  border-radius: 10px;
+}
+.core-skip:hover, .tape-resume:hover, .career-reset:hover { background: #333c54; }
+.beat-btn { border-radius: 10px; font-weight: 700; }
+
+/* cards get the pressure panel depth */
+.core-lesson, .core-stat, .core-marcus, .career-bar, .core-sig, .core-quest,
+.thesis-card, .tape-chart, .core-cal.mirror {
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.35);
+}
+.core-lesson { background: var(--surface); border-color: var(--border); }
+
+/* the five hardcoded blues -> brass */
+.core-sig.leanable:hover { background: rgba(224, 166, 58, 0.07); }
+.core-sig.leaned { background: rgba(224, 166, 58, 0.12); border-color: rgba(224, 166, 58, 0.45); }
+.thesis-card { border: 1px solid rgba(224, 166, 58, 0.4); background: rgba(224, 166, 58, 0.08); }
+.th-h { color: #e7d08a; }
+.core-quest { border: 1px solid rgba(224, 166, 58, 0.35); background: rgba(224, 166, 58, 0.07); }
+.core-size.sel { background: rgba(224, 166, 58, 0.16); border-color: var(--accent); color: #e7d08a; }
+
+/* direction picks keep semantic colour but gain the chunky feel */
+.core-dir { border-radius: 11px; font-weight: 700; }
+.core-dir.up.sel { background: rgba(53, 192, 122, 0.15); }
+.core-dir.down.sel { background: rgba(255, 95, 106, 0.13); }
