@@ -62,3 +62,54 @@ export function restoreSession() {
   }
   return restored;
 }
+
+/*
+ * Namespaced cloud saves.
+ *
+ * playkit gives one save slot per (player, game), but this repo ships several
+ * games under one id — the AI-Boom campaign and the ?proto= slices. They each
+ * own a key inside the blob, so writing one can never clobber another:
+ *
+ *   { campaign: {...}, pressure: {...} }
+ */
+
+/** Reads one slice. Returns null when signed out, offline, or nothing saved. */
+export async function loadSlice(key) {
+  if (!accountsEnabled || !getUser()) return null;
+  try {
+    const saved = await playkit.loadProgress();
+    return saved?.data?.[key] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Merges `value` into the blob under `key`, leaving other slices untouched.
+ *
+ * Uses the version we just read, so a stale write is rejected rather than
+ * silently destroying newer progress. On conflict we re-read and retry once —
+ * whoever saved last wins, which is the right call for a single-player game
+ * where the alternative is interrupting someone mid-run.
+ */
+export async function saveSlice(key, value) {
+  if (!accountsEnabled || !getUser()) return;
+
+  const write = async () => {
+    const saved = await playkit.loadProgress();
+    const blob = { ...(saved?.data ?? {}), [key]: value };
+    await playkit.saveProgress(blob, saved?.version);
+  };
+
+  try {
+    await write();
+  } catch (err) {
+    if (err?.code === 'version_conflict') {
+      try {
+        await write();
+      } catch {
+        /* give up quietly — a lost autosave must not interrupt play */
+      }
+    }
+  }
+}

@@ -13,6 +13,8 @@ import {
   DQ_BOARD,
   getUser,
   subscribeUser,
+  loadSlice,
+  saveSlice,
 } from './playkitClient.js';
 
 const initialRun = {
@@ -42,8 +44,8 @@ export default function App() {
   async function recordRun(finished) {
     if (!accountsEnabled || !user) return;
     try {
-      const existing = await playkit.loadProgress();
-      const history = existing?.data?.history ?? [];
+      const previous = await loadSlice('campaign');
+      const history = previous?.history ?? [];
       const entry = {
         completedAt: new Date().toISOString(),
         campaignId: campaign.meta?.id ?? 'ai-boom',
@@ -54,10 +56,10 @@ export default function App() {
         whys: finished.run.whyIds,
         dna: finished.run.dnaVector,
       };
-      await playkit.saveProgress(
-        { history: [...history, entry].slice(-50), dna: finished.run.dnaVector },
-        existing?.version,
-      );
+      await saveSlice('campaign', {
+        history: [...history, entry].slice(-50),
+        dna: finished.run.dnaVector,
+      });
       await playkit.submitScore(finished.dqScore, {
         board: DQ_BOARD,
         meta: { archetype: entry.archetype, returnPct: finished.returnPct },

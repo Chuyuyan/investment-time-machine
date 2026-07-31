@@ -6396,3 +6396,15 @@ body {
   color: var(--muted);
   border-top: 1px solid var(--border);
 }
+
+/* "Picked up where you left off" — fades itself out after a beat. */
+.pg-resumed {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: var(--brass, #d4a24c);
+  animation: pg-resumed-fade 5s ease forwards;
+}
+@keyframes pg-resumed-fade {
+  0%, 70% { opacity: 1; }
+  100% { opacity: 0; }
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { itmAudio } from '../audio.js';
+import { getUser, loadSlice, saveSlice, restoreSession } from '../playkitClient.js';
 
 /*
  * PressureGame — "Rent's Due"  (?proto=pressure)
@@ -341,6 +342,77 @@ export default function PressureGame() {
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
 
+  // --- Cloud save -------------------------------------------------------
+  // Signed-in players resume this run on any device. Signed-out players are
+  // unaffected: the pouch still lives in localStorage and nothing is sent.
+  const [cloudChecked, setCloudChecked] = useState(false);
+  const [resumed, setResumed] = useState(false);
+  const skipSave = useRef(true);   // don't write back the state we just loaded
+
+  const snapshot = () => ({
+    v: 1,
+    phase, t, cash, shares, avg, acts, dugAt, pend, salDone,
+    helped, refused, blocked, indep, wiseFinal, robbing,
+    unlocked, insight, myLinks, free,
+  });
+
+  const applySnapshot = (s) => {
+    setPhase(s.phase ?? 'play');
+    setT(s.t ?? 0);
+    setCash(s.cash ?? START);
+    setShares(s.shares ?? {});
+    setAvg(s.avg ?? {});
+    setActs(s.acts ?? ACTIONS);
+    setDugAt(s.dugAt ?? {});
+    setPend(s.pend ?? {});
+    setSalDone(s.salDone ?? {});
+    setHelped(s.helped ?? 0);
+    setRefused(s.refused ?? 0);
+    setBlocked(s.blocked ?? {});
+    setIndep(s.indep ?? 0);
+    setWiseFinal(!!s.wiseFinal);
+    setRobbing(s.robbing ?? 0);
+    setUnlocked(s.unlocked ?? START_WATCH);
+    setInsight(s.insight ?? 0);
+    setMyLinks(s.myLinks ?? []);
+    setFree(!!s.free);
+  };
+
+  // Load once, after the account bar has had a chance to restore the session.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      await restoreSession();
+      const saved = await loadSlice('pressure');
+      if (cancelled) return;
+      if (saved?.pouch) setMyLinks(saved.pouch);          // knowledge from past runs
+      if (saved?.run && saved.run.phase === 'play') {
+        applySnapshot(saved.run);
+        setResumed(true);
+      }
+      setCloudChecked(true);
+      // Let the state settle before autosave starts, so loading can't
+      // immediately write the same thing back.
+      setTimeout(() => { skipSave.current = false; }, 0);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Autosave, debounced: a run is worth keeping, but not one write per click.
+  useEffect(() => {
+    if (!cloudChecked || skipSave.current || !getUser()) return;
+    const id = setTimeout(() => {
+      saveSlice('pressure', {
+        pouch: myLinks.filter((l) => l.status !== 'guess'),
+        run: phase === 'play' ? snapshot() : null,
+      });
+    }, 1500);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloudChecked, phase, t, cash, shares, avg, acts, dugAt, pend, salDone,
+      helped, refused, blocked, indep, wiseFinal, robbing, unlocked, insight,
+      myLinks, free]);
+
   const price = (id) => COMPANIES.find((c) => c.id === id).prices[t];
   const holdings = COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * price(c.id), 0);
   const net = cash + holdings;
@@ -492,7 +564,11 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDugAt({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setPhase('intro'); }
+  function restart() { setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDugAt({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setResumed(false); setPhase('intro');
+    // Drop the saved run as well, or the next visit would resume the run the
+    // player just abandoned. The pouch is kept — that knowledge is earned.
+    saveSlice('pressure', { pouch: loadPouch(), run: null });
+  }
 
   if (phase === 'intro') {
     return (
@@ -579,6 +655,11 @@ export default function PressureGame() {
           <div className="pg-stat pg-freedom"><span>Freedom</span><b>{Math.round(net / FREEDOM * 100)}%</b></div>
         </div>
 
+        {resumed && (
+          <p className="pg-resumed" onAnimationEnd={() => setResumed(false)}>
+            Picked up where you left off.
+          </p>
+        )}
         <p className="pg-headline">{HEADLINE[t]}</p>
         {flash && <p className="pg-flash">{flash}</p>}
 
