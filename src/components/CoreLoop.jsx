@@ -61,7 +61,7 @@ const FAMILIES = {
   },
 };
 
-const CASES = [
+export const CASES = [
   {
     short: 'NVIDIA',
     fam: 'craze',
