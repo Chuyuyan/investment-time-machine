@@ -30,6 +30,11 @@ const Root =
   proto === 'decision' ? DecisionClimax :
   App;
 
+// Pin the account chip to the same column the screen behind it uses, so it sits
+// inside the portrait frame instead of floating in a corner of the viewport.
+// The prototypes are 440px columns; the main campaign screen is 560px.
+document.documentElement.style.setProperty('--acct-col', proto ? '440px' : '560px');
+
 // The account bar sits above the router, not inside App: every prototype is a
 // separate root, and sign-in should be reachable from all of them.
 createRoot(document.getElementById('root')).render(

@@ -6228,114 +6228,6 @@ body {
 .pg-mute { position: fixed; right: 12px; bottom: 12px; z-index: 45; width: 44px; height: 44px; border-radius: 50%; background: #1b2030; border: 1px solid #2c3346; font-size: 19px; cursor: pointer; box-shadow: 0 6px 14px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; }
 .pg-mute:hover { background: #222a3c; }
 
-/* ── Accounts (playkit) ────────────────────────────────────────────────
-   Optional sign-in. Sits above the game without competing with it. */
-.account-bar {
-  position: fixed;
-  top: 10px;
-  right: 12px;
-  z-index: 50;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-}
-
-.account-who {
-  color: var(--muted);
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.account-link {
-  background: none;
-  border: none;
-  color: var(--muted);
-  font: inherit;
-  cursor: pointer;
-  padding: 4px 2px;
-  text-decoration: underline;
-  text-decoration-color: var(--border);
-  text-underline-offset: 3px;
-}
-.account-link:hover { color: var(--text); }
-
-.account-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  width: 232px;
-  padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-}
-
-.account-tabs { display: flex; gap: 4px; margin-bottom: 2px; }
-
-.account-tab {
-  flex: 1;
-  padding: 5px 6px;
-  font: inherit;
-  font-size: 11px;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.account-tab.is-on {
-  color: var(--text);
-  background: var(--surface-2);
-  border-color: var(--border);
-}
-
-.account-input {
-  padding: 7px 9px;
-  font: inherit;
-  font-size: 12px;
-  color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.account-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-.account-actions { display: flex; align-items: center; gap: 8px; }
-
-.account-submit {
-  flex: 1;
-  padding: 7px 10px;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--accent);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-.account-submit:hover:not(:disabled) { background: var(--accent-press); }
-.account-submit:disabled { opacity: 0.6; cursor: default; }
-
-.account-error {
-  margin: 0;
-  font-size: 11px;
-  color: var(--red);
-}
-
-.account-note {
-  margin: 2px 0 0;
-  font-size: 10px;
-  color: var(--muted);
-}
-
 /* ── Decision-quality leaderboard ─────────────────────────────────── */
 .leaderboard {
   width: 100%;
@@ -6409,23 +6301,196 @@ body {
   100% { opacity: 0; }
 }
 
-/* Google sign-in slot — Google draws its own button inside. */
-.account-google { display: flex; justify-content: center; min-height: 0; }
-.account-google:empty { display: none; }
 
-.account-or {
+/* ── Accounts ─────────────────────────────────────────────────────────
+   The chip is pinned to the same column the game occupies (--acct-col,
+   set per route in main.jsx), so nothing floats outside the portrait
+   frame the way viewport-anchored chrome does. */
+.acct-slot {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(100% - 24px, var(--acct-col, 440px));
+  display: flex;
+  justify-content: flex-end;
+  z-index: 60;
+  pointer-events: none;   /* only the chip itself is clickable */
+}
+.acct-slot > * { pointer-events: auto; }
+
+.acct-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  max-width: 170px;
+  padding: 4px 10px 4px 4px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--text);
+  background: rgba(21, 25, 34, 0.82);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+}
+.acct-chip:hover { border-color: var(--accent); }
+
+.acct-chip.is-ghost {
+  padding: 5px 12px;
+  color: var(--muted);
+  background: rgba(21, 25, 34, 0.6);
+}
+.acct-chip.is-ghost:hover { color: var(--text); }
+
+.acct-dot {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  border-radius: 50%;
+}
+
+.acct-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.acct-chip-wrap { position: relative; }
+
+.acct-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 170px;
+  padding: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+}
+.acct-menu-email {
+  margin: 0 0 6px;
+  padding: 0 6px;
+  font-size: 11px;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.acct-menu-item {
+  width: 100%;
+  padding: 6px;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  color: var(--text);
+  background: none;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.acct-menu-item:hover { background: var(--surface-2); }
+
+/* ── Sign-in dialog ─────────────────────────────────────────────── */
+.acct-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(6, 8, 13, 0.72);
+  backdrop-filter: blur(3px);
+  animation: acctFade .18s ease;
+}
+@keyframes acctFade { from { opacity: 0; } }
+
+.acct-dialog {
+  width: 100%;
+  max-width: 330px;
+  padding: 24px 22px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  animation: acctRise .22s cubic-bezier(.2, 1, .4, 1);
+}
+@keyframes acctRise { from { opacity: 0; transform: translateY(10px); } }
+
+.acct-title { margin: 0; font-size: 17px; font-weight: 700; color: var(--text); }
+.acct-sub { margin: 6px 0 16px; font-size: 12px; line-height: 1.5; color: var(--muted); }
+
+.acct-google { display: flex; justify-content: center; }
+.acct-google:empty { display: none; }
+
+.acct-or {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin: 14px 0;
   font-size: 10px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: .08em;
 }
-.account-or::before,
-.account-or::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
+.acct-or::before, .acct-or::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.acct-form { display: flex; flex-direction: column; gap: 8px; }
+
+.acct-input {
+  padding: 9px 11px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
 }
+.acct-input:focus { outline: none; border-color: var(--accent); }
+
+.acct-error { margin: 0; font-size: 11px; color: var(--red); }
+
+.acct-primary {
+  margin-top: 2px;
+  padding: 10px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.acct-primary:hover:not(:disabled) { background: var(--accent-press); }
+.acct-primary:disabled { opacity: .6; cursor: default; }
+
+.acct-switch { margin: 12px 0 0; font-size: 11px; color: var(--muted); text-align: center; }
+
+.acct-link {
+  padding: 0;
+  font: inherit;
+  font-size: 11px;
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.acct-skip {
+  width: 100%;
+  margin-top: 14px;
+  padding: 8px;
+  font: inherit;
+  font-size: 12px;
+  color: var(--muted);
+  background: none;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-radius: 0;
+  cursor: pointer;
+}
+.acct-skip:hover { color: var(--text); }
