@@ -1,1 +1,12 @@
 fly.toml
+
+# Keep the build context small and reproducible: node_modules comes from
+# `npm ci` inside the image, and dist is produced there too.
+node_modules
+dist
+.git
+.github
+.claude
+.env
+.env.*
+.DS_Store
