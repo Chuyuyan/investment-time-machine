@@ -91,9 +91,60 @@ function syllable(t, dur, pitch, vowel, P, out) {
   vib.start(t); vib.stop(t + dur + 0.03);
 }
 
+// If the player recorded their own syllables (public/voice/1.mp3, 2.mp3, …),
+// Sal speaks with THOSE — shuffled and pitch-shifted per mood, Banjo-Kazooie
+// style. No recordings -> the formant synth below is the fallback.
+let voiceBufs = [];
+let voiceLoadStarted = false;
+const VOICE_RATE = { hype: 1.12, worried: 0.88, greedy: 1.0, manic: 1.28, panic: 1.38, broke: 0.72 };
+
+async function loadVoice() {
+  if (voiceLoadStarted || !ctx) return;
+  voiceLoadStarted = true;
+  let misses = 0;
+  for (let i = 1; i <= 16 && misses < 2; i++) {
+    let hit = false;
+    for (const ext of ['mp3', 'm4a', 'wav']) {
+      try {
+        const r = await fetch(`/voice/${i}.${ext}`);
+        if (!r.ok) continue;
+        const buf = await ctx.decodeAudioData(await r.arrayBuffer());
+        if (buf.duration > 0.03 && buf.duration < 2) { voiceBufs.push(buf); hit = true; break; }
+      } catch (e) { /* not there / not audio — fine */ }
+    }
+    misses = hit ? 0 : misses + 1;
+  }
+}
+
+function sampleBabble(P, rate) {
+  const out = ctx.createGain();
+  out.gain.value = 0.9;
+  out.connect(master);
+  let t = ctx.currentTime + 0.03;
+  let last = -1;
+  for (let i = 0; i < P.syl; i++) {
+    let k = Math.floor(Math.random() * voiceBufs.length);
+    if (Math.random() < 0.28) k = last >= 0 ? last : k;   // the "ba-ba" repeat
+    last = k;
+    const src = ctx.createBufferSource();
+    src.buffer = voiceBufs[k];
+    src.playbackRate.value = rate * (0.92 + Math.random() * 0.18);
+    const g = ctx.createGain();
+    const dur = Math.min(voiceBufs[k].duration / src.playbackRate.value, 0.5);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(1, t + 0.015);
+    g.gain.setValueAtTime(1, Math.max(t + 0.02, t + dur - 0.04));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(g); g.connect(out);
+    src.start(t, 0, dur + 0.02);
+    t += dur * 0.85 + P.gap * (0.5 + Math.random());
+  }
+}
+
 function babble(mood) {
   if (!ensure() || muted) return;
   const P = VOICES[mood] || VOICES.hype;
+  if (voiceBufs.length >= 3) { sampleBabble(P, VOICE_RATE[mood] || 1); return; }
   const out = ctx.createGain();
   out.gain.value = 0.55;
   out.connect(master);
@@ -162,7 +213,7 @@ function guard(fn) { return (...a) => { if (ensure() && !muted) fn(...a); }; }
 const now = () => ctx.currentTime + 0.02;
 
 export const itmAudio = {
-  start(on) { muted = !on; if (ensure()) master.gain.value = muted ? 0 : 0.5; },
+  start(on) { muted = !on; if (ensure()) { master.gain.value = muted ? 0 : 0.5; loadVoice(); } },
   setMuted(m) { muted = m; if (ctx) master.gain.value = m ? 0 : 0.5; },
   music(mood) { music(mood); },
   ctxState: () => (ctx ? ctx.state : 'none'),

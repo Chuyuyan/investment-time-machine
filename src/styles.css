@@ -6596,3 +6596,18 @@ body:has(.core) {
 .ns-reward { font-size: 14px; font-weight: 800; margin: 10px 0 0; }
 .ns-reward.ok { color: #6fe0a0; }
 .ns-reward.no { color: #8f98ad; }
+
+/* night school: course chooser + concept lessons */
+.ns-course { display: block; width: 100%; text-align: left; background: #141a27; border: 1px solid #2c3346; border-radius: 12px; padding: 14px 16px; margin: 9px 0; cursor: pointer; transition: border-color 0.12s, transform 0.05s; }
+.ns-course:hover { border-color: rgba(224, 166, 58, 0.5); }
+.ns-course:active { transform: translateY(1px); }
+.ns-course b { display: block; font-family: Georgia, 'Times New Roman', serif; font-size: 16px; color: #f2f5fb; margin-bottom: 4px; }
+.ns-course span { font-size: 12.5px; color: #8f98ad; line-height: 1.45; }
+.ns-what { font-size: 14px; color: #dfe6f6; line-height: 1.55; margin: 6px 0 0; }
+.ns-example { font-size: 13px; color: #8f98ad; font-style: italic; line-height: 1.5; margin: 8px 0 0; padding-left: 10px; border-left: 2px solid #2c3346; }
+.ns-q { font-size: 14.5px; font-weight: 700; color: #f2f5fb; margin: 14px 0 8px; line-height: 1.45; }
+.ns-opt { display: block; width: 100%; text-align: left; background: #222a3c; border: 1px solid #333c54; border-radius: 10px; padding: 11px 14px; margin: 6px 0; font-size: 13.5px; color: #dfe6f6; line-height: 1.4; cursor: pointer; }
+.ns-opt:hover:not(:disabled) { border-color: rgba(224, 166, 58, 0.5); }
+.ns-opt:disabled { cursor: default; }
+.ns-opt.right { border-color: #35c07a; background: rgba(53, 192, 122, 0.12); color: #bfead2; }
+.ns-opt.picked-wrong { border-color: #ff5f6a; background: rgba(255, 95, 106, 0.1); color: #f2c9cd; }

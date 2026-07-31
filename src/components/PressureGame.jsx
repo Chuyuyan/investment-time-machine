@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { itmAudio } from '../audio.js';
 import { CASES as STUDY_CASES } from './CoreLoop.jsx';
+import { CONCEPTS } from '../lessons.js';
 import { getUser, loadSlice, saveSlice, restoreSession } from '../playkitClient.js';
 
 /*
@@ -339,10 +340,14 @@ export default function PressureGame() {
   const [pouchOpen, setPouchOpen] = useState(false);
   const [soundOn, setSoundOn] = useState(() => { try { return localStorage.getItem('itm_sound') !== '0'; } catch (e) { return true; } });
   const lastVoice = useRef('');
-  // Night school: study one real historical case per period — 1 move, right = +2 insight.
-  const [camp, setCamp] = useState(null);          // { idx, pick, right } | null
+  // Night school: once per period, 1 move. A real case (+2 if right) or an
+  // investing basic (+1 if right). Closing without answering costs nothing —
+  // but the same item waits for you, so there's no free rerolling.
+  const [camp, setCamp] = useState(null);          // { mode: 'choose'|'case'|'concept', idx, pick, right } | null
   const [campDoneAt, setCampDoneAt] = useState({}); // period -> true (once per period)
   const campSeen = useRef([]);                      // case indices used this run
+  const conceptSeen = useRef([]);                   // concept indices used this run
+  const campPending = useRef({});                   // `${t}:case` / `${t}:concept` -> idx (anti-reroll)
   const [roll] = useState(Math.random());
   const [flash, setFlash] = useState('');
   const [free, setFree] = useState(false);
@@ -486,13 +491,22 @@ export default function PressureGame() {
 
   function campOpen() {
     if (acts <= 0 || campDoneAt[t]) return;
-    const fresh = STUDY_CASES.map((_, i) => i).filter((i) => !campSeen.current.includes(i));
-    const pool = fresh.length ? fresh : STUDY_CASES.map((_, i) => i);
-    const idx = pool[Math.floor(Math.random() * pool.length)];
-    campSeen.current.push(idx);
-    setCamp({ idx, pick: null, right: null });
+    setCamp({ mode: 'choose' });
     itmAudio.scribble();
   }
+  function drawItem(kind, list, seen) {
+    const key = t + ':' + kind;
+    if (campPending.current[key] == null) {
+      const fresh = list.map((_, i) => i).filter((i) => !seen.current.includes(i));
+      const pool = fresh.length ? fresh : list.map((_, i) => i);
+      const idx = pool[Math.floor(Math.random() * pool.length)];
+      seen.current.push(idx);
+      campPending.current[key] = idx;
+    }
+    return campPending.current[key];
+  }
+  function campPickCase() { setCamp({ mode: 'case', idx: drawItem('case', STUDY_CASES, campSeen), pick: null, right: null }); }
+  function campPickConcept() { setCamp({ mode: 'concept', idx: drawItem('concept', CONCEPTS, conceptSeen), pick: null, right: null }); }
   function campAnswer(pick) {
     if (!camp || camp.pick != null) return;
     const right = pick === STUDY_CASES[camp.idx].out.dir;
@@ -500,6 +514,14 @@ export default function PressureGame() {
     setCampDoneAt({ ...campDoneAt, [t]: true });
     if (right) { setInsight(insight + 2); itmAudio.chime(); } else { itmAudio.womp(); }
     setCamp({ ...camp, pick, right });
+  }
+  function conceptAnswer(optIdx) {
+    if (!camp || camp.pick != null) return;
+    const right = optIdx === CONCEPTS[camp.idx].answer;
+    setActs(acts - 1);
+    setCampDoneAt({ ...campDoneAt, [t]: true });
+    if (right) { setInsight(insight + 1); itmAudio.chime(); } else { itmAudio.womp(); }
+    setCamp({ ...camp, pick: optIdx, right });
   }
   function buy(id, amt) {
     const p = price(id); const a = Math.min(amt, cash); if (a < 1) return;
@@ -587,7 +609,7 @@ export default function PressureGame() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function restart() { setCamp(null); setCampDoneAt({}); campSeen.current = []; setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDugAt({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setResumed(false); setPhase('intro');
+  function restart() { setCamp(null); setCampDoneAt({}); campSeen.current = []; conceptSeen.current = []; campPending.current = {}; setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDugAt({}); setPend({}); setSalDone({}); setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0); setRentWarn(null); setUnlocked(START_WATCH); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]); setPouchOpen(false); setFlash(''); setFree(false); setResumed(false); setPhase('intro');
     // Drop the saved run as well, or the next visit would resume the run the
     // player just abandoned. The pouch is kept — that knowledge is earned.
     saveSlice('pressure', { pouch: loadPouch(), run: null });
@@ -882,48 +904,93 @@ export default function PressureGame() {
           </div>
         )}
 
-        {camp && (() => { const C = STUDY_CASES[camp.idx]; const answered = camp.pick != null; return (
-          <div className="pg-pouch-wrap">
+        {camp && (
+          <div className="pg-pouch-wrap" onClick={() => { if (!camp.mode || camp.mode === 'choose' || camp.pick == null) setCamp(null); }}>
             <div className="pg-pouch-panel" onClick={(e) => e.stopPropagation()}>
               <div className="pg-map-head">
                 <span className="pg-map-title">Night school</span>
-                <span className="pg-map-score">a real moment from history — names hidden</span>
+                <span className="pg-map-score">1 move · once a period</span>
               </div>
-              <p className="ns-title">{C.title}</p>
-              <p className="ns-sub">{C.sub}</p>
-              {!answered && <p className="ns-sal">Sal, from the couch: "books, cuz? the market's RIGHT THERE."</p>}
-              {C.clues.map((cl, i) => (
-                <div className="ns-clue" key={i}>
-                  <span className={'ns-chip ' + (cl.side === 1 ? 'up' : 'down')}>{cl.side === 1 ? 'says UP' : 'says DOWN'}</span>
-                  <div className="ns-clue-body">
-                    <b>{cl.label}</b>
-                    <span>{cl.text}</span>
-                    <em>{cl.s === 3 ? 'a very strong clue' : cl.s === 2 ? 'a strong clue' : 'a quieter clue'}</em>
-                  </div>
-                </div>
-              ))}
-              {!answered ? (
+
+              {camp.mode === 'choose' && (
                 <React.Fragment>
-                  <div className="ns-btns">
-                    <button className="ns-btn up" disabled={acts <= 0} onClick={() => campAnswer(1)}>It went UP</button>
-                    <button className="ns-btn down" disabled={acts <= 0} onClick={() => campAnswer(-1)}>It went DOWN</button>
-                  </div>
-                  <p className="ns-note">Costs 1 move. Read it right and earn 2 insight — study only beats digging if you're actually good.</p>
-                </React.Fragment>
-              ) : (
-                <React.Fragment>
-                  <div className={'ns-verdict ' + (camp.right ? 'ok' : 'no')}>
-                    <b>{camp.right ? 'You read it right.' : 'You read it wrong.'}</b> It went {C.out.dir === 1 ? 'UP' : 'DOWN'} {C.out.move}% {C.out.when}.
-                  </div>
-                  <p className="ns-reveal">It was <b>{C.name}</b>. {C.story}</p>
-                  {C.fair && <p className="ns-lesson">The careful read: {C.fair.note}</p>}
-                  <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{camp.right ? '+2 insight earned.' : 'No insight tonight — but the lesson stays.'}</p>
-                  <button className="pg-pouch-x" onClick={() => setCamp(null)}>Back to the desk</button>
+                  <p className="ns-sal">Sal, from the couch: "books, cuz? the market's RIGHT THERE."</p>
+                  <button className="ns-course" onClick={campPickCase}>
+                    <b>A real moment from history</b>
+                    <span>Names hidden, real clues. Call UP or DOWN — right earns 2 insight.</span>
+                  </button>
+                  <button className="ns-course" onClick={campPickConcept}>
+                    <b>An investing basic</b>
+                    <span>Limit orders, bet sizing, diversification… Learn it, apply it once — right earns 1 insight.</span>
+                  </button>
+                  <button className="pg-pouch-x" onClick={() => setCamp(null)}>Not tonight</button>
                 </React.Fragment>
               )}
+
+              {camp.mode === 'case' && (() => { const C = STUDY_CASES[camp.idx]; const answered = camp.pick != null; return (
+                <React.Fragment>
+                  <p className="ns-title">{C.title}</p>
+                  <p className="ns-sub">{C.sub}</p>
+                  {C.clues.map((cl, i) => (
+                    <div className="ns-clue" key={i}>
+                      <span className={'ns-chip ' + (cl.side === 1 ? 'up' : 'down')}>{cl.side === 1 ? 'says UP' : 'says DOWN'}</span>
+                      <div className="ns-clue-body">
+                        <b>{cl.label}</b>
+                        <span>{cl.text}</span>
+                        <em>{cl.s === 3 ? 'a very strong clue' : cl.s === 2 ? 'a strong clue' : 'a quieter clue'}</em>
+                      </div>
+                    </div>
+                  ))}
+                  {!answered ? (
+                    <React.Fragment>
+                      <div className="ns-btns">
+                        <button className="ns-btn up" disabled={acts <= 0} onClick={() => campAnswer(1)}>It went UP</button>
+                        <button className="ns-btn down" disabled={acts <= 0} onClick={() => campAnswer(-1)}>It went DOWN</button>
+                      </div>
+                      <p className="ns-note">Answering costs the move. Right earns 2 insight — study only beats digging if you can actually read.</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Come back later — this case will wait</button>
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <div className={'ns-verdict ' + (camp.right ? 'ok' : 'no')}>
+                        <b>{camp.right ? 'You read it right.' : 'You read it wrong.'}</b> It went {C.out.dir === 1 ? 'UP' : 'DOWN'} {C.out.move}% {C.out.when}.
+                      </div>
+                      <p className="ns-reveal">It was <b>{C.name}</b>. {C.story}</p>
+                      {C.fair && <p className="ns-lesson">The careful read: {C.fair.note}</p>}
+                      <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{camp.right ? '+2 insight earned.' : 'No insight tonight — but the lesson stays.'}</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Back to the desk</button>
+                    </React.Fragment>
+                  )}
+                </React.Fragment>
+              ); })()}
+
+              {camp.mode === 'concept' && (() => { const C = CONCEPTS[camp.idx]; const answered = camp.pick != null; return (
+                <React.Fragment>
+                  <p className="ns-title">{C.term}</p>
+                  <p className="ns-what">{C.what}</p>
+                  <p className="ns-example">{C.example}</p>
+                  <p className="ns-q">{C.q}</p>
+                  {C.opts.map((o, i) => {
+                    const cls = answered ? (i === C.answer ? ' right' : i === camp.pick ? ' picked-wrong' : '') : '';
+                    return <button key={i} className={'ns-opt' + cls} disabled={answered || acts <= 0} onClick={() => conceptAnswer(i)}>{o}</button>;
+                  })}
+                  {!answered ? (
+                    <React.Fragment>
+                      <p className="ns-note">Answering costs the move. Right earns 1 insight.</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Come back later — this lesson will wait</button>
+                    </React.Fragment>
+                  ) : (
+                    <React.Fragment>
+                      <p className="ns-lesson">{C.why}</p>
+                      <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{camp.right ? '+1 insight earned.' : 'No insight tonight — but now you know.'}</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Back to the desk</button>
+                    </React.Fragment>
+                  )}
+                </React.Fragment>
+              ); })()}
             </div>
           </div>
-        ); })()}
+        )}
 
         <button className={'pg-btn pg-primary pg-end' + (rentDanger ? ' danger' : '')} onClick={endMonth}>
           {rentDanger ? `Pay rent ${fmt(RENT)} — you're short` : `End period · pay ${fmt(RENT)} rent →`}
