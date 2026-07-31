@@ -99,11 +99,13 @@ export default function AccountBar() {
 }
 
 function AccountDialog({ onClose }) {
-  const [mode, setMode] = useState('register'); // most first-timers need an account
+  // 'register' | 'login' | 'forgot' — most first-timers need an account.
+  const [mode, setMode] = useState('register');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false);
   const [googleReady, setGoogleReady] = useState(false);
   const googleSlot = useRef(null);
@@ -131,11 +133,24 @@ function AccountDialog({ onClose }) {
     return () => { cancelled = true; };
   }, [googleReady, onClose]);
 
+  function switchMode(next) {
+    setMode(next);
+    setError('');
+    setNotice('');
+  }
+
   async function submit(e) {
     e.preventDefault();
     setError('');
     setBusy(true);
     try {
+      if (mode === 'forgot') {
+        await playkit.requestPasswordReset(email);
+        // The server answers the same whether or not the address exists, and so
+        // does this: telling the player which it was would undo that.
+        setNotice('If that address has an account, a reset link is on its way.');
+        return;
+      }
       const u =
         mode === 'register'
           ? await playkit.register(email, password, displayName)
@@ -153,13 +168,21 @@ function AccountDialog({ onClose }) {
   return (
     <div className="acct-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="acct-dialog" role="dialog" aria-modal="true" aria-label="Save your progress">
-        <h2 className="acct-title">Save your progress</h2>
+        <h2 className="acct-title">
+          {mode === 'forgot' ? 'Reset your password' : 'Save your progress'}
+        </h2>
         <p className="acct-sub">
-          An account keeps your runs and lets you pick up on any device. Entirely optional.
+          {mode === 'forgot'
+            ? "Enter the email you signed up with and we'll send a link to set a new password."
+            : 'An account keeps your runs and lets you pick up on any device. Entirely optional.'}
         </p>
 
-        <div ref={googleSlot} className="acct-google" />
-        {googleReady && <div className="acct-or"><span>or</span></div>}
+        {mode !== 'forgot' && (
+          <>
+            <div ref={googleSlot} className="acct-google" />
+            {googleReady && <div className="acct-or"><span>or</span></div>}
+          </>
+        )}
 
         <form className="acct-form" onSubmit={submit}>
           {mode === 'register' && (
@@ -173,7 +196,7 @@ function AccountDialog({ onClose }) {
             />
           )}
           <input
-            ref={mode === 'login' ? firstField : null}
+            ref={mode === 'register' ? null : firstField}
             className="acct-input"
             type="email"
             placeholder="Email"
@@ -182,31 +205,49 @@ function AccountDialog({ onClose }) {
             autoComplete="email"
             required
           />
-          <input
-            className="acct-input"
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
-            required
-          />
+          {mode !== 'forgot' && (
+            <input
+              className="acct-input"
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
+              required
+            />
+          )}
 
           {error && <p className="acct-error">{error}</p>}
+          {notice && <p className="acct-notice">{notice}</p>}
 
-          <button className="acct-primary" type="submit" disabled={busy}>
-            {busy ? '…' : mode === 'register' ? 'Create account' : 'Sign in'}
+          <button className="acct-primary" type="submit" disabled={busy || Boolean(notice)}>
+            {busy
+              ? '…'
+              : mode === 'register'
+                ? 'Create account'
+                : mode === 'forgot'
+                  ? 'Send reset link'
+                  : 'Sign in'}
           </button>
         </form>
 
+        {mode === 'login' && (
+          <p className="acct-switch">
+            <button type="button" className="acct-link" onClick={() => switchMode('forgot')}>
+              Forgot your password?
+            </button>
+          </p>
+        )}
+
         <p className="acct-switch">
-          {mode === 'register' ? 'Already have an account?' : 'New here?'}{' '}
+          {mode === 'register' && 'Already have an account? '}
+          {mode === 'login' && 'New here? '}
           <button
             type="button"
             className="acct-link"
-            onClick={() => { setMode(mode === 'register' ? 'login' : 'register'); setError(''); }}
+            onClick={() => switchMode(mode === 'register' ? 'login' : mode === 'forgot' ? 'login' : 'register')}
           >
-            {mode === 'register' ? 'Sign in' : 'Create one'}
+            {mode === 'register' ? 'Sign in' : mode === 'forgot' ? 'Back to sign in' : 'Create one'}
           </button>
         </p>
 

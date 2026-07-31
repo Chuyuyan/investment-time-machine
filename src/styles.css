@@ -6611,3 +6611,5 @@ body:has(.core) {
 .ns-opt:disabled { cursor: default; }
 .ns-opt.right { border-color: #35c07a; background: rgba(53, 192, 122, 0.12); color: #bfead2; }
 .ns-opt.picked-wrong { border-color: #ff5f6a; background: rgba(255, 95, 106, 0.1); color: #f2c9cd; }
+
+.acct-notice { margin: 0; font-size: 12px; line-height: 1.5; color: var(--green); }
