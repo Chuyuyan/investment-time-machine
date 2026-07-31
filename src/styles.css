@@ -6408,3 +6408,24 @@ body {
   0%, 70% { opacity: 1; }
   100% { opacity: 0; }
 }
+
+/* Google sign-in slot — Google draws its own button inside. */
+.account-google { display: flex; justify-content: center; min-height: 0; }
+.account-google:empty { display: none; }
+
+.account-or {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+.account-or::before,
+.account-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}

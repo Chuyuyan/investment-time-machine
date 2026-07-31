@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { mountGoogleButton } from '../lib/playkit.js';
 import {
   playkit,
   accountsEnabled,
@@ -6,6 +7,7 @@ import {
   setUser,
   subscribeUser,
   restoreSession,
+  googleClientId,
 } from '../playkitClient.js';
 
 /**
@@ -36,6 +38,25 @@ export default function AccountBar() {
   useEffect(() => {
     if (open) emailRef.current?.focus();
   }, [open, mode]);
+
+  // Google's button has to be drawn by Google's own script into a real node,
+  // so it mounts once the form opens. If Google can't be reached the slot just
+  // stays empty and email sign-in still works.
+  const googleSlot = useRef(null);
+  const [googleReady, setGoogleReady] = useState(false);
+
+  useEffect(() => {
+    if (!open || !googleClientId || !googleSlot.current || googleReady) return;
+    let cancelled = false;
+    mountGoogleButton(playkit, {
+      clientId: googleClientId,
+      container: googleSlot.current,
+      onSignedIn: (u) => { setUser(u); setOpen(false); },
+      onError: () => setError('Google sign-in failed. Try email instead.'),
+      width: 218,
+    }).then((ok) => { if (!cancelled) setGoogleReady(ok); });
+    return () => { cancelled = true; };
+  }, [open, googleReady]);
 
   if (!accountsEnabled) return null;
 
@@ -98,6 +119,9 @@ export default function AccountBar() {
               Create account
             </button>
           </div>
+
+          <div ref={googleSlot} className="account-google" />
+          {googleReady && <div className="account-or"><span>or</span></div>}
 
           {mode === 'register' && (
             <input

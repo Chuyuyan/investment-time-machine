@@ -16,6 +16,9 @@ export const playkit = accountsEnabled
 /** The leaderboard ranks Decision Quality, not returns. */
 export const DQ_BOARD = 'decision-quality';
 
+/** Google OAuth client ID. Public by design — it ships inside the bundle. */
+export const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '';
+
 /*
  * A tiny auth store.
  *
