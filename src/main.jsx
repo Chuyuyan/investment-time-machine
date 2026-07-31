@@ -8,6 +8,7 @@ import DeskGame from './components/DeskGame.jsx';
 import RunGame from './components/RunGame.jsx';
 import InvestGame from './components/InvestGame.jsx';
 import PressureGame from './components/PressureGame.jsx';
+import AccountBar from './components/AccountBar.jsx';
 import './styles.css';
 
 // Prototype toggles:
@@ -29,8 +30,11 @@ const Root =
   proto === 'decision' ? DecisionClimax :
   App;
 
+// The account bar sits above the router, not inside App: every prototype is a
+// separate root, and sign-in should be reachable from all of them.
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <AccountBar />
     <Root />
   </React.StrictMode>,
 );

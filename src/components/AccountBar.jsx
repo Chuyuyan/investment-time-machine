@@ -1,11 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { playkit, accountsEnabled } from '../playkitClient.js';
+import {
+  playkit,
+  accountsEnabled,
+  getUser,
+  setUser,
+  subscribeUser,
+  restoreSession,
+} from '../playkitClient.js';
 
 /**
  * Small sign-in affordance. Deliberately unobtrusive: an account is optional,
  * so this must never look like a wall in front of the game.
+ *
+ * Self-contained by design — it reads the signed-in user from the shared store
+ * rather than from props, so it can be mounted once above every entry point
+ * (the main campaign and each ?proto= slice) instead of only inside App.
  */
-export default function AccountBar({ user, onUser }) {
+export default function AccountBar() {
+  const [user, setLocalUser] = useState(getUser);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState('login'); // 'login' | 'register'
   const [email, setEmail] = useState('');
@@ -14,6 +26,12 @@ export default function AccountBar({ user, onUser }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const emailRef = useRef(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeUser(setLocalUser);
+    restoreSession();
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     if (open) emailRef.current?.focus();
@@ -30,7 +48,7 @@ export default function AccountBar({ user, onUser }) {
         mode === 'register'
           ? await playkit.register(email, password, displayName)
           : await playkit.login(email, password);
-      onUser(u);
+      setUser(u);
       setOpen(false);
       setPassword('');
     } catch (err) {
@@ -42,7 +60,7 @@ export default function AccountBar({ user, onUser }) {
 
   async function signOut() {
     await playkit.logout();
-    onUser(null);
+    setUser(null);
   }
 
   if (user) {

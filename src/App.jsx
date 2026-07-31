@@ -3,12 +3,17 @@ import { campaign, whys, contextsByName, motivationsById } from './content.js';
 import Intro from './components/Intro.jsx';
 import DayScreen from './components/DayScreen.jsx';
 import Autopsy from './components/Autopsy.jsx';
-import AccountBar from './components/AccountBar.jsx';
 import Leaderboard from './components/Leaderboard.jsx';
 import { runCampaign } from './engine/money.js';
 import { dqAverage, riskBucket, verdict } from './engine/scoring.js';
 import { emptyVector, accumulate, nearestArchetype } from './engine/dna.js';
-import { playkit, accountsEnabled, DQ_BOARD } from './playkitClient.js';
+import {
+  playkit,
+  accountsEnabled,
+  DQ_BOARD,
+  getUser,
+  subscribeUser,
+} from './playkitClient.js';
 
 const initialRun = {
   chosenIds: [],
@@ -22,15 +27,12 @@ export default function App() {
   const [dayIndex, setDayIndex] = useState(0);
   const [run, setRun] = useState(initialRun);
   const [results, setResults] = useState(null);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(getUser);
   const [savedRuns, setSavedRuns] = useState(0);
 
-  // Resume a session from a previous visit. Failure is fine — the player just
-  // stays anonymous.
-  useEffect(() => {
-    if (!accountsEnabled) return;
-    playkit.restore().then(setUser).catch(() => {});
-  }, []);
+  // The account bar (mounted above the router) owns sign-in and session
+  // restore; App just follows who is currently signed in.
+  useEffect(() => subscribeUser(setUser), []);
 
   /**
    * Records a finished run for signed-in players: the full decision history
@@ -110,18 +112,12 @@ export default function App() {
   }
 
   if (screen === 'intro') {
-    return (
-      <>
-        <AccountBar user={user} onUser={setUser} />
-        <Intro meta={campaign.meta} onStart={startGame} />
-      </>
-    );
+    return <Intro meta={campaign.meta} onStart={startGame} />;
   }
 
   if (screen === 'autopsy') {
     return (
       <>
-        <AccountBar user={user} onUser={setUser} />
         <Autopsy
           results={results}
           campaign={campaign}
