@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { money } from '../format.js';
+import { getUser, loadSlice, saveSlice, restoreSession } from '../playkitClient.js';
 
 // ============================================================================
 // DAY ONE — the morning that earns the decision.
@@ -53,6 +54,7 @@ const PHASE_ORDER = Object.keys(PHASE_LABELS);
 // immune to StrictMode's double-invoke and dev HMR remounts. A real reload
 // re-evaluates the module and starts fresh.
 let CURR_SESSION = null; // { S, H }
+let cloudTimer = null;   // debounce handle for mirroring the record to the account
 let CURR_PHASE = 'promise';
 
 const TOTAL = 10000;
@@ -374,6 +376,28 @@ export default function DecisionClimax() {
   // phase timeline + the moment they looked away (tab blur) or left (pagehide),
   // persisted to localStorage so a quit is captured. Headline: did they reach —
   // and act on — Day Two? Viewable at ?report=1; nothing shows during play.
+  // Pull the account's record in, so a playtest history started on another
+  // device is not lost. Merged by id rather than replaced — both sides may hold
+  // sessions the other has never seen.
+  useEffect(() => {
+    if (REPORT) return;
+    let cancelled = false;
+    (async () => {
+      await restoreSession();
+      const cloud = await loadSlice('decision');
+      if (cancelled || !cloud?.sessions?.length || !CURR_SESSION) return;
+      const byId = new Map(cloud.sessions.map((x) => [x.id, x]));
+      for (const local of CURR_SESSION.H) byId.set(local.id, local);
+      CURR_SESSION.H = [...byId.values()].slice(-15);
+      try {
+        localStorage.setItem('itm_sessions', JSON.stringify(CURR_SESSION.H));
+      } catch {
+        /* ignore */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   useEffect(() => {
     if (REPORT) return;
     if (!CURR_SESSION) {
@@ -407,6 +431,14 @@ export default function DecisionClimax() {
         localStorage.setItem('itm_sessions', JSON.stringify(CURR_SESSION.H));
       } catch {
         /* ignore */
+      }
+      // Mirror to the account so the record follows the player between
+      // devices. Debounced, because this is called on almost every beat.
+      if (getUser()) {
+        clearTimeout(cloudTimer);
+        cloudTimer = setTimeout(() => {
+          saveSlice('decision', { sessions: CURR_SESSION.H });
+        }, 2000);
       }
     };
     const mark = (kind) => {

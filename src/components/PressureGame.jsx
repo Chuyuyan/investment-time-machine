@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { itmAudio } from '../audio.js';
 import { CASES as STUDY_CASES } from './CoreLoop.jsx';
 import { CONCEPTS } from '../lessons.js';
+import { ERA_DOTCOM, DOTCOM_COLORS } from '../eras-dotcom.js';
 import { getUser, loadSlice, saveSlice, restoreSession } from '../playkitClient.js';
 
 /*
@@ -171,6 +172,45 @@ const SAL_BASE = {
   3: { mood: 'greedy', line: "Everyone's getting rich! My guy runs a newsletter — $200 and he hands you the next 10×. He swears Peloton and Zoom go to the moon. In or out?", choices: [{ label: 'Buy the tip ($200)', need: 200, eff: { cash: -200, reveal: ['PTON', 'ZM'] }, note: 'You pay — then research them yourself.' }, { label: 'Pass' }] },
 };
 
+Object.assign(COLORS, DOTCOM_COLORS);
+
+// Chapter 1 wraps the data above; chapter 2 lives in eras-dotcom.js. The pouch
+// is shared across eras on purpose — RATES, Apple and Microsoft exist in both,
+// so what you prove in 2022 comes back to life in 1999.
+const ERA_COVID = {
+  id: 'covid', num: 1, requires: null,
+  title: "Rent's due", sub: '2020\u20132022 \u00b7 the crash, the mania, the bust',
+  startLabel: 'February 2020', endLabel: 'June 2022',
+  dates: DATES, moods: MUSIC_MOODS, headlines: HEADLINE,
+  stormAt: [1], alarmAt: 1,
+  startWatch: START_WATCH, salDarlings: ['PTON', 'ZM'], darlingUntil: 3,
+  companies: COMPANIES, info: INFO, leads: LEADS, forces: FORCES, truth: TRUTH,
+  sal: {
+    base: SAL_BASE,
+    steal: { line: "Funny thing, cuz \u2014 you kept slamming the door on me. So I let myself in and 'borrowed' $700 from your drawer. Guess we're even now." },
+    warn: { line: "Cuz, you always spot me when I'm down \u2014 so straight up: I'm in deep on Peloton and Zoom, but something feels wrong. Get out while you can. And here, take this back.", cash: 600, reveal: ['PTON', 'ZM'], note: 'He pays you back \u2014 and hands you a real warning.' },
+    plant: { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. And write this in that little bag of yours, cuz: rate hikes can't touch us \u2014 they HELP Tesla!!", plant: { force: 'RATES', company: 'TSLA', dir: 'helps' }, accept: "Write Sal's line in the pouch", decline: 'Sal\u2026 please be careful', note: "His call, in your pouch. Free \u2014 but it's HIS." },
+    final: { mood: 'panic', line: "IT'S ALL CRASHING, CUZ!! Peloton, Zoom \u2014 everything's going to ZERO!! SELL IT ALL, RIGHT NOW!! Don't think \u2014 just DUMP EVERYTHING!!", doLabel: 'Panic \u2014 dump everything', doNote: "Do it Sal's way. Sell it all at the bottom.", wiseLabel: "No \u2014 I'll trust my own read", wiseNote: 'Stay calm. Stick to your own analysis.' },
+    epi: {
+      wiseIndep: "\u2026Wait. You didn't panic. You've been tuning me out all year, cuz \u2014 and you were right, every single time. \u2026Huh. Maybe I should've been listening to YOU.",
+      wise: "\u2026Wait. You didn't panic. You just looked at it and decided for yourself. \u2026Huh. Maybe I should've been listening to you this whole time.",
+      refused: "I lost it all, cuz. \u2026And no, we're not square after I took your cash. Don't look at me like that.",
+      helped: "I lost it all \u2014 but you kept me afloat when it mattered. That's worth more than money. Crashing at Mom's for a while.",
+      neutral: "I lost it all, cuz. Peloton, Zoom, everything. That newsletter guy was a fraud. Moving back in with Mom.",
+    },
+  },
+  blurbs: {
+    win: (net) => `You turned $4,000 into ${net} while the bills never stopped \u2014 through the crash, the mania, and the bust. Your money now works harder than your rent. That's escape velocity.`,
+    survive: "You kept the lights on through a crash, a bubble, and its collapse. You didn't get rich \u2014 but you didn't get evicted, and you didn't end up like Sal.",
+  },
+};
+if (!ERA_DOTCOM.sal.epi.wiseIndep) ERA_DOTCOM.sal.epi.wiseIndep = ERA_DOTCOM.sal.epi.wise;
+const ERAS = [ERA_COVID, ERA_DOTCOM];
+
+const CHAPTERS_KEY = 'itm_chapters_v1';
+const loadChapters = () => { try { return JSON.parse(localStorage.getItem(CHAPTERS_KEY)) || {}; } catch (e) { return {}; } };
+const saveChapter = (id, net) => { try { const c = loadChapters(); c[id] = { done: true, net: Math.max(net, (c[id] && c[id].net) || 0) }; localStorage.setItem(CHAPTERS_KEY, JSON.stringify(c)); } catch (e) { /* private mode */ } };
+
 // Cousin Sal: huge head, tiny body, GIANT glasses whose lenses are his expression screen.
 function SalGuy({ mood, thief }) {
   const lens = (cx) => {
@@ -286,10 +326,10 @@ const POUCH_KEY = 'itm_pouch_v1';
 const loadPouch = () => { try { return JSON.parse(localStorage.getItem(POUCH_KEY)) || []; } catch { return []; } };
 const savePouch = (links) => { try { localStorage.setItem(POUCH_KEY, JSON.stringify(links)); } catch (e) { /* private mode */ } };
 
-function MarketChart({ upto, watch }) {
+function MarketChart({ upto, watch, companies, dates }) {
   const n = upto + 1;
   if (n < 2) return null;
-  const series = COMPANIES.filter((c) => watch.includes(c.id)).map((c) => ({ id: c.id, name: c.name, vals: c.prices.slice(0, n).map((p) => (p / c.prices[0]) * 100) }));
+  const series = companies.filter((c) => watch.includes(c.id) && c.prices[0] != null).map((c) => ({ id: c.id, name: c.name, vals: c.prices.slice(0, n).map((p) => (p / c.prices[0]) * 100) }));
   const all = series.flatMap((s) => s.vals).concat([100]);
   const min = Math.min(...all), max = Math.max(...all);
   const W = 360, H = 148, pL = 6, pR = 6, pT = 8, pB = 16;
@@ -298,14 +338,14 @@ function MarketChart({ upto, watch }) {
   const sorted = series.slice().sort((a, b) => b.vals[n - 1] - a.vals[n - 1]);
   return (
     <div className="pg-chart-card">
-      <p className="pg-chart-h">Every company since Feb 2020 — as if you'd put $100 in each</p>
+      <p className="pg-chart-h">Every company since {dates[0]} — as if you'd put $100 in each</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="pg-chart">
         <line className="pg-chart-base" x1={pL} x2={W - pR} y1={Y(100)} y2={Y(100)} />
         <text className="pg-chart-lbl" x={pL} y={Y(100) - 3}>$100</text>
         {series.map((s) => <polyline key={s.id} points={s.vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')} fill="none" stroke={COLORS[s.id]} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />)}
         {series.map((s) => <circle key={s.id} cx={X(n - 1)} cy={Y(s.vals[n - 1])} r="3" fill={COLORS[s.id]} />)}
-        <text className="pg-chart-x" x={pL} y={H - 3}>{DATES[0]}</text>
-        <text className="pg-chart-x" x={W - pR} y={H - 3} textAnchor="end">{DATES[upto]}</text>
+        <text className="pg-chart-x" x={pL} y={H - 3}>{dates[0]}</text>
+        <text className="pg-chart-x" x={W - pR} y={H - 3} textAnchor="end">{dates[upto]}</text>
       </svg>
       <div className="pg-chart-legend">
         {sorted.map((s) => { const chg = s.vals[n - 1] / 100 - 1; return <span key={s.id} className="pg-leg"><span className="pg-dot" style={{ background: COLORS[s.id] }} />{s.name} <em className={cls(chg)}>{sPct(chg)}</em></span>; })}
@@ -316,6 +356,13 @@ function MarketChart({ upto, watch }) {
 }
 
 export default function PressureGame() {
+  // Which chapter is loaded. Component-scope consts shadow the module-level
+  // chapter-1 data, so every reference below follows the active era.
+  const [eraId, setEraId] = useState('covid');
+  const ERA = ERAS.find((e) => e.id === eraId) || ERA_COVID;
+  /* eslint-disable no-shadow */
+  const { dates: DATES, moods: MUSIC_MOODS, headlines: HEADLINE, companies: COMPANIES, info: INFO, leads: LEADS, forces: FORCES, truth: TRUTH, startWatch: START_WATCH } = ERA;
+  /* eslint-enable no-shadow */
   const [phase, setPhase] = useState('intro');
   const [t, setT] = useState(0);
   const [cash, setCash] = useState(START);
@@ -360,13 +407,14 @@ export default function PressureGame() {
   const skipSave = useRef(true);   // don't write back the state we just loaded
 
   const snapshot = () => ({
-    v: 1,
+    v: 2, era: eraId,
     phase, t, cash, shares, avg, acts, dugAt, pend, salDone,
     helped, refused, blocked, indep, wiseFinal, robbing,
     unlocked, insight, myLinks, free,
   });
 
   const applySnapshot = (s) => {
+    setEraId(s.era ?? 'covid');
     setPhase(s.phase ?? 'play');
     setT(s.t ?? 0);
     setCash(s.cash ?? START);
@@ -429,19 +477,20 @@ export default function PressureGame() {
   const leadIds = new Set((LEADS[t] || []).map((l) => l.id));
 
   function salFor(turn) {
+    const S = ERA.sal;
     if (turn === 4) {
-      if (refused >= 2) return { mood: 'greedy', line: "Funny thing, cuz — you kept slamming the door on me. So I let myself in and 'borrowed' $700 from your drawer. Guess we're even now.", choices: [{ label: '…Sal.', eff: { steal: 700 } }] };
-      if (helped >= 1 && roll < 0.8) return { mood: 'worried', line: "Cuz, you always spot me when I'm down — so straight up: I'm in deep on Peloton and Zoom, but something feels wrong. Get out while you can. And here, take this back.", choices: [{ label: 'Thanks, Sal — you too', eff: { cash: 600, reveal: ['PTON', 'ZM'] }, note: 'He pays you back — and hands you a real warning.' }] };
-      return { mood: 'manic', line: "I re-mortgaged the house and put it ALL into Peloton and Zoom. And write this in that little bag of yours, cuz: rate hikes can't touch us — they HELP Tesla!!", choices: [{ label: "Write Sal's line in the pouch", eff: { plant: { force: 'RATES', company: 'TSLA', dir: 'helps' } }, note: "His call, in your pouch. Free — but it's HIS." }, { label: 'Sal… please be careful' }] };
+      if (refused >= 2) return { mood: 'greedy', line: S.steal.line, choices: [{ label: '…Sal.', eff: { steal: 700 } }] };
+      if (helped >= 1 && roll < 0.8) return { mood: 'worried', line: S.warn.line, choices: [{ label: 'Thanks, Sal — you too', eff: { cash: S.warn.cash, ...(S.warn.reveal ? { reveal: S.warn.reveal } : {}) }, note: S.warn.note }] };
+      return { mood: S.plant.mood || 'manic', line: S.plant.line, choices: [{ label: S.plant.accept, eff: { plant: S.plant.plant }, note: S.plant.note }, { label: S.plant.decline }] };
     }
     if (turn === 5) {
-      // The final crisis — Sal panics. This is the growth-arc reversal.
-      return { mood: 'panic', line: "IT'S ALL CRASHING, CUZ!! Peloton, Zoom — everything's going to ZERO!! SELL IT ALL, RIGHT NOW!! Don't think — just DUMP EVERYTHING!!", choices: [
-        { label: 'Panic — dump everything', eff: { dumpAll: true }, note: 'Do it Sal\'s way. Sell it all at the bottom.' },
-        { label: "No — I'll trust my own read", wise: true, note: 'Stay calm. Stick to your own analysis.' },
+      // The final crisis — the growth-arc reversal, era-flavoured.
+      return { mood: S.final.mood, line: S.final.line, choices: [
+        { label: S.final.doLabel, eff: S.final.allIn ? { allIn: S.final.allIn } : { dumpAll: true }, note: S.final.doNote },
+        { label: S.final.wiseLabel, wise: true, note: S.final.wiseNote },
       ] };
     }
-    return SAL_BASE[turn] || null;
+    return S.base[turn] || null;
   }
   const salEvt = !salDone[t] ? salFor(t) : null;
 
@@ -538,7 +587,7 @@ export default function PressureGame() {
   function applyTrade(id) {
     const a = pend[id] || 0;
     // Sal's 4th-wall block: he won't let you dump his darlings while he's still bullish.
-    if (a < 0 && (id === 'PTON' || id === 'ZM') && t <= 3 && !blocked[t + id] && (shares[id] || 0) * price(id) > 0.5) {
+    if (a < 0 && ERA.salDarlings.includes(id) && t <= ERA.darlingUntil && !blocked[t + id] && (shares[id] || 0) * price(id) > 0.5) {
       setInterject({ id, amt: -a }); return;
     }
     // Rent guard: warn before a buy that would leave you short for rent.
@@ -556,6 +605,14 @@ export default function PressureGame() {
     if (e.dumpAll) {
       const hv = COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * price(c.id), 0);
       setShares({}); setAvg({}); setCash(cash + hv);
+    } else if (e.allIn) {
+      const p = price(e.allIn);
+      if (p && cash > 1) {
+        const cur = shares[e.allIn] || 0; const ns = cur + cash / p;
+        const na = ((cur * (avg[e.allIn] || 0)) + cash) / ns;
+        setShares({ ...shares, [e.allIn]: ns }); setAvg({ ...avg, [e.allIn]: na }); setCash(0);
+        itmAudio.buy();
+      }
     } else {
       let nc = cash;
       if (e.cash) nc += e.cash;
@@ -601,11 +658,15 @@ export default function PressureGame() {
     if (won) setInsight(insight + won);                          // stake pays double when proven
     itmAudio.kaching();
     if (resolved.length) setTimeout(() => itmAudio.verdict(resolved.filter((r) => r.ok).length, resolved.filter((r) => !r.ok).length), 500);
-    if (nt > DATES.length - 1) { setCash(afterRent); setPhase('end'); itmAudio.win(); return; }
+    if (nt > DATES.length - 1) {
+      const endNet = afterRent + COMPANIES.reduce((sum, c) => sum + (shares[c.id] || 0) * (c.prices[t] || 0), 0);
+      saveChapter(eraId, endNet);
+      setCash(afterRent); setPhase('end'); itmAudio.win(); return;
+    }
     const nextNet = afterRent + COMPANIES.reduce((s, c) => s + (shares[c.id] || 0) * c.prices[nt], 0);
     setCash(afterRent); setT(nt); setActs(ACTIONS); setPend({}); setFlash('');   // dugAt persists — old intel stays, marked stale
-    if (nextNet >= FREEDOM) { setFree(true); setPhase('end'); itmAudio.win(); return; }
-    if (nt === 1) setTimeout(() => itmAudio.alarm(), 600);   // the crash hits
+    if (nextNet >= FREEDOM) { setFree(true); saveChapter(eraId, nextNet); setPhase('end'); itmAudio.win(); return; }
+    if (nt === ERA.alarmAt) setTimeout(() => itmAudio.alarm(), 600);   // the crash hits
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -615,33 +676,54 @@ export default function PressureGame() {
     saveSlice('pressure', { pouch: loadPouch(), run: null });
   }
 
+  function startEra(id) {
+    const era = ERAS.find((x) => x.id === id) || ERA_COVID;
+    setEraId(id);
+    setCamp(null); setCampDoneAt({}); campSeen.current = []; conceptSeen.current = []; campPending.current = {};
+    setT(0); setCash(START); setShares({}); setAvg({}); setActs(ACTIONS); setDugAt({}); setPend({}); setSalDone({});
+    setHelped(0); setRefused(0); setInterject(null); setBlocked({}); setIndep(0); setWiseFinal(false); setRobbing(0);
+    setRentWarn(null); setUnlocked(era.startWatch); setInsight(0); setMyLinks(loadPouch()); setVerdicts([]);
+    setPouchOpen(false); setFlash(''); setFree(false); setResumed(false);
+    itmAudio.start(soundOn);
+    setPhase('play');
+  }
+
   if (phase === 'intro') {
+    const prog = loadChapters();
     return (
       <div className="pg"><div className="pg-col pg-mid">{muteBtn}
-        <p className="pg-kick">Investment Time Machine · rent's due</p>
+        <p className="pg-kick">Investment Time Machine</p>
         <h1 className="pg-title">You're broke. Rent is due. Don't get evicted — get free.</h1>
+        {ERAS.map((era) => { const rec = prog[era.id]; const eraLocked = era.requires && !(prog[era.requires] && prog[era.requires].done); return (
+          <button key={era.id} className={'pg-chapter' + (eraLocked ? ' locked' : '')} disabled={eraLocked} onClick={() => startEra(era.id)}>
+            <span className="pg-ch-num">Chapter {era.num}</span>
+            <b>{era.title}</b>
+            <span className="pg-ch-sub">{era.sub}</span>
+            <span className={'pg-ch-state' + (rec && rec.done ? ' done' : '')}>{rec && rec.done ? `Cleared · best ${fmt(rec.net)}` : eraLocked ? `Finish chapter ${era.num - 1} to unlock` : `Start — ${era.startLabel}`}</span>
+          </button>
+        ); })}
         <ul className="pg-rules">
           <li><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</li>
-          <li><b>Time is tight.</b> Each period you get <b>3 moves</b> — investigate a company, or grind a side gig for $300.</li>
-          <li><b>Investigate for facts, not answers.</b> You get the real numbers, price and news — you decide what they mean. Each investigation also earns <b>💡 insight</b>, which you spend to follow new companies and to stake links in your pouch.</li>
+          <li><b>3 moves a period.</b> Investigate for facts and insight, grind a side gig for cash, or hit night school.</li>
           <li><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</li>
-          {myLinks.length > 0 && <li><b>🧧 Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> from past runs — what you've proven about the world stays with you.</li>}
+          {myLinks.length > 0 && <li><b>Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> — what you've proven about the world follows you into every era.</li>}
         </ul>
-        <button className="pg-btn pg-primary" onClick={() => { itmAudio.start(soundOn); setPhase('play'); }}>Start — February 2020 →</button>
       </div></div>
     );
   }
 
   if (phase === 'end') {
     const won = free || net >= FREEDOM;
+    const EPI = ERA.sal.epi;
     let epi;
-    if (wiseFinal) epi = { mood: 'worried', line: indep > 0 ? "…Wait. You didn't panic. You've been tuning me out all year, cuz — and you were right, every single time. …Huh. Maybe I should've been listening to YOU." : "…Wait. You didn't panic. You just looked at it and decided for yourself. …Huh. Maybe I should've been listening to you this whole time." };
-    else if (refused >= 2) epi = { mood: 'broke', line: "I lost it all, cuz. …And no, we're not square after I took your cash. Don't look at me like that." };
-    else if (helped >= 1) epi = { mood: 'broke', line: "I lost it all — but you kept me afloat when it mattered. That's worth more than money. Crashing at Mom's for a while." };
-    else epi = { mood: 'broke', line: "I lost it all, cuz. Peloton, Zoom, everything. That newsletter guy was a fraud. Moving back in with Mom." };
+    if (wiseFinal) epi = { mood: 'worried', line: indep > 0 ? EPI.wiseIndep : EPI.wise };
+    else if (refused >= 2) epi = { mood: 'broke', line: EPI.refused };
+    else if (helped >= 1) epi = { mood: 'broke', line: EPI.helped };
+    else epi = { mood: 'broke', line: EPI.neutral };
+    const nextEra = ERAS.find((e) => e.requires === eraId);
     return (
       <div className="pg"><div className="pg-col pg-mid">{muteBtn}
-        <p className="pg-kick">{won ? 'You made it out' : 'June 2022'}</p>
+        <p className="pg-kick">{won ? 'You made it out' : ERA.endLabel}</p>
         <h1 className="pg-title">{won ? "You're free." : 'You survived to the other side.'}</h1>
         <div className="pg-final"><span>Net worth</span><b className={cls(net / START - 1)}>{fmt(net)}</b></div>
         {verdicts.length > 0 && (
@@ -662,14 +744,15 @@ export default function PressureGame() {
           <div className="pg-epi-bubble"><p className="pg-dave-name">Cousin Sal</p><p className="pg-epi-line">"{epi.line}"</p></div>
         </div>
 
-        <p className="pg-lead">{won
-          ? `You turned $4,000 into ${fmt(net)} while the bills never stopped — through the crash, the mania, and the bust. Your money now works harder than your rent. That's escape velocity.`
-          : `You kept the lights on through a crash, a bubble, and its collapse. You didn't get rich — but you didn't get evicted, and you didn't end up like Sal.`}</p>
+        <p className="pg-lead">{won ? ERA.blurbs.win(fmt(net)) : ERA.blurbs.survive}</p>
         {indep > 0 && <p className="pg-lead pg-dim">You overruled Sal {indep} time{indep === 1 ? '' : 's'} and trusted your own read. That's the whole point.</p>}
         {myLinks.filter((l) => l.status !== 'guess').length > 0 && (
           <p className="pg-lead pg-dim">🧧 Your pouch keeps its {myLinks.filter((l) => l.status !== 'guess').length} tested link{myLinks.filter((l) => l.status !== 'guess').length > 1 ? 's' : ''}. The money resets — what you learned about the world doesn't.</p>
         )}
-        <button className="pg-btn pg-primary" onClick={restart}>Run it again →</button>
+        {nextEra && (
+          <button className="pg-btn pg-primary" onClick={() => startEra(nextEra.id)}>Chapter {nextEra.num} unlocked: {nextEra.title} →</button>
+        )}
+        <button className={'pg-btn ' + (nextEra ? 'pg-secondary' : 'pg-primary')} onClick={restart}>Back to chapters →</button>
       </div></div>
     );
   }
@@ -682,7 +765,7 @@ export default function PressureGame() {
   const mapAlerts = [];
   activeForces.forEach((f) => myLinks.forEach((l) => { if (l.force === f.id && l.status !== 'broken' && unlocked.includes(l.company)) mapAlerts.push({ f, l }); }));
   return (
-    <div className={'pg' + (t === 1 ? ' pg-storm' : '') + (salEvt && salEvt.mood === 'panic' ? ' pg-panicking' : '')}>
+    <div className={'pg' + (ERA.stormAt.includes(t) ? ' pg-storm' : '') + (salEvt && salEvt.mood === 'panic' ? ' pg-panicking' : '')}>
       <div className="pg-col">
         {muteBtn}
         <div className="pg-bar">
@@ -777,7 +860,7 @@ export default function PressureGame() {
         {/* the monitor on your desk — the market lives on its screen */}
         <div className="pg-monitor">
           <div className="pg-monitor-screen">
-            <MarketChart upto={t} watch={unlocked} />
+            <MarketChart upto={t} watch={unlocked} companies={COMPANIES} dates={DATES} />
             {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
           const p = price(c.id); const prev = t > 0 ? c.prices[t - 1] : null; const mv = prev ? p / prev - 1 : null;
           const pos = (shares[c.id] || 0) * p; const g = (shares[c.id] || 0) > 0 && (avg[c.id] || 0) > 0 ? p / avg[c.id] - 1 : 0;
@@ -829,12 +912,12 @@ export default function PressureGame() {
                     <div className="pg-locked" key={c.id}>
                       <div className="pg-locked-top">
                         <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name} <span className="pg-lockchip">not following</span></span>
-                        <span className="pg-pb"><b>${lp}</b>{lmv != null && <span className={'pg-mv ' + cls(lmv)}>{sPct(lmv)}</span>}</span>
+                        {lp != null ? <span className="pg-pb"><b>${lp}</b>{lmv != null && <span className={'pg-mv ' + cls(lmv)}>{sPct(lmv)}</span>}</span> : <span className="pg-na">not public yet</span>}
                       </div>
                       <p className="pg-teaser">{c.teasers[t]}</p>
                       <div className="pg-locked-btns">
-                        <button className="pg-unlock" disabled={cash < c.cost} onClick={() => unlockCash(c)}>Subscribe · {fmt(c.cost)}</button>
-                        <button className="pg-unlock xp" disabled={insight < c.xp} onClick={() => unlockXp(c)}>Use {c.xp} insight</button>
+                        <button className="pg-unlock" disabled={cash < c.cost || lp == null} onClick={() => unlockCash(c)}>Subscribe · {fmt(c.cost)}</button>
+                        <button className="pg-unlock xp" disabled={insight < c.xp || lp == null} onClick={() => unlockXp(c)}>Use {c.xp} insight</button>
                       </div>
                       {tight && <p className="pg-locked-warn">Paying leaves you short for rent.</p>}
                     </div>

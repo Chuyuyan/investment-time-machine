@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { money } from '../format.js';
+import { getUser, loadSlice, saveSlice, restoreSession } from '../playkitClient.js';
 
 // ============================================================================
 // THE NAKED LOOP, v3 — INSIGHT AS THE REWARD  (?proto=core)
@@ -649,8 +650,31 @@ export default function CoreLoop() {
 
   // the career persists — this is the "something to lose"
   useEffect(() => {
-    saveCareer({ bank: bankroll, marcus: marcusBank, runs: loadCareer().runs });
+    const career = { bank: bankroll, marcus: marcusBank, runs: loadCareer().runs };
+    saveCareer(career);
+    // Mirror it to the account, so the fund follows the player to another
+    // device. Signed out this is a no-op and nothing is sent.
+    if (getUser()) saveSlice('core', career);
   }, [bankroll, marcusBank]);
+
+  // Adopt the account's career on load, if it is further along than this
+  // device's. "Further along" is run count: the fund itself can go down, so
+  // comparing money would let a bad run overwrite real progress.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      await restoreSession();
+      const cloud = await loadSlice('core');
+      if (cancelled || !cloud || typeof cloud.bank !== 'number') return;
+      if ((cloud.runs ?? 0) > (loadCareer().runs ?? 0)) {
+        saveCareer(cloud);
+        setBankroll(cloud.bank);
+        setMarcusBank(cloud.marcus);
+        setRunStart(cloud.bank);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const c = order[i];
   const seen = history.map((h) => h.case); // revealed cases, in order

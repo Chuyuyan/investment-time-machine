@@ -6613,3 +6613,16 @@ body:has(.core) {
 .ns-opt.picked-wrong { border-color: #ff5f6a; background: rgba(255, 95, 106, 0.1); color: #f2c9cd; }
 
 .acct-notice { margin: 0; font-size: 12px; line-height: 1.5; color: var(--green); }
+
+/* chapter picker + secondary button */
+.pg-chapter { display: block; width: 100%; text-align: left; background: #1b2030; border: 1px solid #2c3346; border-radius: 14px; padding: 16px 18px; margin: 10px 0; cursor: pointer; transition: border-color 0.12s, transform 0.05s; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4); }
+.pg-chapter:hover:not(:disabled) { border-color: rgba(224, 166, 58, 0.55); }
+.pg-chapter:active:not(:disabled) { transform: translateY(1px); }
+.pg-chapter.locked { opacity: 0.5; cursor: default; }
+.pg-ch-num { display: block; font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #8f98ad; margin-bottom: 3px; }
+.pg-chapter b { display: block; font-family: Georgia, 'Times New Roman', serif; font-size: 20px; color: #f2f5fb; margin-bottom: 3px; }
+.pg-ch-sub { display: block; font-size: 13px; color: #8f98ad; margin-bottom: 9px; }
+.pg-ch-state { display: inline-block; font-size: 12px; font-weight: 800; color: #e7d08a; border: 1px solid rgba(224, 166, 58, 0.4); border-radius: 999px; padding: 4px 11px; }
+.pg-ch-state.done { color: #6fe0a0; border-color: rgba(53, 192, 122, 0.45); }
+.pg-secondary { display: block; width: 100%; margin-top: 10px; padding: 13px; font-size: 14px; font-weight: 700; color: #e7ecf6; background: #2a3145; border: 1px solid #3a4358; border-radius: 12px; cursor: pointer; }
+.pg-secondary:hover { background: #333c54; }
