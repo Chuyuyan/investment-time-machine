@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 470" width="900" height="470" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, sans-serif">
+  <style>
+    .bg   { fill: #0d1117; }
+    .card { fill: #161b22; stroke: #30363d; stroke-width: 1.5; rx: 10; }
+    .data { fill: #191f2b; stroke: #a371f7; stroke-width: 1.5; rx: 10; }
+    .eng  { fill: #16212b; stroke: #388bfd; stroke-width: 1.5; rx: 10; }
+    .out  { fill: #17212b; stroke: #3fb950; stroke-width: 1.5; rx: 10; }
+    .t    { fill: #e6edf3; font-size: 13.5px; font-weight: 600; }
+    .s    { fill: #8b949e; font-size: 11px; }
+    .lbl  { fill: #6e7681; font-size: 10.5px; letter-spacing: 0.08em; }
+    .line { stroke: #484f58; stroke-width: 1.4; fill: none; }
+    .note { fill: #6e7681; font-size: 10.5px; font-style: italic; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 L8 4 L0 8 z" fill="#484f58"/>
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="900" height="470"/>
+
+  <text class="lbl" x="40" y="36">CONTENT · PLAIN JSON, NO CODE</text>
+  <rect class="data" x="40" y="50" width="200" height="66"/>
+  <text class="t" x="56" y="76">campaign.json</text>
+  <text class="s" x="56" y="94">Days, signals, choices, outcomes</text>
+  <text class="s" x="56" y="108">— a campaign is data, not a build</text>
+
+  <rect class="data" x="40" y="130" width="200" height="52"/>
+  <text class="t" x="56" y="154">whys.json</text>
+  <text class="s" x="56" y="171">The motivation library</text>
+
+  <text class="lbl" x="300" y="36">ENGINE · PURE FUNCTIONS, NO UI IMPORTS</text>
+  <rect class="eng" x="300" y="50" width="250" height="132"/>
+  <text class="t" x="318" y="76">src/engine/</text>
+  <rect class="card" x="318" y="88" width="214" height="26"/>
+  <text class="s" x="330" y="105">money.js — portfolio &amp; return math</text>
+  <rect class="card" x="318" y="118" width="214" height="26"/>
+  <text class="s" x="330" y="135">scoring.js — Decision Quality</text>
+  <rect class="card" x="318" y="148" width="214" height="26"/>
+  <text class="s" x="330" y="165">dna.js — behavioural fingerprint</text>
+
+  <text class="lbl" x="610" y="36">UI · REACT + VITE</text>
+  <rect class="card" x="610" y="50" width="250" height="132"/>
+  <text class="t" x="628" y="76">Day screen → Why capture</text>
+  <text class="t" x="628" y="96">→ Autopsy → Multiverse</text>
+  <text class="s" x="628" y="118">Renders state. Holds no rules, so a</text>
+  <text class="s" x="628" y="132">balance change can never hide in a</text>
+  <text class="s" x="628" y="146">component.</text>
+  <text class="s" x="628" y="167">Prototype routes: ?proto=pressure · core · decision</text>
+
+  <path class="line" marker-end="url(#a)" d="M240 83 L296 100"/>
+  <path class="line" marker-end="url(#a)" d="M240 156 L296 130"/>
+  <path class="line" marker-end="url(#a)" d="M550 116 L606 116"/>
+
+  <text class="note" x="40" y="212">Content, rules, and presentation are separated so the rules can be tested without a browser — `node --test` runs the engine directly.</text>
+
+  <text class="lbl" x="40" y="266">SCORING · WHY THE NUMBER IS NOT THE MONEY</text>
+  <rect class="eng" x="40" y="280" width="380" height="86"/>
+  <text class="t" x="58" y="304">Decision Quality (DQ)</text>
+  <text class="s" x="58" y="324">Scored on the reasoning available at the time:</text>
+  <text class="s" x="58" y="340">position sizing, evidence sought, reaction to hype.</text>
+  <text class="s" x="58" y="356">A lucky reckless call still scores badly.</text>
+
+  <rect class="eng" x="440" y="280" width="200" height="86"/>
+  <text class="t" x="458" y="304">The Multiverse</text>
+  <text class="s" x="458" y="324">Replays your decisions</text>
+  <text class="s" x="458" y="340">through histories that</text>
+  <text class="s" x="458" y="356">did not happen.</text>
+
+  <text class="lbl" x="40" y="404">PERSISTENCE · OPTIONAL</text>
+  <rect class="out" x="40" y="416" width="600" height="40"/>
+  <text class="t" x="58" y="434" font-size="12.5">playkit — cloud save + a leaderboard ranked on DQ, never on returns</text>
+  <text class="s" x="58" y="449" font-size="10.5">Unset VITE_PLAYKIT_URL and the account UI does not render at all; the game plays the same offline.</text>
+
+  <path class="line" marker-end="url(#a)" d="M230 366 L230 412"/>
+  <path class="line" marker-end="url(#a)" d="M425 116 Q680 116 700 250 L700 276 Q700 290 660 290 L646 300"/>
+
+  <text class="note" x="440" y="404">Ranking money would reward the luck-chasing the game exists to unteach.</text>
+</svg>

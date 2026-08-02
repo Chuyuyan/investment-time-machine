@@ -19,10 +19,10 @@ Investing is simply the arena where those decisions happen. The real subject is
 life.
 
 <p align="center">
-  <img src="docs/screenshot.png" width="720" alt="A decision in the AI-Boom campaign: NVIDIA spikes 24% and the player must choose what to do with $10,000, weighing bullish hype, analyst caution, and a veteran's warning." />
+  <img src="docs/screenshot.png" width="820" alt="The Multiverse screen: the player's same decisions replayed through real history (+6.5%), a plausible bad world (-8%), and a catastrophic one (-19%), compared against a disciplined investor who averaged +9%." />
 </p>
 
-<p align="center"><em>Day 1 of the AI-Boom campaign — the same information a real investor had in May 2023, and no idea yet how it ends.</em></p>
+<p align="center"><em>The end of a run. Your decisions are replayed through histories that didn't happen — because whether this particular timeline was kind to you is the least interesting thing about them.</em></p>
 
 ---
 
@@ -44,6 +44,27 @@ life.
 
 The single bet: does the **Decision Autopsy** make a player say *"I thought I was
 right, but now I understand my decision better"*?
+
+---
+
+## Architecture
+
+<p align="center">
+  <img src="docs/architecture.svg" alt="JSON content feeds a pure-function engine, which a React UI renders; Decision Quality and the Multiverse both come from the engine, and playkit persistence is optional." width="880">
+</p>
+
+Three layers that do not reach into each other:
+
+- **Content** is JSON at the project root. Adding a campaign is authoring data, not
+  writing code.
+- **The engine** is pure functions with no UI imports, so `node --test` exercises the
+  actual rules — the money math, the DQ score, the behavioural fingerprint — without
+  a browser anywhere in the loop.
+- **The UI** renders state and owns no rules, which means a change to how money moves
+  cannot hide inside a component.
+
+Accounts are optional and bolted on at the edge: with `VITE_PLAYKIT_URL` unset the
+account UI does not render and the game never makes a network call.
 
 ---
 
