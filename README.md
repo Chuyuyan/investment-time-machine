@@ -1,5 +1,11 @@
 # Investment Time Machine
 
+<p align="center">
+  <img src="docs/hero.png" alt="A decision in the AI-boom campaign: three conflicting signals, four possible moves." width="820">
+</p>
+
+<p align="center"><a href="https://investment-time-machine.fly.dev"><b>Play it in your browser</b></a></p>
+
 A pixel-art **decision-training game**, not a stock simulator. Players relive real
 historical market events (the first campaign is the AI / NVDA boom) and make
 financial decisions under genuine uncertainty. The goal isn't to teach finance
