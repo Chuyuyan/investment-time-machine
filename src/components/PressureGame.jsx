@@ -3,6 +3,7 @@ import { itmAudio } from '../audio.js';
 import { CASES as STUDY_CASES } from './CoreLoop.jsx';
 import { CONCEPTS } from '../lessons.js';
 import { ERA_DOTCOM, DOTCOM_COLORS } from '../eras-dotcom.js';
+import { T, L, useLangTick } from '../i18n.jsx';
 import { getUser, loadSlice, saveSlice, restoreSession } from '../playkitClient.js';
 
 /*
@@ -201,7 +202,9 @@ const ERA_COVID = {
   },
   blurbs: {
     win: (net) => `You turned $4,000 into ${net} while the bills never stopped \u2014 through the crash, the mania, and the bust. Your money now works harder than your rent. That's escape velocity.`,
+    winZh: (net) => `账单从没停过，你还是把 $4,000 变成了 ${net}\u2014\u2014穿过崩盘、狂热与破裂。你的钱现在比房租跑得快。这就是逃逸速度。`,
     survive: "You kept the lights on through a crash, a bubble, and its collapse. You didn't get rich \u2014 but you didn't get evicted, and you didn't end up like Sal.",
+    surviveZh: '崩盘、泡沫、破裂，你都把日子撑住了。没发财\u2014\u2014但也没被赶出去，更没活成 Sal 那样。',
   },
 };
 if (!ERA_DOTCOM.sal.epi.wiseIndep) ERA_DOTCOM.sal.epi.wiseIndep = ERA_DOTCOM.sal.epi.wise;
@@ -264,12 +267,12 @@ function SalOverlay({ sal, cash, onPick }) {
   return (
     <div className={'pg-dave-overlay' + (sal.mood === 'panic' ? ' pg-panic-overlay' : '')}>
       <div className="pg-dave-bubble">
-        <p className="pg-dave-name">Cousin Sal</p>
-        <p className="pg-dave-line">"{sal.line}"</p>
+        <p className="pg-dave-name">{T('Cousin Sal')}</p>
+        <p className="pg-dave-line">"{T(sal.line)}"</p>
         <div className="pg-dave-choices">
           {sal.mood === 'panic' && <span className="pg-point">👉</span>}
           {sal.choices.map((ch, i) => { const cant = ch.need && cash < ch.need; return (
-            <button key={i} className="pg-dave-btn" disabled={cant} onClick={() => onPick(ch)}>{cant ? `${ch.label} — can't afford it` : ch.label}{ch.note && !cant && <em>{ch.note}</em>}</button>
+            <button key={i} className="pg-dave-btn" disabled={cant} onClick={() => onPick(ch)}>{cant ? L(`${ch.label} — can't afford it`, `${T(ch.label)}——付不起`) : T(ch.label)}{ch.note && !cant && <em>{T(ch.note)}</em>}</button>
           ); })}
         </div>
       </div>
@@ -283,11 +286,11 @@ function SalInterject({ name, onHold, onSell }) {
   return (
     <div className="pg-dave-overlay">
       <div className="pg-dave-bubble pg-interject-bubble">
-        <p className="pg-dave-name">Cousin Sal · barging in</p>
-        <p className="pg-dave-line">"WAIT!! Don't sell {name}!! It's about to bounce, cuz, I can FEEL it — just hold a little longer!!"</p>
+        <p className="pg-dave-name">{T('Cousin Sal · barging in')}</p>
+        <p className="pg-dave-line">{L(`"WAIT!! Don't sell ${name}!! It's about to bounce, cuz, I can FEEL it — just hold a little longer!!"`, `"等等！！别卖 ${name}！！马上就要反弹了老表，我感觉得到——再拿一会儿！！"`)}</p>
         <div className="pg-dave-choices">
-          <button className="pg-dave-btn" onClick={onHold}>…Fine, I'll keep holding<em>Do it Sal's way.</em></button>
-          <button className="pg-dave-btn pg-defy" onClick={onSell}>No — I'm selling anyway<em>Trust your own read.</em></button>
+          <button className="pg-dave-btn" onClick={onHold}>{T("…Fine, I'll keep holding")}<em>{T("Do it Sal's way.")}</em></button>
+          <button className="pg-dave-btn pg-defy" onClick={onSell}>{T("No — I'm selling anyway")}<em>{T('Trust your own read.')}</em></button>
         </div>
       </div>
       <div className="pg-dave-guy pg-dave-burst"><SalGuy mood="manic" /></div>
@@ -338,19 +341,19 @@ function MarketChart({ upto, watch, companies, dates }) {
   const sorted = series.slice().sort((a, b) => b.vals[n - 1] - a.vals[n - 1]);
   return (
     <div className="pg-chart-card">
-      <p className="pg-chart-h">Every company since {dates[0]} — as if you'd put $100 in each</p>
+      <p className="pg-chart-h">{L(`Every company since ${dates[0]} — as if you'd put $100 in each`, `自${T(dates[0])}以来的每家公司——假设各投了 $100`)}</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="pg-chart">
         <line className="pg-chart-base" x1={pL} x2={W - pR} y1={Y(100)} y2={Y(100)} />
         <text className="pg-chart-lbl" x={pL} y={Y(100) - 3}>$100</text>
         {series.map((s) => <polyline key={s.id} points={s.vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')} fill="none" stroke={COLORS[s.id]} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />)}
         {series.map((s) => <circle key={s.id} cx={X(n - 1)} cy={Y(s.vals[n - 1])} r="3" fill={COLORS[s.id]} />)}
-        <text className="pg-chart-x" x={pL} y={H - 3}>{dates[0]}</text>
-        <text className="pg-chart-x" x={W - pR} y={H - 3} textAnchor="end">{dates[upto]}</text>
+        <text className="pg-chart-x" x={pL} y={H - 3}>{T(dates[0])}</text>
+        <text className="pg-chart-x" x={W - pR} y={H - 3} textAnchor="end">{T(dates[upto])}</text>
       </svg>
       <div className="pg-chart-legend">
         {sorted.map((s) => { const chg = s.vals[n - 1] / 100 - 1; return <span key={s.id} className="pg-leg"><span className="pg-dot" style={{ background: COLORS[s.id] }} />{s.name} <em className={cls(chg)}>{sPct(chg)}</em></span>; })}
       </div>
-      <p className="pg-chart-note">Each company has its own colour — the dot on a card just matches its line up here. Nothing more.</p>
+      <p className="pg-chart-note">{T('Each company has its own colour — the dot on a card just matches its line up here. Nothing more.')}</p>
     </div>
   );
 }
@@ -358,6 +361,7 @@ function MarketChart({ upto, watch, companies, dates }) {
 export default function PressureGame() {
   // Which chapter is loaded. Component-scope consts shadow the module-level
   // chapter-1 data, so every reference below follows the active era.
+  useLangTick();   // re-render when the language toggles
   const [eraId, setEraId] = useState('covid');
   const ERA = ERAS.find((e) => e.id === eraId) || ERA_COVID;
   /* eslint-disable no-shadow */
@@ -633,7 +637,7 @@ export default function PressureGame() {
   }
 
   function endMonth() {
-    if (cash < RENT) { setFlash(`You're ${fmt(RENT - cash)} short on rent. Sell a holding to cover it — or you're out.`); return; }
+    if (cash < RENT) { setFlash(L(`You're ${fmt(RENT - cash)} short on rent. Sell a holding to cover it — or you're out.`, `房租还差 ${fmt(RENT - cash)}。卖点持仓补上——不然就出局了。`)); return; }
     const afterRent = cash - RENT;
     const nt = t + 1;
     const ending = nt > DATES.length - 1;
@@ -692,21 +696,21 @@ export default function PressureGame() {
     const prog = loadChapters();
     return (
       <div className="pg"><div className="pg-col pg-mid">{muteBtn}
-        <p className="pg-kick">Investment Time Machine</p>
-        <h1 className="pg-title">You're broke. Rent is due. Don't get evicted — get free.</h1>
+        <p className="pg-kick">{T('Investment Time Machine')}</p>
+        <h1 className="pg-title">{T("You're broke. Rent is due. Don't get evicted — get free.")}</h1>
         {ERAS.map((era) => { const rec = prog[era.id]; const eraLocked = era.requires && !(prog[era.requires] && prog[era.requires].done); return (
           <button key={era.id} className={'pg-chapter' + (eraLocked ? ' locked' : '')} disabled={eraLocked} onClick={() => startEra(era.id)}>
-            <span className="pg-ch-num">Chapter {era.num}</span>
-            <b>{era.title}</b>
-            <span className="pg-ch-sub">{era.sub}</span>
-            <span className={'pg-ch-state' + (rec && rec.done ? ' done' : '')}>{rec && rec.done ? `Cleared · best ${fmt(rec.net)}` : eraLocked ? `Finish chapter ${era.num - 1} to unlock` : `Start — ${era.startLabel}`}</span>
+            <span className="pg-ch-num">{L(`Chapter ${era.num}`, `第 ${era.num} 章`)}</span>
+            <b>{T(era.title)}</b>
+            <span className="pg-ch-sub">{T(era.sub)}</span>
+            <span className={'pg-ch-state' + (rec && rec.done ? ' done' : '')}>{rec && rec.done ? L(`Cleared · best ${fmt(rec.net)}`, `已通关 · 最佳 ${fmt(rec.net)}`) : eraLocked ? L(`Finish chapter ${era.num - 1} to unlock`, `通关第 ${era.num - 1} 章解锁`) : L(`Start — ${era.startLabel}`, `开始——${T(era.startLabel)}`)}</span>
           </button>
         ); })}
         <ul className="pg-rules">
-          <li><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</li>
-          <li><b>3 moves a period.</b> Investigate for facts and insight, grind a side gig for cash, or hit night school.</li>
-          <li><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</li>
-          {myLinks.length > 0 && <li><b>Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> — what you've proven about the world follows you into every era.</li>}
+          <li>{L(<><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</>, <><b>全部身家 $4,000。</b>每期房租 <b>$700</b>，交不上就出局。</>)}</li>
+          <li>{L(<><b>3 moves a period.</b> Investigate for facts and insight, grind a side gig for cash, or hit night school.</>, <><b>每期 3 步。</b>调查换事实和洞察，打零工换现金，或者去上夜校。</>)}</li>
+          <li>{L(<><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</>, <><b>表哥 Sal 永远闭不上嘴。</b>他是家人、信心爆棚、而且基本都是错的。学会什么时候不听他的。</>)}</li>
+          {myLinks.length > 0 && <li>{L(<><b>Your pouch carries {myLinks.length} tested link{myLinks.length > 1 ? 's' : ''}</b> — what you've proven about the world follows you into every era.</>, <><b>你的锦囊带着 {myLinks.length} 条经过检验的线</b>——你对世界证实过的判断，会跟你进每一个时代。</>)}</li>}
         </ul>
       </div></div>
     );
@@ -723,17 +727,17 @@ export default function PressureGame() {
     const nextEra = ERAS.find((e) => e.requires === eraId);
     return (
       <div className="pg"><div className="pg-col pg-mid">{muteBtn}
-        <p className="pg-kick">{won ? 'You made it out' : ERA.endLabel}</p>
-        <h1 className="pg-title">{won ? "You're free." : 'You survived to the other side.'}</h1>
-        <div className="pg-final"><span>Net worth</span><b className={cls(net / START - 1)}>{fmt(net)}</b></div>
+        <p className="pg-kick">{won ? T('You made it out') : T(ERA.endLabel)}</p>
+        <h1 className="pg-title">{T(won ? "You're free." : 'You survived to the other side.')}</h1>
+        <div className="pg-final"><span>{T('Net worth')}</span><b className={cls(net / START - 1)}>{fmt(net)}</b></div>
         {verdicts.length > 0 && (
           <div className="pg-verdicts">
-            <p className="pg-verdicts-h">🧧 The market's final word on your pouch</p>
+            <p className="pg-verdicts-h">{T("🧧 The market's final word on your pouch")}</p>
             {verdicts.map((v, i) => (
               <div className={'pg-verdict ' + (v.ok ? 'ok' : 'no')} key={i}>
-                <span className="pg-verdict-tag">{v.ok ? '✓ held up' : '✗ wrong'}</span>
-                <p>{v.sal ? <b>Sal said</b> : 'You said'} <b>{v.force.name}</b> {v.dir === 'helps' ? 'helps' : 'hurts'} <b>{v.name}</b>. {v.note}
-                  {!v.ok && v.sal && <em>That line came straight from Sal's mouth. Worth remembering where you get your lines.</em>}</p>
+                <span className="pg-verdict-tag">{T(v.ok ? '✓ held up' : '✗ wrong')}</span>
+                <p>{v.sal ? <b>{T('Sal said')}</b> : T('You said')} <b>{T(v.force.name)}</b> {T(v.dir === 'helps' ? 'helps' : 'hurts')} <b>{v.name}</b>{L('. ', '。')}{T(v.note)}
+                  {!v.ok && v.sal && <em>{T("That line came straight from Sal's mouth. Worth remembering where you get your lines.")}</em>}</p>
               </div>
             ))}
           </div>
@@ -741,18 +745,18 @@ export default function PressureGame() {
 
         <div className="pg-epilogue">
           <div className="pg-epi-guy"><SalGuy mood={epi.mood} /></div>
-          <div className="pg-epi-bubble"><p className="pg-dave-name">Cousin Sal</p><p className="pg-epi-line">"{epi.line}"</p></div>
+          <div className="pg-epi-bubble"><p className="pg-dave-name">{T('Cousin Sal')}</p><p className="pg-epi-line">"{T(epi.line)}"</p></div>
         </div>
 
-        <p className="pg-lead">{won ? ERA.blurbs.win(fmt(net)) : ERA.blurbs.survive}</p>
-        {indep > 0 && <p className="pg-lead pg-dim">You overruled Sal {indep} time{indep === 1 ? '' : 's'} and trusted your own read. That's the whole point.</p>}
+        <p className="pg-lead">{won ? (ERA.blurbs.winZh ? L(ERA.blurbs.win(fmt(net)), ERA.blurbs.winZh(fmt(net))) : ERA.blurbs.win(fmt(net))) : (ERA.blurbs.surviveZh ? L(ERA.blurbs.survive, ERA.blurbs.surviveZh) : ERA.blurbs.survive)}</p>
+        {indep > 0 && <p className="pg-lead pg-dim">{L(`You overruled Sal ${indep} time${indep === 1 ? '' : 's'} and trusted your own read. That's the whole point.`, `你顶住了 Sal ${indep} 次，相信了自己的判断。这正是整个游戏的意义。`)}</p>}
         {myLinks.filter((l) => l.status !== 'guess').length > 0 && (
-          <p className="pg-lead pg-dim">🧧 Your pouch keeps its {myLinks.filter((l) => l.status !== 'guess').length} tested link{myLinks.filter((l) => l.status !== 'guess').length > 1 ? 's' : ''}. The money resets — what you learned about the world doesn't.</p>
+          <p className="pg-lead pg-dim">{L(<>🧧 Your pouch keeps its {myLinks.filter((l) => l.status !== 'guess').length} tested link{myLinks.filter((l) => l.status !== 'guess').length > 1 ? 's' : ''}. The money resets — what you learned about the world doesn't.</>, <>🧧 你的锦囊留着 {myLinks.filter((l) => l.status !== 'guess').length} 条经过检验的线。钱会清零——你对世界学到的东西不会。</>)}</p>
         )}
         {nextEra && (
-          <button className="pg-btn pg-primary" onClick={() => startEra(nextEra.id)}>Chapter {nextEra.num} unlocked: {nextEra.title} →</button>
+          <button className="pg-btn pg-primary" onClick={() => startEra(nextEra.id)}>{L(`Chapter ${nextEra.num} unlocked: ${nextEra.title} →`, `第 ${nextEra.num} 章已解锁：${T(nextEra.title)} →`)}</button>
         )}
-        <button className={'pg-btn ' + (nextEra ? 'pg-secondary' : 'pg-primary')} onClick={restart}>Back to chapters →</button>
+        <button className={'pg-btn ' + (nextEra ? 'pg-secondary' : 'pg-primary')} onClick={restart}>{L('Back to chapters →', '返回选章 →')}</button>
       </div></div>
     );
   }
@@ -769,18 +773,18 @@ export default function PressureGame() {
       <div className="pg-col">
         {muteBtn}
         <div className="pg-bar">
-          <div className="pg-bar-l"><span className="pg-month">{DATES[t]}</span><span className="pg-sub">Period {t + 1} of {DATES.length}</span></div>
+          <div className="pg-bar-l"><span className="pg-month">{T(DATES[t])}</span><span className="pg-sub">{L(`Period ${t + 1} of ${DATES.length}`, `第 ${t + 1} 期 / 共 ${DATES.length} 期`)}</span></div>
           <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => { setPouchOpen(true); itmAudio.pouch(); }} aria-label="Open your market map">
             <PouchIcon />
             {activeForces.length > 0 && <span className="pg-pouch-badge">{activeForces.length}</span>}
           </button>
-          <div className={'pg-rent' + (rentDanger ? ' danger' : '')}><span>Rent due</span><b>{fmt(RENT)}</b></div>
+          <div className={'pg-rent' + (rentDanger ? ' danger' : '')}><span>{T('Rent due')}</span><b>{fmt(RENT)}</b></div>
         </div>
         <div className="pg-stats">
-          <div className={'pg-stat' + (robbing ? ' robbed' : '')}><span>Cash</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b>{robbing ? <span className="pg-rob-amt">−{fmt(robbing)}</span> : null}</div>
-          <div className="pg-stat"><span>Invested</span><b>{fmt(holdings)}</b></div>
-          <div className="pg-stat"><span>Net worth</span><b>{fmt(net)}</b></div>
-          <div className="pg-stat pg-freedom"><span>Freedom</span><b>{Math.round(net / FREEDOM * 100)}%</b></div>
+          <div className={'pg-stat' + (robbing ? ' robbed' : '')}><span>{T('Cash')}</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b>{robbing ? <span className="pg-rob-amt">−{fmt(robbing)}</span> : null}</div>
+          <div className="pg-stat"><span>{T('Invested')}</span><b>{fmt(holdings)}</b></div>
+          <div className="pg-stat"><span>{T('Net worth')}</span><b>{fmt(net)}</b></div>
+          <div className="pg-stat pg-freedom"><span>{T('Freedom')}</span><b>{Math.round(net / FREEDOM * 100)}%</b></div>
         </div>
 
         {resumed && (
@@ -788,25 +792,25 @@ export default function PressureGame() {
             Picked up where you left off.
           </p>
         )}
-        <p className="pg-headline">{HEADLINE[t]}</p>
+        <p className="pg-headline">{T(HEADLINE[t])}</p>
         {flash && <p className="pg-flash">{flash}</p>}
 
         {newForces.length > 0 && (
           <button className="pg-newforce" onClick={() => setPouchOpen(true)}>
-            🧧 Something new just landed in your pouch: {newForces.map((f) => f.icon + ' ' + f.name).join(' · ')} — open it
+            {L(`🧧 Something new just landed in your pouch: ${newForces.map((f) => f.icon + ' ' + f.name).join(' · ')} — open it`, `🧧 有新东西落进了你的锦囊：${newForces.map((f) => f.icon + ' ' + T(f.name)).join(' · ')}——点开看看`)}
           </button>
         )}
 
         {verdicts.length > 0 && (
           <div className="pg-verdicts">
-            <p className="pg-verdicts-h">🧧 The market tested your pouch</p>
+            <p className="pg-verdicts-h">{T('🧧 The market tested your pouch')}</p>
             {verdicts.map((v, i) => (
               <div className={'pg-verdict ' + (v.ok ? 'ok' : 'no')} key={i}>
-                <span className="pg-verdict-tag">{v.ok ? '✓ held up' : '✗ wrong'}</span>
-                <p>{v.sal ? <b>Sal said</b> : 'You said'} <b>{v.force.name}</b> {v.dir === 'helps' ? 'helps' : 'hurts'} <b>{v.name}</b>. {v.note}
-                  {v.ok && !v.sal && <em className="pg-vwin">Your stake pays: +2 💡</em>}
-                  {!v.ok && v.sal && <em>That line came straight from Sal's mouth. Worth remembering where you get your lines.</em>}
-                  {!v.ok && !v.sal && <em>Stake lost — conviction has a price.</em>}</p>
+                <span className="pg-verdict-tag">{T(v.ok ? '✓ held up' : '✗ wrong')}</span>
+                <p>{v.sal ? <b>{T('Sal said')}</b> : T('You said')} <b>{T(v.force.name)}</b> {T(v.dir === 'helps' ? 'helps' : 'hurts')} <b>{v.name}</b>{L('. ', '。')}{T(v.note)}
+                  {v.ok && !v.sal && <em className="pg-vwin">{T('Your stake pays: +2 💡')}</em>}
+                  {!v.ok && v.sal && <em>{T("That line came straight from Sal's mouth. Worth remembering where you get your lines.")}</em>}
+                  {!v.ok && !v.sal && <em>{T('Stake lost — conviction has a price.')}</em>}</p>
               </div>
             ))}
           </div>
@@ -814,19 +818,19 @@ export default function PressureGame() {
 
         {mapAlerts.length > 0 && (
           <div className="pg-mapalert">
-            <span className="pg-mapalert-h">🧧 Your pouch is glowing</span>
+            <span className="pg-mapalert-h">{T('🧧 Your pouch is glowing')}</span>
             {mapAlerts.map(({ f, l }, i) => (
-              <p key={i}>{f.icon} <b>{f.name}</b> is moving the market — your map says it {l.dir === 'helps' ? '📈 helps' : '📉 hurts'} <b>{COMPANIES.find((c) => c.id === l.company).name}</b>.</p>
+              <p key={i}>{f.icon} <b>{T(f.name)}</b>{L(' is moving the market — your map says it ', ' 正在搅动市场——你的地图说它 ')}{T(l.dir === 'helps' ? '📈 helps' : '📉 hurts')} <b>{COMPANIES.find((c) => c.id === l.company).name}</b>{L('.', '。')}</p>
             ))}
           </div>
         )}
 
         {rentWarn && (
           <div className="pg-rentwarn">
-            <p>⚠️ That buy would leave you <b>{fmt(Math.max(0, cash - rentWarn.amt))}</b> — under this period's <b>{fmt(RENT)}</b> rent. Miss rent and you're evicted.</p>
+            <p>{L('⚠️ That buy would leave you ', '⚠️ 买了这笔，你就只剩 ')}<b>{fmt(Math.max(0, cash - rentWarn.amt))}</b>{L(` — under this period's `, '——低于本期房租 ')}<b>{fmt(RENT)}</b>{L(" rent. Miss rent and you're evicted.", '。交不上房租就会被赶出去。')}</p>
             <div className="pg-rentwarn-btns">
-              <button className="pg-rw-cancel" onClick={cancelRentBuy}>Never mind</button>
-              <button className="pg-rw-go" onClick={confirmRentBuy}>Buy anyway</button>
+              <button className="pg-rw-cancel" onClick={cancelRentBuy}>{L('Never mind', '算了')}</button>
+              <button className="pg-rw-go" onClick={confirmRentBuy}>{L('Buy anyway', '还是要买')}</button>
             </div>
           </div>
         )}
@@ -843,17 +847,17 @@ export default function PressureGame() {
         ) : null}
 
         <div className="pg-time">
-          <span className="pg-time-lbl">Time this period</span>
+          <span className="pg-time-lbl">{T('Time this period')}</span>
           <span className="pg-pips">{Array.from({ length: ACTIONS }).map((_, i) => <span key={i} className={'pg-pip' + (i < acts ? ' on' : '')} />)}</span>
-          <span className="pg-insight" title="Earned by investigating. Spend it to follow new companies and to stake links in your pouch.">💡 {insight} insight</span>
-          <button className="pg-gig" disabled={acts <= 0} onClick={gig}>Side gig +{fmt(GIG)}</button>
-          <button className="pg-gig pg-study" disabled={acts <= 0 || !!campDoneAt[t]} onClick={campOpen} title="Study one real case from market history. Read it right and earn 2 insight.">{campDoneAt[t] ? 'Studied tonight' : 'Night school'}</button>
+          <span className="pg-insight" title="Earned by investigating. Spend it to follow new companies and to stake links in your pouch.">{L(`💡 ${insight} insight`, `💡 ${insight} 洞察`)}</span>
+          <button className="pg-gig" disabled={acts <= 0} onClick={gig}>{L(`Side gig +${fmt(GIG)}`, `打零工 +${fmt(GIG)}`)}</button>
+          <button className="pg-gig pg-study" disabled={acts <= 0 || !!campDoneAt[t]} onClick={campOpen} title="Study one real case from market history. Read it right and earn 2 insight.">{T(campDoneAt[t] ? 'Studied tonight' : 'Night school')}</button>
         </div>
 
         {(LEADS[t] || []).length > 0 && (
           <div className="pg-leads">
-            <span className="pg-leads-h">📣 Leads — worth investigating, not buy tips</span>
-            {LEADS[t].map((l, i) => <p key={i} className="pg-lead-row"><b>{COMPANIES.find((c) => c.id === l.id).name}</b> — {l.why}</p>)}
+            <span className="pg-leads-h">{T('📣 Leads — worth investigating, not buy tips')}</span>
+            {LEADS[t].map((l, i) => <p key={i} className="pg-lead-row"><b>{COMPANIES.find((c) => c.id === l.id).name}</b> — {T(l.why)}</p>)}
           </div>
         )}
 
@@ -870,32 +874,32 @@ export default function PressureGame() {
           return (
             <div className={'pg-card' + (leadIds.has(c.id) ? ' lead' : '')} key={c.id}>
               <div className="pg-card-top">
-                <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}{leadIds.has(c.id) && <span className="pg-tag">lead</span>}</span>
+                <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}{leadIds.has(c.id) && <span className="pg-tag">{T('lead')}</span>}</span>
                 <span className="pg-pb"><b>${p}</b>{mv != null && <span className={'pg-mv ' + cls(mv)}>{sPct(mv)}</span>}</span>
               </div>
-              {pos > 0.5 && <div className="pg-own">you hold {fmt(pos)} <em className={cls(g)}>{sPct(g)}</em></div>}
+              {pos > 0.5 && <div className="pg-own">{L('you hold ', '你持有 ')}{fmt(pos)} <em className={cls(g)}>{sPct(g)}</em></div>}
 
               {info
                 ? <div className={'pg-dossier' + (freshIntel ? '' : ' stale')}>
-                    {!freshIntel && <p className="pg-stale-tag">📁 Intel from {DATES[dugP]} — the story has moved on since.</p>}
-                    <p className="pg-biz">{c.biz}</p>
-                    <div className="pg-fact"><span className="pg-fk">Money</span><span className="pg-fv">{info.m}</span></div>
-                    <div className="pg-fact"><span className="pg-fk">Price</span><span className="pg-fv">{info.v}</span></div>
-                    <div className="pg-fact"><span className="pg-fk">News</span><span className="pg-fv">{info.n}</span></div>
-                    {!freshIntel && <button className="pg-dig pg-redig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : `Update intel — what's new in ${DATES[t]}? (1 move)`}</button>}
+                    {!freshIntel && <p className="pg-stale-tag">{L(`📁 Intel from ${DATES[dugP]} — the story has moved on since.`, `📁 情报来自${T(DATES[dugP])}——之后故事已经变了。`)}</p>}
+                    <p className="pg-biz">{T(c.biz)}</p>
+                    <div className="pg-fact"><span className="pg-fk">{T('Money')}</span><span className="pg-fv">{T(info.m)}</span></div>
+                    <div className="pg-fact"><span className="pg-fk">{T('Price')}</span><span className="pg-fv">{T(info.v)}</span></div>
+                    <div className="pg-fact"><span className="pg-fk">{T('News')}</span><span className="pg-fv">{T(info.n)}</span></div>
+                    {!freshIntel && <button className="pg-dig pg-redig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? T('no moves left this period') : L(`Update intel — what's new in ${DATES[t]}? (1 move)`, `更新情报——${T(DATES[t])}有什么新变化？（花 1 步）`)}</button>}
                   </div>
-                : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? 'no moves left this period' : 'Investigate (1 move)'}</button>}
+                : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{T(acts <= 0 ? 'no moves left this period' : 'Investigate (1 move)')}</button>}
 
               {mapAlerts.filter((a) => a.l.company === c.id).map((a, i) => (
-                <p className={'pg-tradecall' + (a.l.sal ? ' sal' : '')} key={i}>🧧 Your pouch: {a.f.icon} <b>{a.f.name}</b> {a.l.dir === 'helps' ? '📈 helps' : '📉 hurts'} <b>{c.name}</b>{a.l.status === 'proven' ? ' — proven.' : a.l.sal ? " — Sal's line, not yours." : ' — your call, unproven.'}</p>
+                <p className={'pg-tradecall' + (a.l.sal ? ' sal' : '')} key={i}>{L('🧧 Your pouch: ', '🧧 你的锦囊：')}{a.f.icon} <b>{T(a.f.name)}</b> {T(a.l.dir === 'helps' ? '📈 helps' : '📉 hurts')} <b>{c.name}</b>{a.l.status === 'proven' ? L(' — proven.', '——已证实。') : a.l.sal ? L(" — Sal's line, not yours.", '——这是 Sal 的判断，不是你的。') : L(' — your call, unproven.', '——你的判断，未经证实。')}</p>
               ))}
 
               <div className="pg-tradebox">
                 <input type="range" className="pg-slider" min={-Math.round(pos)} max={Math.round(cash)} step="50" value={pd} disabled={!canTrade}
                   onChange={(e) => setPend({ ...pend, [c.id]: +e.target.value })} />
-                <div className="pg-slider-ends"><span>{pos >= 1 ? `◀ sell ${fmt(pos)}` : ''}</span><span>{cash >= 1 ? `buy ${fmt(cash)} ▶` : ''}</span></div>
+                <div className="pg-slider-ends"><span>{pos >= 1 ? L(`◀ sell ${fmt(pos)}`, `◀ 卖出 ${fmt(pos)}`) : ''}</span><span>{cash >= 1 ? L(`buy ${fmt(cash)} ▶`, `买入 ${fmt(cash)} ▶`) : ''}</span></div>
                 <button className={'pg-trade-btn' + (pd > 0 ? ' buy' : pd < 0 ? ' sell' : '')} disabled={!pd} onClick={() => applyTrade(c.id)}>
-                  {pd > 0 ? `Buy ${fmt(pd)}` : pd < 0 ? `Sell ${fmt(-pd)}` : 'Drag the slider to buy or sell'}
+                  {pd > 0 ? L(`Buy ${fmt(pd)}`, `买入 ${fmt(pd)}`) : pd < 0 ? L(`Sell ${fmt(-pd)}`, `卖出 ${fmt(-pd)}`) : T('Drag the slider to buy or sell')}
                 </button>
               </div>
             </div>
@@ -904,22 +908,22 @@ export default function PressureGame() {
 
             {COMPANIES.filter((c) => !unlocked.includes(c.id)).length > 0 && (
               <div className="pg-locked-wrap">
-                <p className="pg-locked-h">The rest of the market — you don't follow these yet</p>
+                <p className="pg-locked-h">{T("The rest of the market — you don't follow these yet")}</p>
                 {COMPANIES.filter((c) => !unlocked.includes(c.id)).map((c) => {
                   const tight = cash >= c.cost && cash - c.cost < RENT;
                   const lp = c.prices[t]; const lprev = t > 0 ? c.prices[t - 1] : null; const lmv = lprev ? lp / lprev - 1 : null;
                   return (
                     <div className="pg-locked" key={c.id}>
                       <div className="pg-locked-top">
-                        <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name} <span className="pg-lockchip">not following</span></span>
-                        {lp != null ? <span className="pg-pb"><b>${lp}</b>{lmv != null && <span className={'pg-mv ' + cls(lmv)}>{sPct(lmv)}</span>}</span> : <span className="pg-na">not public yet</span>}
+                        <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name} <span className="pg-lockchip">{T('not following')}</span></span>
+                        {lp != null ? <span className="pg-pb"><b>${lp}</b>{lmv != null && <span className={'pg-mv ' + cls(lmv)}>{sPct(lmv)}</span>}</span> : <span className="pg-na">{T('not public yet')}</span>}
                       </div>
-                      <p className="pg-teaser">{c.teasers[t]}</p>
+                      <p className="pg-teaser">{T(c.teasers[t])}</p>
                       <div className="pg-locked-btns">
-                        <button className="pg-unlock" disabled={cash < c.cost || lp == null} onClick={() => unlockCash(c)}>Subscribe · {fmt(c.cost)}</button>
-                        <button className="pg-unlock xp" disabled={insight < c.xp || lp == null} onClick={() => unlockXp(c)}>Use {c.xp} insight</button>
+                        <button className="pg-unlock" disabled={cash < c.cost || lp == null} onClick={() => unlockCash(c)}>{L(`Subscribe · ${fmt(c.cost)}`, `订阅 · ${fmt(c.cost)}`)}</button>
+                        <button className="pg-unlock xp" disabled={insight < c.xp || lp == null} onClick={() => unlockXp(c)}>{L(`Use ${c.xp} insight`, `用 ${c.xp} 洞察`)}</button>
                       </div>
-                      {tight && <p className="pg-locked-warn">Paying leaves you short for rent.</p>}
+                      {tight && <p className="pg-locked-warn">{T('Paying leaves you short for rent.')}</p>}
                     </div>
                   );
                 })}
@@ -936,27 +940,27 @@ export default function PressureGame() {
           <div className="pg-pouch-wrap" onClick={() => setPouchOpen(false)}>
             <div className="pg-pouch-panel" onClick={(e) => e.stopPropagation()}>
               <div className="pg-map-head">
-                <span className="pg-map-title">🧧 Your pouch — the market map</span>
-                <span className="pg-map-score">{provenCount} proven · {metForces.length}/{FORCES.length} forces · 💡 {insight}</span>
+                <span className="pg-map-title">{L('🧧 Your pouch — the market map', '🧧 你的锦囊——市场地图')}</span>
+                <span className="pg-map-score">{L(`${provenCount} proven · ${metForces.length}/${FORCES.length} forces · 💡 ${insight}`, `${provenCount} 条已证实 · ${metForces.length}/${FORCES.length} 个大势 · 💡 ${insight}`)}</span>
               </div>
-              <p className="pg-map-sub">Your call on what moves whom — you can be wrong. Drawing a link stakes <b>1 💡</b>: proven pays back <b>2</b>, broken loses it. Proven links survive into your next run.</p>
-              {metForces.length === 0 && <p className="pg-pouch-empty">Empty so far. Forces show up in the news — read the headlines, and they'll land in here.</p>}
+              <p className="pg-map-sub">{L(<>Your call on what moves whom — you can be wrong. Drawing a link stakes <b>1 💡</b>: proven pays back <b>2</b>, broken loses it. Proven links survive into your next run.</>, <>谁影响谁，由你判断——你可能判断错。连一条线押 <b>1 💡</b>：被证实退 <b>2</b>，连错没收。已证实的线会跟进你的下一局。</>)}</p>
+              {metForces.length === 0 && <p className="pg-pouch-empty">{T("Empty so far. Forces show up in the news — read the headlines, and they'll land in here.")}</p>}
               {metForces.length > 0 && myLinks.length === 0 && (
                 <div className="pg-pouch-guide">
-                  <p className="pg-pouch-guide-h">How the pouch works</p>
-                  <p><b>1.</b> Big forces (a lockdown, a rate hike…) land in here when they hit the news.</p>
-                  <p><b>2.</b> For each force, tap <b>📈 helps</b> or <b>📉 hurts</b> on a company — that's your read on the world. Each call stakes <b>1 💡</b>.</p>
-                  <p><b>3.</b> While that force is moving the market, your pouch buzzes and your call appears on the company's card — before you trade.</p>
-                  <p><b>4.</b> When the force plays out, the market grades you: right pays back <b>2 💡</b>, wrong loses the stake. Proven calls stay with you in every future run.</p>
+                  <p className="pg-pouch-guide-h">{T('How the pouch works')}</p>
+                  <p><b>1.</b> {L('Big forces (a lockdown, a rate hike…) land in here when they hit the news.', '大势（封锁、加息……）一上新闻，就会落进这里。')}</p>
+                  <p><b>2.</b> {L(<>For each force, tap <b>📈 helps</b> or <b>📉 hurts</b> on a company — that's your read on the world. Each call stakes <b>1 💡</b>.</>, <>对每个大势，给公司点 <b>📈 利好</b> 或 <b>📉 利空</b>——这是你对世界的判断。每条押 <b>1 💡</b>。</>)}</p>
+                  <p><b>3.</b> {L("While that force is moving the market, your pouch buzzes and your call appears on the company's card — before you trade.", '这个大势搅动市场时，锦囊会发烫，你的判断会出现在公司卡片上——在你交易之前。')}</p>
+                  <p><b>4.</b> {L(<>When the force plays out, the market grades you: right pays back <b>2 💡</b>, wrong loses the stake. Proven calls stay with you in every future run.</>, <>大势尘埃落定，市场给你打分：对了退 <b>2 💡</b>，错了没收。已证实的判断跟你进每一局。</>)}</p>
                 </div>
               )}
-              {metForces.length > 0 && insight < 1 && <p className="pg-pouch-need">You're out of 💡 insight — investigate companies to earn more before drawing new links.</p>}
+              {metForces.length > 0 && insight < 1 && <p className="pg-pouch-need">{T("You're out of 💡 insight — investigate companies to earn more before drawing new links.")}</p>}
               {metForces.map((f) => {
                 const live = activeForces.includes(f);
                 return (
                   <div className={'pg-force' + (live ? ' live' : '')} key={f.id}>
-                    <div className="pg-force-top"><span className="pg-force-name">{f.icon} {f.name}{live && <span className="pg-force-live">live now</span>}</span></div>
-                    <p className="pg-force-blurb">{f.blurb}</p>
+                    <div className="pg-force-top"><span className="pg-force-name">{f.icon} {T(f.name)}{live && <span className="pg-force-live">{T('live now')}</span>}</span></div>
+                    <p className="pg-force-blurb">{T(f.blurb)}</p>
                     {COMPANIES.filter((c) => unlocked.includes(c.id)).map((c) => {
                       const l = linkOf(f.id, c.id);
                       return (
@@ -967,8 +971,8 @@ export default function PressureGame() {
                             {l && l.status === 'broken' && <em className="pg-link-badge no">✗</em>}
                           </span>
                           <span className="pg-link-btns">
-                            <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={(l && l.status !== 'guess') || (!l && insight < 1)} onClick={() => setLink(f.id, c.id, 'helps')}>📈 helps</button>
-                            <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={(l && l.status !== 'guess') || (!l && insight < 1)} onClick={() => setLink(f.id, c.id, 'hurts')}>📉 hurts</button>
+                            <button className={'pg-link-btn' + (l && l.dir === 'helps' ? ' on-up' : '')} disabled={(l && l.status !== 'guess') || (!l && insight < 1)} onClick={() => setLink(f.id, c.id, 'helps')}>{T('📈 helps')}</button>
+                            <button className={'pg-link-btn' + (l && l.dir === 'hurts' ? ' on-down' : '')} disabled={(l && l.status !== 'guess') || (!l && insight < 1)} onClick={() => setLink(f.id, c.id, 'hurts')}>{T('📉 hurts')}</button>
                           </span>
                         </div>
                       );
@@ -979,10 +983,10 @@ export default function PressureGame() {
               {FORCES.filter((f) => !f.at.some((p) => p <= t)).map((f) => (
                 <div className="pg-force pg-force-unmet" key={f.id}>
                   <span className="pg-force-name">❓ ???</span>
-                  <p className="pg-force-blurb">A force you haven't met yet. Keep reading the news — it's coming.</p>
+                  <p className="pg-force-blurb">{T("A force you haven't met yet. Keep reading the news — it's coming.")}</p>
                 </div>
               ))}
-              <button className="pg-pouch-x" onClick={() => setPouchOpen(false)}>Close the pouch</button>
+              <button className="pg-pouch-x" onClick={() => setPouchOpen(false)}>{T('Close the pouch')}</button>
             </div>
           </div>
         )}
@@ -991,57 +995,57 @@ export default function PressureGame() {
           <div className="pg-pouch-wrap" onClick={() => { if (!camp.mode || camp.mode === 'choose' || camp.pick == null) setCamp(null); }}>
             <div className="pg-pouch-panel" onClick={(e) => e.stopPropagation()}>
               <div className="pg-map-head">
-                <span className="pg-map-title">Night school</span>
-                <span className="pg-map-score">1 move · once a period</span>
+                <span className="pg-map-title">{T('Night school')}</span>
+                <span className="pg-map-score">{T('1 move · once a period')}</span>
               </div>
 
               {camp.mode === 'choose' && (
                 <React.Fragment>
-                  <p className="ns-sal">Sal, from the couch: "books, cuz? the market's RIGHT THERE."</p>
+                  <p className="ns-sal">{T('Sal, from the couch: "books, cuz? the market\'s RIGHT THERE."')}</p>
                   <button className="ns-course" onClick={campPickCase}>
-                    <b>A real moment from history</b>
-                    <span>Names hidden, real clues. Call UP or DOWN — right earns 2 insight.</span>
+                    <b>{T('A real moment from history')}</b>
+                    <span>{T('Names hidden, real clues. Call UP or DOWN — right earns 2 insight.')}</span>
                   </button>
                   <button className="ns-course" onClick={campPickConcept}>
-                    <b>An investing basic</b>
-                    <span>Limit orders, bet sizing, diversification… Learn it, apply it once — right earns 1 insight.</span>
+                    <b>{T('An investing basic')}</b>
+                    <span>{T('Limit orders, bet sizing, diversification… Learn it, apply it once — right earns 1 insight.')}</span>
                   </button>
-                  <button className="pg-pouch-x" onClick={() => setCamp(null)}>Not tonight</button>
+                  <button className="pg-pouch-x" onClick={() => setCamp(null)}>{T('Not tonight')}</button>
                 </React.Fragment>
               )}
 
               {camp.mode === 'case' && (() => { const C = STUDY_CASES[camp.idx]; const answered = camp.pick != null; return (
                 <React.Fragment>
-                  <p className="ns-title">{C.title}</p>
-                  <p className="ns-sub">{C.sub}</p>
+                  <p className="ns-title">{T(C.title)}</p>
+                  <p className="ns-sub">{T(C.sub)}</p>
                   {C.clues.map((cl, i) => (
                     <div className="ns-clue" key={i}>
-                      <span className={'ns-chip ' + (cl.side === 1 ? 'up' : 'down')}>{cl.side === 1 ? 'says UP' : 'says DOWN'}</span>
+                      <span className={'ns-chip ' + (cl.side === 1 ? 'up' : 'down')}>{L(cl.side === 1 ? 'says UP' : 'says DOWN', cl.side === 1 ? '看涨' : '看跌')}</span>
                       <div className="ns-clue-body">
-                        <b>{cl.label}</b>
-                        <span>{cl.text}</span>
-                        <em>{cl.s === 3 ? 'a very strong clue' : cl.s === 2 ? 'a strong clue' : 'a quieter clue'}</em>
+                        <b>{T(cl.label)}</b>
+                        <span>{T(cl.text)}</span>
+                        <em>{T(cl.s === 3 ? 'a very strong clue' : cl.s === 2 ? 'a strong clue' : 'a quieter clue')}</em>
                       </div>
                     </div>
                   ))}
                   {!answered ? (
                     <React.Fragment>
                       <div className="ns-btns">
-                        <button className="ns-btn up" disabled={acts <= 0} onClick={() => campAnswer(1)}>It went UP</button>
-                        <button className="ns-btn down" disabled={acts <= 0} onClick={() => campAnswer(-1)}>It went DOWN</button>
+                        <button className="ns-btn up" disabled={acts <= 0} onClick={() => campAnswer(1)}>{T('It went UP')}</button>
+                        <button className="ns-btn down" disabled={acts <= 0} onClick={() => campAnswer(-1)}>{T('It went DOWN')}</button>
                       </div>
-                      <p className="ns-note">Answering costs the move. Right earns 2 insight — study only beats digging if you can actually read.</p>
-                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Come back later — this case will wait</button>
+                      <p className="ns-note">{T('Answering costs the move. Right earns 2 insight — study only beats digging if you can actually read.')}</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>{T('Come back later — this case will wait')}</button>
                     </React.Fragment>
                   ) : (
                     <React.Fragment>
                       <div className={'ns-verdict ' + (camp.right ? 'ok' : 'no')}>
-                        <b>{camp.right ? 'You read it right.' : 'You read it wrong.'}</b> It went {C.out.dir === 1 ? 'UP' : 'DOWN'} {C.out.move}% {C.out.when}.
+                        <b>{T(camp.right ? 'You read it right.' : 'You read it wrong.')}</b> {L(`It went ${C.out.dir === 1 ? 'UP' : 'DOWN'} ${C.out.move}% ${C.out.when}.`, `它${C.out.dir === 1 ? '涨' : '跌'}了 ${Math.abs(C.out.move)}%（${C.out.when}）。`)}
                       </div>
-                      <p className="ns-reveal">It was <b>{C.name}</b>. {C.story}</p>
-                      {C.fair && <p className="ns-lesson">The careful read: {C.fair.note}</p>}
-                      <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{camp.right ? '+2 insight earned.' : 'No insight tonight — but the lesson stays.'}</p>
-                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Back to the desk</button>
+                      <p className="ns-reveal">{L('It was ', '它是 ')}<b>{C.name}</b>{L('. ', '。')}{T(C.story)}</p>
+                      {C.fair && <p className="ns-lesson">{L('The careful read: ', '谨慎的读法：')}{T(C.fair.note)}</p>}
+                      <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{T(camp.right ? '+2 insight earned.' : 'No insight tonight — but the lesson stays.')}</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>{T('Back to the desk')}</button>
                     </React.Fragment>
                   )}
                 </React.Fragment>
@@ -1049,24 +1053,24 @@ export default function PressureGame() {
 
               {camp.mode === 'concept' && (() => { const C = CONCEPTS[camp.idx]; const answered = camp.pick != null; return (
                 <React.Fragment>
-                  <p className="ns-title">{C.term}</p>
-                  <p className="ns-what">{C.what}</p>
-                  <p className="ns-example">{C.example}</p>
-                  <p className="ns-q">{C.q}</p>
+                  <p className="ns-title">{T(C.term)}</p>
+                  <p className="ns-what">{T(C.what)}</p>
+                  <p className="ns-example">{T(C.example)}</p>
+                  <p className="ns-q">{T(C.q)}</p>
                   {C.opts.map((o, i) => {
                     const cls = answered ? (i === C.answer ? ' right' : i === camp.pick ? ' picked-wrong' : '') : '';
-                    return <button key={i} className={'ns-opt' + cls} disabled={answered || acts <= 0} onClick={() => conceptAnswer(i)}>{o}</button>;
+                    return <button key={i} className={'ns-opt' + cls} disabled={answered || acts <= 0} onClick={() => conceptAnswer(i)}>{T(o)}</button>;
                   })}
                   {!answered ? (
                     <React.Fragment>
-                      <p className="ns-note">Answering costs the move. Right earns 1 insight.</p>
-                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Come back later — this lesson will wait</button>
+                      <p className="ns-note">{T('Answering costs the move. Right earns 1 insight.')}</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>{T('Come back later — this lesson will wait')}</button>
                     </React.Fragment>
                   ) : (
                     <React.Fragment>
-                      <p className="ns-lesson">{C.why}</p>
-                      <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{camp.right ? '+1 insight earned.' : 'No insight tonight — but now you know.'}</p>
-                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>Back to the desk</button>
+                      <p className="ns-lesson">{T(C.why)}</p>
+                      <p className={'ns-reward ' + (camp.right ? 'ok' : 'no')}>{T(camp.right ? '+1 insight earned.' : 'No insight tonight — but now you know.')}</p>
+                      <button className="pg-pouch-x" onClick={() => setCamp(null)}>{T('Back to the desk')}</button>
                     </React.Fragment>
                   )}
                 </React.Fragment>
@@ -1076,9 +1080,9 @@ export default function PressureGame() {
         )}
 
         <button className={'pg-btn pg-primary pg-end' + (rentDanger ? ' danger' : '')} onClick={endMonth}>
-          {rentDanger ? `Pay rent ${fmt(RENT)} — you're short` : `End period · pay ${fmt(RENT)} rent →`}
+          {rentDanger ? L(`Pay rent ${fmt(RENT)} — you're short`, `付房租 ${fmt(RENT)}——你的钱不够`) : L(`End period · pay ${fmt(RENT)} rent →`, `结束本期 · 付 ${fmt(RENT)} 房租 →`)}
         </button>
-        <p className="pg-endsub">{t === DATES.length - 1 ? 'Last period — then we settle up.' : `Then it's ${DATES[t + 1]}. The market moves. Rent comes again.`}</p>
+        <p className="pg-endsub">{t === DATES.length - 1 ? L('Last period — then we settle up.', '最后一期——然后就是总结算。') : L(`Then it's ${DATES[t + 1]}. The market moves. Rent comes again.`, `接下来是${T(DATES[t + 1])}。市场会动，房租也会再来。`)}</p>
       </div>
     </div>
   );

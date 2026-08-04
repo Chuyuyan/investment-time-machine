@@ -174,6 +174,8 @@ export const ERA_DOTCOM = {
   },
   blurbs: {
     win: (net) => `You turned $4,000 into ${net} through the wildest bubble and the longest winter the market has ever had. That's escape velocity.`,
+    winZh: (net) => `穿过市场史上最疯的泡沫和最长的寒冬，你把 $4,000 变成了 ${net}。这就是逃逸速度。`,
     survive: 'Five years, one bubble, one long winter — and you are still standing. Most people who started in 1999 cannot say that.',
+    surviveZh: '五年，一场泡沫，一个漫长的寒冬——你还站着。1999 年入场的人，大多说不出这句话。',
   },
 };

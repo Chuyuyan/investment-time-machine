@@ -9,6 +9,7 @@ import RunGame from './components/RunGame.jsx';
 import InvestGame from './components/InvestGame.jsx';
 import PressureGame from './components/PressureGame.jsx';
 import AccountBar from './components/AccountBar.jsx';
+import { LangGlobe } from './i18n.jsx';
 import './styles.css';
 
 // Prototype toggles:
@@ -39,6 +40,7 @@ document.documentElement.style.setProperty('--acct-col', proto ? '440px' : '560p
 // separate root, and sign-in should be reachable from all of them.
 createRoot(document.getElementById('root')).render(
   <React.StrictMode>
+    <LangGlobe />
     <AccountBar />
     <Root />
   </React.StrictMode>,

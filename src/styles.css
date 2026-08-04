@@ -6626,3 +6626,8 @@ body:has(.core) {
 .pg-ch-state.done { color: #6fe0a0; border-color: rgba(53, 192, 122, 0.45); }
 .pg-secondary { display: block; width: 100%; margin-top: 10px; padding: 13px; font-size: 14px; font-weight: 700; color: #e7ecf6; background: #2a3145; border: 1px solid #3a4358; border-radius: 12px; cursor: pointer; }
 .pg-secondary:hover { background: #333c54; }
+
+/* language globe — always visible, above every modal (login dialog is z 200) */
+.itm-globe { position: fixed; left: 12px; bottom: 12px; z-index: 300; display: flex; align-items: center; gap: 5px; height: 44px; padding: 0 12px; border-radius: 22px; background: #1b2030; border: 1px solid #2c3346; color: #e7ecf6; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5); }
+.itm-globe:hover { background: #222a3c; border-color: rgba(224, 166, 58, 0.5); }
+.itm-globe svg { display: block; }
