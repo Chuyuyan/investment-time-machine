@@ -40,8 +40,12 @@ export default function AccountBar() {
     const unsubscribe = subscribeUser(setLocalUser);
     restoreSession().then((u) => {
       setReady(true);
-      // First-time visitors get the offer once; everyone else is left alone.
-      if (!u && !wasDismissed()) setOpen(true);
+      // The offer waits until there's a run worth saving: brand-new players go
+      // straight to the game, and only someone who has finished a chapter
+      // (itm_chapters_v1, written by the game on completion) is asked — once.
+      let hasRun = false;
+      try { hasRun = !!localStorage.getItem('itm_chapters_v1'); } catch { /* private mode */ }
+      if (!u && hasRun && !wasDismissed()) setOpen(true);
     });
     return unsubscribe;
   }, []);

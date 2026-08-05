@@ -698,6 +698,7 @@ export default function PressureGame() {
       <div className="pg"><div className="pg-col pg-mid">{muteBtn}
         <p className="pg-kick">{T('Investment Time Machine')}</p>
         <h1 className="pg-title">{T("You're broke. Rent is due. Don't get evicted — get free.")}</h1>
+        <p className="pg-lead">{L('Everything in here is real — the companies, the prices, the headlines. You know what happens next. Nobody did back then.', '这里的一切都是真的——公司、价格、头条。接下来发生的事，你现在知道，当时没人知道。')}</p>
         {ERAS.map((era) => { const rec = prog[era.id]; const eraLocked = era.requires && !(prog[era.requires] && prog[era.requires].done); return (
           <button key={era.id} className={'pg-chapter' + (eraLocked ? ' locked' : '')} disabled={eraLocked} onClick={() => startEra(era.id)}>
             <span className="pg-ch-num">{L(`Chapter ${era.num}`, `第 ${era.num} 章`)}</span>
@@ -707,6 +708,7 @@ export default function PressureGame() {
           </button>
         ); })}
         <ul className="pg-rules">
+          <li>{L(<><b>Reach $15,000 and you're free.</b> That's the win. Cash and holdings both count.</>, <><b>攒到 $15,000，你就自由了。</b>这就是赢。现金和持仓都算数。</>)}</li>
           <li>{L(<><b>$4,000 to your name.</b> Rent is <b>$700 every period</b>. Miss it and you're out.</>, <><b>全部身家 $4,000。</b>每期房租 <b>$700</b>，交不上就出局。</>)}</li>
           <li>{L(<><b>3 moves a period.</b> Investigate for facts and insight, grind a side gig for cash, or hit night school.</>, <><b>每期 3 步。</b>调查换事实和洞察，打零工换现金，或者去上夜校。</>)}</li>
           <li>{L(<><b>Cousin Sal will not shut up.</b> He's family, he's confident, and he's usually wrong. Learn when to ignore him.</>, <><b>表哥 Sal 永远闭不上嘴。</b>他是家人、信心爆棚、而且基本都是错的。学会什么时候不听他的。</>)}</li>
