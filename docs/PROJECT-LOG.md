@@ -550,9 +550,7 @@ npm run dev      # http://localhost:5173/?proto=decision&dev=1
 npm test         # 9 engine tests
 npm run build
 ```
-The repo is currently **private**. `node_modules/`, `dist/`, and `.claude/` are
-git-ignored (the last holds machine-specific absolute paths — recreate local
-tooling config per device).
+The repo is **public**. `node_modules/` and `dist/` are git-ignored.
 
 ---
 
