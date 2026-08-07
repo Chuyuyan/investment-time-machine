@@ -389,6 +389,22 @@ export default function PressureGame() {
   const [myLinks, setMyLinks] = useState(loadPouch);   // your hypotheses: { force, company, dir, status, sal? } — resolved ones survive runs
   const [verdicts, setVerdicts] = useState([]); // last period's map judgments
   const [pouchOpen, setPouchOpen] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false); // re-open the pouch how-to after the first link exists
+  const [salWait, setSalWait] = useState(false);
+  const [hint, setHint] = useState(null);            // one-time first-touch nudges, Sal-voiced
+  const hintsShown = useRef((() => { try { return JSON.parse(localStorage.getItem('itm_hints_v1')) || {}; } catch (e) { return {}; } })());
+  function fireHint(key, en, zh) {
+    if (hintsShown.current[key]) return;
+    hintsShown.current[key] = 1;
+    try { localStorage.setItem('itm_hints_v1', JSON.stringify(hintsShown.current)); } catch (e) { /* private mode */ }
+    setHint({ key, en, zh });
+  }
+  useEffect(() => {
+    if (phase !== 'play' || t === 0) return;
+    setSalWait(true);
+    const id = setTimeout(() => setSalWait(false), 3500);
+    return () => clearTimeout(id);
+  }, [phase, t]);
   const [soundOn, setSoundOn] = useState(() => { try { return localStorage.getItem('itm_sound') !== '0'; } catch (e) { return true; } });
   const lastVoice = useRef('');
   // Night school: once per period, 1 move. A real case (+2 if right) or an
@@ -496,7 +512,11 @@ export default function PressureGame() {
     }
     return S.base[turn] || null;
   }
-  const salEvt = !salDone[t] ? salFor(t) : null;
+  // Sal never opens the show. Period 1 he waits for the player's first real
+  // action (a move spent or a position taken), later periods he holds back a
+  // few seconds so the headline and the pouch banner land first.
+  const orientated = t > 0 || acts < ACTIONS || Object.values(shares).some((n) => n > 0);
+  const salEvt = !salDone[t] && !salWait && orientated ? salFor(t) : null;
 
   // sound: music follows the market's mood; Sal babbles gibberish when he pops in
   useEffect(() => { if (phase === 'play') itmAudio.music(MUSIC_MOODS[t] || 'calm'); }, [phase, t]);
@@ -519,7 +539,7 @@ export default function PressureGame() {
   const muteBtn = <button className="pg-mute" onClick={toggleSound} aria-label="Sound on or off">{soundOn ? '🔊' : '🔇'}</button>;
 
   // Researching is what earns insight — the game rewards the habit it wants.
-  function dig(id) { if (acts <= 0 || dugAt[id] === t) return; setDugAt({ ...dugAt, [id]: t }); setActs(acts - 1); setInsight(insight + 1); itmAudio.scribble(); }
+  function dig(id) { if (acts <= 0 || dugAt[id] === t) return; setDugAt({ ...dugAt, [id]: t }); setActs(acts - 1); setInsight(insight + 1); itmAudio.scribble(); fireHint('dig', '"Facts, cuz — money, price, news. Whether to buy is on you."', '"事实到手了表哥——钱、价格、新闻。买不买你自己拿主意。"'); }
   function unlockCash(c) { if (unlocked.includes(c.id) || cash < c.cost) return; setCash(cash - c.cost); setUnlocked([...unlocked, c.id]); itmAudio.unlock(); }
   function unlockXp(c) { if (unlocked.includes(c.id) || insight < c.xp) return; setInsight(insight - c.xp); setUnlocked([...unlocked, c.id]); itmAudio.unlock(); }
 
@@ -597,6 +617,7 @@ export default function PressureGame() {
     // Rent guard: warn before a buy that would leave you short for rent.
     if (a > 0 && cash - Math.min(a, cash) < RENT) { setRentWarn({ id, amt: a }); return; }
     if (a > 0) buy(id, a); else if (a < 0) sell(id, -a);
+    if (a) fireHint('trade', '"Position\'s on, cuz. The market only moves when you end the period."', '"仓位建好了表哥。市场要等你结束本期才会动。"');
     setPend({ ...pend, [id]: 0 });
   }
   function confirmRentBuy() { buy(rentWarn.id, rentWarn.amt); setPend({ ...pend, [rentWarn.id]: 0 }); setRentWarn(null); }
@@ -779,6 +800,7 @@ export default function PressureGame() {
           <button className={'pg-pouch' + (mapAlerts.length ? ' hot' : '')} onClick={() => { setPouchOpen(true); itmAudio.pouch(); }} aria-label="Open your market map">
             <PouchIcon />
             {activeForces.length > 0 && <span className="pg-pouch-badge">{activeForces.length}</span>}
+            <span className="pg-pouch-lbl">{L('pouch', '锦囊')}</span>
           </button>
           <div className={'pg-rent' + (rentDanger ? ' danger' : '')}><span>{T('Rent due')}</span><b>{fmt(RENT)}</b></div>
         </div>
@@ -786,7 +808,7 @@ export default function PressureGame() {
           <div className={'pg-stat' + (robbing ? ' robbed' : '')}><span>{T('Cash')}</span><b className={rentDanger ? 'down' : ''}>{fmt(cash)}</b>{robbing ? <span className="pg-rob-amt">−{fmt(robbing)}</span> : null}</div>
           <div className="pg-stat"><span>{T('Invested')}</span><b>{fmt(holdings)}</b></div>
           <div className="pg-stat"><span>{T('Net worth')}</span><b>{fmt(net)}</b></div>
-          <div className="pg-stat pg-freedom"><span>{T('Freedom')}</span><b>{Math.round(net / FREEDOM * 100)}%</b></div>
+          <div className="pg-stat pg-freedom"><span>{T('Freedom')}</span><b>{Math.round(net / FREEDOM * 100)}%</b><i className="pg-free-goal">{L('goal $15,000', '目标 $15,000')}</i></div>
         </div>
 
         {resumed && (
@@ -796,6 +818,13 @@ export default function PressureGame() {
         )}
         <p className="pg-headline">{T(HEADLINE[t])}</p>
         {flash && <p className="pg-flash">{flash}</p>}
+        {hint && !salEvt && (
+          <button className="pg-hint" onClick={() => setHint(null)}>
+            <span className="pg-hint-tag">SAL</span>
+            <span className="pg-hint-text">{L(hint.en, hint.zh)}</span>
+            <span className="pg-hint-x">×</span>
+          </button>
+        )}
 
         {newForces.length > 0 && (
           <button className="pg-newforce" onClick={() => setPouchOpen(true)}>
@@ -849,17 +878,18 @@ export default function PressureGame() {
         ) : null}
 
         <div className="pg-time">
-          <span className="pg-time-lbl">{T('Time this period')}</span>
+          <span className="pg-time-lbl">{L('Moves left', '剩余步数')}</span>
           <span className="pg-pips">{Array.from({ length: ACTIONS }).map((_, i) => <span key={i} className={'pg-pip' + (i < acts ? ' on' : '')} />)}</span>
-          <span className="pg-insight" title="Earned by investigating. Spend it to follow new companies and to stake links in your pouch.">{L(`💡 ${insight} insight`, `💡 ${insight} 洞察`)}</span>
-          <button className="pg-gig" disabled={acts <= 0} onClick={gig}>{L(`Side gig +${fmt(GIG)}`, `打零工 +${fmt(GIG)}`)}</button>
-          <button className="pg-gig pg-study" disabled={acts <= 0 || !!campDoneAt[t]} onClick={campOpen} title="Study one real case from market history. Read it right and earn 2 insight.">{T(campDoneAt[t] ? 'Studied tonight' : 'Night school')}</button>
+          <span className="pg-insight">{L(`💡 ${insight} insight`, `💡 ${insight} 洞察`)}</span>
+          <button className="pg-gig" disabled={acts <= 0} onClick={gig}>{L(`Side gig +${fmt(GIG)} (1 move)`, `打零工 +${fmt(GIG)}（花 1 步）`)}</button>
+          <button className="pg-gig pg-study" disabled={acts <= 0 || !!campDoneAt[t]} onClick={campOpen}>{T(campDoneAt[t] ? 'Studied tonight' : 'Night school')}</button>
         </div>
+        {t <= 1 && <p className="pg-insight-tip">{L('Investigating earns insight — you spend it in the pouch and to follow new companies.', '调查赚洞察——在锦囊里押注、关注新公司，花的都是它。')}</p>}
 
         {(LEADS[t] || []).length > 0 && (
           <div className="pg-leads">
             <span className="pg-leads-h">{T('📣 Leads — worth investigating, not buy tips')}</span>
-            {LEADS[t].map((l, i) => <p key={i} className="pg-lead-row"><b>{COMPANIES.find((c) => c.id === l.id).name}</b> — {T(l.why)}</p>)}
+            {LEADS[t].map((l, i) => <p key={i} className="pg-lead-row"><b>{COMPANIES.find((c) => c.id === l.id).name}</b> — {T(l.why)}{!unlocked.includes(l.id) && <em className="pg-lead-locked">{L(" You don't follow them yet — find them below.", ' 你还没关注它——去下面解锁。')}</em>}</p>)}
           </div>
         )}
 
@@ -876,7 +906,7 @@ export default function PressureGame() {
           return (
             <div className={'pg-card' + (leadIds.has(c.id) ? ' lead' : '')} key={c.id}>
               <div className="pg-card-top">
-                <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name}{leadIds.has(c.id) && <span className="pg-tag">{T('lead')}</span>}</span>
+                <span className="pg-co">{t > 0 && <span className="pg-dot" style={{ background: COLORS[c.id] }} />}{c.name}{leadIds.has(c.id) && <span className="pg-tag">{T('lead')}</span>}</span>
                 <span className="pg-pb"><b>${p}</b>{mv != null && <span className={'pg-mv ' + cls(mv)}>{sPct(mv)}</span>}</span>
               </div>
               {pos > 0.5 && <div className="pg-own">{L('you hold ', '你持有 ')}{fmt(pos)} <em className={cls(g)}>{sPct(g)}</em></div>}
@@ -890,7 +920,7 @@ export default function PressureGame() {
                     <div className="pg-fact"><span className="pg-fk">{T('News')}</span><span className="pg-fv">{T(info.n)}</span></div>
                     {!freshIntel && <button className="pg-dig pg-redig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? T('no moves left this period') : L(`Update intel — what's new in ${DATES[t]}? (1 move)`, `更新情报——${T(DATES[t])}有什么新变化？（花 1 步）`)}</button>}
                   </div>
-                : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{T(acts <= 0 ? 'no moves left this period' : 'Investigate (1 move)')}</button>}
+                : <button className="pg-dig" disabled={acts <= 0} onClick={() => dig(c.id)}>{acts <= 0 ? T('no moves left this period') : L('Investigate (1 move · +1 insight)', '调查（花 1 步 · +1 洞察）')}</button>}
 
               {mapAlerts.filter((a) => a.l.company === c.id).map((a, i) => (
                 <p className={'pg-tradecall' + (a.l.sal ? ' sal' : '')} key={i}>{L('🧧 Your pouch: ', '🧧 你的锦囊：')}{a.f.icon} <b>{T(a.f.name)}</b> {T(a.l.dir === 'helps' ? '📈 helps' : '📉 hurts')} <b>{c.name}</b>{a.l.status === 'proven' ? L(' — proven.', '——已证实。') : a.l.sal ? L(" — Sal's line, not yours.", '——这是 Sal 的判断，不是你的。') : L(' — your call, unproven.', '——你的判断，未经证实。')}</p>
@@ -917,12 +947,12 @@ export default function PressureGame() {
                   return (
                     <div className="pg-locked" key={c.id}>
                       <div className="pg-locked-top">
-                        <span className="pg-co"><span className="pg-dot" style={{ background: COLORS[c.id] }} />{c.name} <span className="pg-lockchip">{T('not following')}</span></span>
+                        <span className="pg-co">{t > 0 && <span className="pg-dot" style={{ background: COLORS[c.id] }} />}{c.name} <span className="pg-lockchip">{T('not following')}</span></span>
                         {lp != null ? <span className="pg-pb"><b>${lp}</b>{lmv != null && <span className={'pg-mv ' + cls(lmv)}>{sPct(lmv)}</span>}</span> : <span className="pg-na">{T('not public yet')}</span>}
                       </div>
                       <p className="pg-teaser">{T(c.teasers[t])}</p>
                       <div className="pg-locked-btns">
-                        <button className="pg-unlock" disabled={cash < c.cost || lp == null} onClick={() => unlockCash(c)}>{L(`Subscribe · ${fmt(c.cost)}`, `订阅 · ${fmt(c.cost)}`)}</button>
+                        <button className="pg-unlock" disabled={cash < c.cost || lp == null} onClick={() => unlockCash(c)}>{L(`Start following · ${fmt(c.cost)}`, `开始关注 · ${fmt(c.cost)}`)}</button>
                         <button className="pg-unlock xp" disabled={insight < c.xp || lp == null} onClick={() => unlockXp(c)}>{L(`Use ${c.xp} insight`, `用 ${c.xp} 洞察`)}</button>
                       </div>
                       {tight && <p className="pg-locked-warn">{T('Paying leaves you short for rent.')}</p>}
@@ -947,7 +977,10 @@ export default function PressureGame() {
               </div>
               <p className="pg-map-sub">{L(<>Your call on what moves whom — you can be wrong. Drawing a link stakes <b>1 💡</b>: proven pays back <b>2</b>, broken loses it. Proven links survive into your next run.</>, <>谁影响谁，由你判断——你可能判断错。连一条线押 <b>1 💡</b>：被证实退 <b>2</b>，连错没收。已证实的线会跟进你的下一局。</>)}</p>
               {metForces.length === 0 && <p className="pg-pouch-empty">{T("Empty so far. Forces show up in the news — read the headlines, and they'll land in here.")}</p>}
-              {metForces.length > 0 && myLinks.length === 0 && (
+              {metForces.length > 0 && myLinks.length > 0 && (
+                <button className="pg-guide-toggle" onClick={() => setGuideOpen((o) => !o)}>{guideOpen ? L('Hide the how-to', '收起玩法说明') : L('How does the pouch work?', '锦囊怎么用？')}</button>
+              )}
+              {metForces.length > 0 && (myLinks.length === 0 || guideOpen) && (
                 <div className="pg-pouch-guide">
                   <p className="pg-pouch-guide-h">{T('How the pouch works')}</p>
                   <p><b>1.</b> {L('Big forces (a lockdown, a rate hike…) land in here when they hit the news.', '大势（封锁、加息……）一上新闻，就会落进这里。')}</p>
@@ -1042,7 +1075,7 @@ export default function PressureGame() {
                   ) : (
                     <React.Fragment>
                       <div className={'ns-verdict ' + (camp.right ? 'ok' : 'no')}>
-                        <b>{T(camp.right ? 'You read it right.' : 'You read it wrong.')}</b> {L(`It went ${C.out.dir === 1 ? 'UP' : 'DOWN'} ${C.out.move}% ${C.out.when}.`, `它${C.out.dir === 1 ? '涨' : '跌'}了 ${Math.abs(C.out.move)}%（${C.out.when}）。`)}
+                        <b>{T(camp.right ? 'You read it right.' : 'You read it wrong.')}</b> {L(`It went ${C.out.dir === 1 ? 'UP' : 'DOWN'} ${C.out.move}% ${C.out.when}.`, `它${C.out.dir === 1 ? '涨' : '跌'}了 ${Math.abs(C.out.move)}%（${T(C.out.when)}）。`)}
                       </div>
                       <p className="ns-reveal">{L('It was ', '它是 ')}<b>{C.name}</b>{L('. ', '。')}{T(C.story)}</p>
                       {C.fair && <p className="ns-lesson">{L('The careful read: ', '谨慎的读法：')}{T(C.fair.note)}</p>}

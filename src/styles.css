@@ -6631,3 +6631,17 @@ body:has(.core) {
 .itm-globe { position: fixed; left: 12px; bottom: 12px; z-index: 300; display: flex; align-items: center; gap: 5px; height: 44px; padding: 0 12px; border-radius: 22px; background: #1b2030; border: 1px solid #2c3346; color: #e7ecf6; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.5); }
 .itm-globe:hover { background: #222a3c; border-color: rgba(224, 166, 58, 0.5); }
 .itm-globe svg { display: block; }
+
+/* Onboarding legibility: the goal under Freedom, the insight explainer, the
+   pouch's visible name, the lead unlock note, the re-openable pouch guide. */
+.pg-free-goal { display: block; font-style: normal; font-size: 9px; letter-spacing: .04em; color: #b8a26e; margin-top: 2px; }
+.pg-insight-tip { margin: 6px 2px 0; font-size: 12px; line-height: 1.5; color: #9aa3b8; }
+.pg-pouch-lbl { display: block; font-size: 9px; letter-spacing: .12em; color: #cdbb95; margin-top: 1px; text-align: center; }
+.pg-lead-locked { font-style: normal; opacity: .72; }
+.pg-guide-toggle { display: block; margin: 0 0 10px; padding: 7px 12px; border-radius: 9px; border: 1px dashed rgba(205,187,149,.5); background: transparent; color: #cdbb95; font-size: 12px; cursor: pointer; }
+.pg-guide-toggle:hover { border-color: #cdbb95; }
+.pg-hint { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; margin: 0 0 10px; padding: 9px 12px; border-radius: 11px; border: 1px solid rgba(205,187,149,.4); background: rgba(38,32,22,.92); color: #e2d6bd; font-size: 12.5px; line-height: 1.45; cursor: pointer; animation: hintIn .25s ease-out; }
+.pg-hint-tag { flex: none; font-size: 9px; font-weight: 800; letter-spacing: .1em; padding: 2px 6px; border-radius: 6px; background: #b03a2e; color: #fff; }
+.pg-hint-text { flex: 1; }
+.pg-hint-x { flex: none; opacity: .5; font-size: 14px; }
+@keyframes hintIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
