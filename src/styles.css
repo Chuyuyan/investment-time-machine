@@ -6645,3 +6645,6 @@ body:has(.core) {
 .pg-hint-text { flex: 1; }
 .pg-hint-x { flex: none; opacity: .5; font-size: 14px; }
 @keyframes hintIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.pg-insight .pg-bulb { vertical-align: -2px; margin-right: 4px; }
+.pg-link-salmark { font-style: normal; font-size: 8px; font-weight: 800; letter-spacing: .08em; padding: 1px 4px; border-radius: 5px; background: #b03a2e; color: #fff; margin-left: 5px; vertical-align: 1px; }
+.pg-heist-cash svg { display: block; filter: drop-shadow(0 2px 4px rgba(0,0,0,.4)); }

@@ -119,10 +119,10 @@ export const ERA_DOTCOM = {
     [],
   ],
   forces: [
-    { id: 'NET', name: 'The internet gold rush', icon: '🌐', at: [0, 1], blurb: 'Everything with a website is being priced as the future.' },
-    { id: 'RATES', name: 'Rate hikes', icon: '🏦', at: [1, 2], blurb: 'The Fed makes money expensive. Expensive dreams feel it first.' },
-    { id: 'BUST', name: 'The long bust', icon: '🕳️', at: [2, 3, 4], blurb: 'The easy money is gone. Companies without profits are dying.' },
-    { id: 'RECOV', name: 'The slow rebuild', icon: '🌱', at: [4, 5], blurb: 'Real businesses grind back while nobody is watching.' },
+    { id: 'NET', name: 'The internet gold rush', at: [0, 1], blurb: 'Everything with a website is being priced as the future.' },
+    { id: 'RATES', name: 'Rate hikes', at: [1, 2], blurb: 'The Fed makes money expensive. Expensive dreams feel it first.' },
+    { id: 'BUST', name: 'The long bust', at: [2, 3, 4], blurb: 'The easy money is gone. Companies without profits are dying.' },
+    { id: 'RECOV', name: 'The slow rebuild', at: [4, 5], blurb: 'Real businesses grind back while nobody is watching.' },
   ],
   truth: {
     NET: {

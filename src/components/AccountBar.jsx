@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { T, useLangTick } from '../i18n.jsx';
 import { mountGoogleButton } from '../lib/playkit.js';
 import {
   playkit,
@@ -31,6 +32,7 @@ const rememberDismissed = () => {
  *    as part of the game rather than as browser chrome.
  */
 export default function AccountBar() {
+  useLangTick(); // re-render (dialog included) when the language toggles
   const [user, setLocalUser] = useState(getUser);
   const [open, setOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -83,7 +85,7 @@ export default function AccountBar() {
                     setMenuOpen(false);
                   }}
                 >
-                  Sign out
+                  {T('Sign out')}
                 </button>
               </div>
             )}
@@ -91,7 +93,7 @@ export default function AccountBar() {
         ) : (
           ready && (
             <button className="acct-chip is-ghost" onClick={() => setOpen(true)}>
-              Sign in
+              {T('Sign in')}
             </button>
           )
         )}
@@ -131,7 +133,7 @@ function AccountDialog({ onClose }) {
       clientId: googleClientId,
       container: googleSlot.current,
       onSignedIn: (u) => { setUser(u); rememberDismissed(); onClose(); },
-      onError: () => setError('Google sign-in failed. Try email instead.'),
+      onError: () => setError(T('Google sign-in failed. Try email instead.')),
       width: 260,
     }).then((ok) => { if (!cancelled) setGoogleReady(ok); });
     return () => { cancelled = true; };
@@ -152,7 +154,7 @@ function AccountDialog({ onClose }) {
         await playkit.requestPasswordReset(email);
         // The server answers the same whether or not the address exists, and so
         // does this: telling the player which it was would undo that.
-        setNotice('If that address has an account, a reset link is on its way.');
+        setNotice(T('If that address has an account, a reset link is on its way.'));
         return;
       }
       const u =
@@ -163,7 +165,7 @@ function AccountDialog({ onClose }) {
       rememberDismissed();
       onClose();
     } catch (err) {
-      setError(err?.message || 'Something went wrong. Try again.');
+      setError(err?.message || T('Something went wrong. Try again.'));
     } finally {
       setBusy(false);
     }
@@ -171,20 +173,20 @@ function AccountDialog({ onClose }) {
 
   return (
     <div className="acct-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="acct-dialog" role="dialog" aria-modal="true" aria-label="Save your progress">
+      <div className="acct-dialog" role="dialog" aria-modal="true" aria-label={T('Save your progress')}>
         <h2 className="acct-title">
-          {mode === 'forgot' ? 'Reset your password' : 'Save your progress'}
+          {T(mode === 'forgot' ? 'Reset your password' : 'Save your progress')}
         </h2>
         <p className="acct-sub">
           {mode === 'forgot'
-            ? "Enter the email you signed up with and we'll send a link to set a new password."
-            : 'An account keeps your runs and lets you pick up on any device. Entirely optional.'}
+            ? T("Enter the email you signed up with and we'll send a link to set a new password.")
+            : T('An account keeps your runs and lets you pick up on any device. Entirely optional.')}
         </p>
 
         {mode !== 'forgot' && (
           <>
             <div ref={googleSlot} className="acct-google" />
-            {googleReady && <div className="acct-or"><span>or</span></div>}
+            {googleReady && <div className="acct-or"><span>{T('or')}</span></div>}
           </>
         )}
 
@@ -193,7 +195,7 @@ function AccountDialog({ onClose }) {
             <input
               ref={firstField}
               className="acct-input"
-              placeholder="Display name"
+              placeholder={T('Display name')}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               autoComplete="nickname"
@@ -203,7 +205,7 @@ function AccountDialog({ onClose }) {
             ref={mode === 'register' ? null : firstField}
             className="acct-input"
             type="email"
-            placeholder="Email"
+            placeholder={T('Email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
@@ -213,7 +215,7 @@ function AccountDialog({ onClose }) {
             <input
               className="acct-input"
               type="password"
-              placeholder="Password"
+              placeholder={T('Password')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               autoComplete={mode === 'register' ? 'new-password' : 'current-password'}
@@ -227,36 +229,36 @@ function AccountDialog({ onClose }) {
           <button className="acct-primary" type="submit" disabled={busy || Boolean(notice)}>
             {busy
               ? '…'
-              : mode === 'register'
+              : T(mode === 'register'
                 ? 'Create account'
                 : mode === 'forgot'
                   ? 'Send reset link'
-                  : 'Sign in'}
+                  : 'Sign in')}
           </button>
         </form>
 
         {mode === 'login' && (
           <p className="acct-switch">
             <button type="button" className="acct-link" onClick={() => switchMode('forgot')}>
-              Forgot your password?
+              {T('Forgot your password?')}
             </button>
           </p>
         )}
 
         <p className="acct-switch">
-          {mode === 'register' && 'Already have an account? '}
-          {mode === 'login' && 'New here? '}
+          {mode === 'register' && T('Already have an account? ')}
+          {mode === 'login' && T('New here? ')}
           <button
             type="button"
             className="acct-link"
             onClick={() => switchMode(mode === 'register' ? 'login' : mode === 'forgot' ? 'login' : 'register')}
           >
-            {mode === 'register' ? 'Sign in' : mode === 'forgot' ? 'Back to sign in' : 'Create one'}
+            {T(mode === 'register' ? 'Sign in' : mode === 'forgot' ? 'Back to sign in' : 'Create one')}
           </button>
         </p>
 
         <button type="button" className="acct-skip" onClick={onClose}>
-          Play without an account
+          {T('Play without an account')}
         </button>
       </div>
     </div>

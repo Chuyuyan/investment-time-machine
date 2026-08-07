@@ -21,7 +21,7 @@ export const ZH = {
   'The rest of the market — you don’t follow these yet': '市场的其余部分——你还没关注它们',
   "The rest of the market — you don't follow these yet": '市场的其余部分——你还没关注它们',
   'Paying leaves you short for rent.': '付了这笔钱，房租就不够了。',
-  '📣 Leads — worth investigating, not buy tips': '线报——值得调查，不是荐股',
+  'Leads — worth investigating, not buy tips': '线报——值得调查，不是荐股',
   'lead': '线报',
   'Each company has its own colour — the dot on a card just matches its line up here. Nothing more.': '每家公司有自己的颜色——卡片上的圆点只对应上图的线条，没有其他含义。',
   'Cousin Sal': '表哥 Sal',
@@ -67,16 +67,14 @@ export const ZH = {
   'Close the pouch': '收起锦囊',
   'Empty so far. Forces show up in the news — read the headlines, and they’ll land in here.': '目前是空的。大势会出现在新闻里——读头条，它们就会落进来。',
   "Empty so far. Forces show up in the news — read the headlines, and they'll land in here.": '目前是空的。大势会出现在新闻里——读头条，它们就会落进来。',
-  "You're out of 💡 insight — investigate companies to earn more before drawing new links.": '你的 💡 洞察用完了——先去调查公司赚一些，再来连线。',
+  "You're out of insight — investigate companies to earn more before drawing new links.": '你的洞察用完了——先去调查公司赚一些，再来连线。',
   "A force you haven't met yet. Keep reading the news — it's coming.": '一个你还没遇到的大势。继续读新闻——它会来的。',
-  '📈 helps': '📈 利好',
-  '📉 hurts': '📉 利空',
-  '🧧 Your pouch is glowing': '🧧 你的锦囊在发烫',
-  '🧧 The market tested your pouch': '🧧 市场检验了你的锦囊',
-  "🧧 The market's final word on your pouch": '🧧 市场对你锦囊的最终裁决',
+  'Your pouch is glowing': '你的锦囊在发烫',
+  'The market tested your pouch': '市场检验了你的锦囊',
+  "The market's final word on your pouch": '市场对你锦囊的最终裁决',
   '✓ held up': '✓ 成立',
   '✗ wrong': '✗ 错了',
-  'Your stake pays: +2 💡': '押注兑现：+2 💡',
+  'Your stake pays: +2 insight': '押注兑现：+2 洞察',
   'Stake lost — conviction has a price.': '押注没收——信念是有价格的。',
   "That line came straight from Sal's mouth. Worth remembering where you get your lines.": '这句话出自 Sal 之口。记住你的判断都是从哪来的。',
   // ---- night school ----
@@ -598,4 +596,256 @@ Object.assign(ZH, {
 
 Object.assign(ZH, {
   "Thanks, Sal — I'll look into it": '谢了 Sal——我会研究研究的',
+});
+
+Object.assign(ZH, {
+  // ---- night school: the 20 history cases (CoreLoop CASES) ----
+  // clue labels not already in the dict
+  'The company’s real results': '公司的真实业绩',
+  'News headlines': '新闻头条',
+  'People betting it will fall': '押注它会跌的人',
+  // outcome timeframes (C.out.when)
+  'over the next six months': '此后半年内',
+  'within a month': '一个月内',
+  'within two months': '两个月内',
+  'over the next year': '此后一年内',
+  'over the next 18 months': '此后一年半内',
+  'over the next two years': '此后两年内',
+  'over the next three years': '此后三年内',
+  'over the next four years': '此后四年内',
+  'over the next five years': '此后五年内',
+  'within a year': '一年内',
+  // ---- NVIDIA · early 2024 ----
+  'A computer-chip company that tripled last year': '一家去年翻了三倍的电脑芯片公司',
+  'early 2024 · everyone is talking about artificial intelligence': '2024年初 · 人人都在谈人工智能',
+  'it tripled last year and is still climbing': '去年翻了三倍，如今还在爬升',
+  'everyone online says it simply cannot lose': '网上人人都说它根本不可能输',
+  'one of the most expensive prices a stock has ever had': '股票史上数一数二的贵价',
+  'the bosses sold hundreds of millions of dollars of their own shares': '老板们卖掉了数亿美元的自家股票',
+  'The chips powered the artificial-intelligence boom and demand exploded. The “impossibly expensive” stock more than doubled again. The bosses who sold missed out on billions.':
+    '芯片撑起了人工智能热潮，需求爆炸。那只"贵得离谱"的股票又翻了一倍多。卖掉股票的老板们错过了数十亿。',
+  'The careful read said stay away — too expensive, and the bosses themselves were selling.': '离远点——太贵了，而且老板们自己都在卖。',
+  // ---- GameStop · January 2021 ----
+  'A dying mall store that jumped 1,500% in three weeks': '一家三周暴涨 1500% 的濒死商场门店',
+  'January 2021 · the internet has adopted it as a cause': '2021年1月 · 整个互联网把它当成了一场运动',
+  'up 1,500% in three weeks': '三周涨了 1500%',
+  'the whole internet is screaming “buy” at once': '整个互联网在齐声高喊"买"',
+  'a shrinking mall store that loses money every year': '一家不断萎缩、年年亏钱的商场门店',
+  'nearly every expert says this will end badly': '几乎每个专家都说这不会有好下场',
+  'The excitement ran out in days. It fell from $350 to under $50 within a month. The people who bought at the top were the ones who arrived last.':
+    '兴奋几天就烧完了。一个月内它从 350 美元跌到不足 50 美元。在顶点买入的人，正是最后才赶到的人。',
+  'The careful read said the party was almost over — the business underneath could not carry that price.': '派对快散了——底下那门生意撑不起这个价。',
+  // ---- First Republic · March 2023 ----
+  'A bank whose price collapsed on scary headlines': '一家股价被吓人头条砸崩的银行',
+  'March 2023 · two other banks just failed': '2023年3月 · 另外两家银行刚刚倒闭',
+  'frightening stories about banks failing, every single day': '银行倒闭的吓人报道，一天不落',
+  'priced far below everything the bank owns on paper': '定价远低于银行账面上拥有的一切',
+  'the bank’s own bosses were buying shares': '银行自家的老板们在买入股票',
+  'customers were pulling their money out, fast': '储户正在飞快地把钱取走',
+  'The bosses were wrong about their own bank. Customers kept leaving, and the bank was seized and sold within two months. “Cheap” can keep getting cheaper — sometimes all the way to zero.':
+    '老板们看错了自家银行。储户不停离开，两个月内银行被接管、被出售。"便宜"可以一路更便宜——有时直到归零。',
+  'Genuinely hard: cheap price and bosses buying — but customers running for the door is the one thing a bank cannot survive.':
+    '真心难判：价格便宜、老板在买——可储户夺门而逃，恰恰是银行唯一扛不住的事。',
+  // ---- Meta · November 2022 ----
+  'A famous internet company everyone says is finished': '一家人人都说完蛋了的知名互联网公司',
+  'November 2022 · down 75% this year': '2022年11月 · 今年已跌去 75%',
+  'down 75% in a year': '一年跌了 75%',
+  'story after story saying the company wasted billions and lost its way': '一篇接一篇的报道说它烧掉了几十亿、迷了路',
+  'still earns tens of billions in profit every year': '每年仍净赚数百亿',
+  'the cheapest it has ever been compared to its profits': '相对利润，这是它有史以来最便宜的时候',
+  'The panic was overdone. The profits were real, the price was not. It nearly tripled within a year — one of the great comebacks of the decade.':
+    '恐慌过头了。利润是真的，价格不是。一年之内它几乎翻了三倍——这十年最了不起的翻身仗之一。',
+  'The careful read said the fear had gone further than the facts: a company earning that much, priced that low, usually recovers.':
+    '恐惧已经跑到了事实前面：赚这么多、价这么低的公司，通常会缓过来。',
+  // ---- Tesla · June 2019 ----
+  'An electric-car maker the experts say is going bankrupt': '一家专家们说要破产的电动车厂商',
+  'mid 2019 · more people bet against it than any stock in the world': '2019年年中 · 全球被做空最多的股票',
+  'famous investors openly predict bankruptcy': '知名投资人公开预言它会破产',
+  'more money bet against it than any other stock': '押它下跌的钱比押任何股票的都多',
+  'the boss bought $25 million of shares with his own money': '老板自掏腰包买了 2500 万美元的股票',
+  'orders growing every single month': '订单一个月比一个月多',
+  'It did not go bankrupt. Within 18 months it became the most valuable car company on earth, and the people betting against it lost more than on any stock in history.':
+    '它没破产。18 个月内它成了全球市值第一的车厂，做空它的人亏掉的钱超过历史上任何一只股票。',
+  'A genuine coin flip at the time — real danger, real growth, and no way to be sure which would win.':
+    '当时是货真价实的抛硬币——危险是真的，增长也是真的，谁会赢没人说得准。',
+  // ---- Sears · 2014 ----
+  'A legendary store chain at its cheapest price in 30 years': '一家跌到 30 年最低价的传奇连锁百货',
+  '2014 · a famous investor runs it and keeps buying': '2014 · 一位知名投资人掌舵，还在不停买入',
+  'the lowest price in thirty years': '三十年来的最低价',
+  'the famous investor in charge keeps buying shares': '掌舵的知名投资人还在不断买入',
+  'sales have fallen every single year for years': '销售额连年下滑，一年都没落下',
+  'photo stories of empty stores and empty shelves': '空荡门店、空空货架的图片报道',
+  'Cheap was not enough. The stores kept emptying until there was nothing left, and the company went bankrupt in 2018. A dying business beats a cheap price, every time.':
+    '便宜不够用。门店一路空下去，直到什么都不剩，公司 2018 年破产。垂死的生意永远压过便宜的价格，无一例外。',
+  'The careful read: when the business itself shrinks year after year, a low price is a trap, not a bargain.': '生意本身年年缩水时，低价是陷阱，不是便宜货。',
+  // ---- Apple · mid 2016 ----
+  'The world’s most famous phone maker, now called “boring”': '全球最有名的手机厂商，如今被叫作"无聊"',
+  'mid 2016 · experts say its best days are over': '2016年年中 · 专家说它最好的日子过去了',
+  '“the phone story is over” — growth has stalled': '"手机的故事讲完了"——增长已经停滞',
+  'enormous, steady profits, year after year': '巨大而稳定的利润，年复一年',
+  'cheap compared to those profits': '和这些利润一比，价格便宜',
+  'the world’s most famous investor quietly started buying': '全球最有名的投资人悄悄开始买入',
+  'Boring won. The quiet buying you could have seen in public records became one of the most profitable investments ever made.':
+    '无聊赢了。那笔公开记录里人人可见的悄悄买入，成了史上最赚钱的投资之一。',
+  'The careful read said huge steady profits at a modest price is the best kind of boring.': '巨大而稳定的利润配上平实的价格，是最好的那种无聊。',
+  // ---- Zoom · October 2020 ----
+  'The video-call company the whole world suddenly uses': '全世界突然都在用的那家视频会议公司',
+  'October 2020 · up 700% this year': '2020年10月 · 今年涨了 700%',
+  'up 700% in a year': '一年涨了 700%',
+  'every school, office and family on earth uses it daily': '地球上的学校、办公室和家庭天天都在用它',
+  'the price only makes sense if lockdowns last forever': '只有封锁永远不结束，这个价格才说得通',
+  'the bosses were steadily selling their own shares': '老板们在持续卖出自家股票',
+  'Everyone really did use it — and the stock still fell 80%, because the price had assumed even more than that. A true story can still be a bad price.':
+    '所有人真的都在用它——股价照样跌了 80%，因为价格假设的比这还要多。真实的故事也可能配着糟糕的价格。',
+  'The careful read: when a price needs the emergency to last forever, it usually does not.': '当一个价格需要紧急状态永远持续，它通常不会持续。',
+  // ---- Moderna · July 2020 ----
+  'A medicine company racing to make the vaccine everyone is waiting for': '一家药厂，正抢着造出全世界都在等的那支疫苗',
+  'July 2020 · it has never sold a product in its life': '2020年7月 · 它这辈子还没卖出过一件产品',
+  'has never sold a single product; loses money every year': '一件产品都没卖出过；年年亏钱',
+  'racing to make the vaccine the whole world needs': '正抢着研制全世界需要的疫苗',
+  'wild excitement — and wild doubt — everywhere': '狂热的兴奋和狂热的怀疑，到处都是',
+  'experts are split down the middle': '专家们正好分成两半',
+  'The vaccine worked. A pure gamble paid off 5-to-1. Remember both halves: it paid — and it was still a gamble. Most bets like this one lose.':
+    '疫苗成了。一场纯粹的赌局按 1 赔 5 兑了现。两半都要记住：它赢了——但它依然是赌。这样的赌注，大多数以输收场。',
+  'A true coin flip — nobody on earth knew whether the science would work. Sitting out was just as sound as betting.':
+    '真正的抛硬币——地球上没人知道这项科学能不能成。旁观和下注一样站得住。',
+  // ---- Microsoft · 2013 ----
+  'A giant old software company everyone calls finished': '一家人人都说气数已尽的老牌软件巨头',
+  '2013 · a new boss is about to take over': '2013 · 新老板即将上任',
+  '“boring, out of ideas, the future belongs to others”': '"无聊、没点子，未来属于别人"',
+  'nearly every business on earth still pays it every month': '地球上几乎每家企业每个月还在向它付钱',
+  'cheap compared to its steady profits': '和它稳定的利润一比，价格便宜',
+  'a new boss with new ideas is about to take over': '一位带着新想法的新老板即将上任',
+  'The “boring, finished” company went up tenfold over the following decade. Nobody tweeted about it. It just kept working.':
+    '那家"无聊、完蛋"的公司在接下来的十年里涨了十倍。没人发推谈论它。它只是一直在运转。',
+  'The careful read: steady profits everyone depends on, at a cheap price, with a reason things might change.':
+    '人人离不开的稳定利润，配上便宜的价格，还有一个可能变天的理由。',
+  // ---- Cisco · March 2000 ----
+  'The company building the internet itself': '建造互联网本身的那家公司',
+  'March 2000 · briefly the most valuable company on earth': '2000年3月 · 一度是全球市值第一的公司',
+  'doubled in the last year': '过去一年翻了一倍',
+  '“the internet is the future, and this company IS the internet”': '"互联网就是未来，而这家公司就是互联网"',
+  'it really does sell the equipment the internet runs on': '互联网赖以运转的设备，确实是它在卖',
+  'priced at two hundred years’ worth of its own profits': '定价相当于它自己两百年的利润',
+  'The internet WAS the future — and the stock still fell 80%, and took twenty years to see that price again. The story was right. The price was wrong.':
+    '互联网确实是未来——股价照样跌了 80%，用了二十年才重见那个价格。故事没错，价格错了。',
+  'The careful read: even a completely true story can cost too much.': '哪怕故事完全是真的，价格也可能贵过头。',
+  // ---- American Express · 1964 ----
+  'A famous payments company caught in a scandal': '一家卷入丑闻的知名支付公司',
+  '1964 · a fraud it lent money to just blew up': '1964 · 它借过钱的一个骗局刚刚爆雷',
+  'a huge scandal, and real money genuinely lost': '一桩大丑闻，真金白银实打实亏掉了',
+  'the stock nearly halved': '股价几乎腰斩',
+  'customers kept using the card exactly like before': '持卡人照旧刷卡，和从前一模一样',
+  '“the reputation is ruined”': '"招牌砸了"',
+  'The scandal was real — but it touched a side business. Customers never stopped using the card. A young investor named Warren Buffett noticed exactly that, bet heavily, and it tripled.':
+    '丑闻是真的——但砸中的是一块副业。持卡人从没停止刷卡。一位叫沃伦·巴菲特的年轻投资人恰恰注意到了这一点，重仓押注，股价翻了三倍。',
+  'The careful read: the scare was about a side business; the main business never blinked.': '吓人的是一块副业；主业连眼都没眨一下。',
+  // ---- Kodak · 2007 ----
+  'The photography giant everyone grew up with': '陪一代代人长大的摄影巨头',
+  '2007 · phones are starting to take pictures': '2007 · 手机开始能拍照了',
+  'one of the most beloved brand names on earth': '地球上最受喜爱的品牌之一',
+  'the lowest price in twenty years': '二十年来的最低价',
+  'film sales fall further every single year': '胶卷销量一年比一年跌得更深',
+  'the bosses have promised a “digital turnaround” for a decade': '老板们把"数码转型"承诺了整整十年',
+  'The turnaround never came. Bankrupt in 2012. A beloved name is a memory, not a business.': '转型始终没来。2012 年破产。一个被人深爱的名字是一段回忆，不是一门生意。',
+  'The careful read: when the world moves on, “cheap” just means the fade has started.': '当世界翻篇了，"便宜"只说明衰败已经开始。',
+  // ---- Netflix · October 2011 ----
+  'A streaming company that just made all its customers furious': '一家刚把全体用户惹火的流媒体公司',
+  'October 2011 · the boss botched a price change, the stock fell 75%': '2011年10月 · 老板改价改砸了，股价跌了 75%',
+  'down 75% in a few months': '几个月内跌了 75%',
+  'customers cancelling in anger; late-night shows mocking the boss': '用户怒而退订；深夜脱口秀拿老板开涮',
+  'streaming keeps growing underneath all the noise': '喧嚣底下，流媒体业务一直在涨',
+  'the boss admitted the mistake and reversed it': '老板认了错，把决定撤了回去',
+  'The anger faded; the streaming kept growing. Within two years the stock was up several hundred percent. A mistake is not the same as a broken business.':
+    '怒气消了；流媒体接着涨。两年之内股价涨了好几倍。犯了个错误，不等于生意坏了。',
+  'The careful read: the customers were angry, but they were still watching. The business itself never stopped working.':
+    '用户在生气，但他们还在看。这门生意本身从没停止运转。',
+  // ---- Amazon · 2015 ----
+  'A giant online store that famously never shows a profit': '一家出了名从不见利润的电商巨头',
+  '2015 · experts have called it overpriced for twenty years straight': '2015 · 专家们连喊了二十年"太贵"',
+  'sales grow relentlessly, every single year': '销售额年年猛涨，一年都不停',
+  'by every normal measure, the price looks absurd': '按任何常规尺子量，这价格都荒唐',
+  '“a bubble” — they have said so for years': '"泡沫"——这话他们说了好多年',
+  'customers love it more every year': '顾客一年比一年更爱它',
+  'The profits were hiding on purpose — every dollar went straight back into growing. The “absurdly priced” store went up five-fold. Some things look expensive because they are actually cheap.':
+    '利润是故意藏起来的——每一块钱都直接投回增长。那家"贵得荒唐"的商店涨了五倍。有些东西看着贵，恰恰因为它其实便宜。',
+  'Genuinely hard: an absurd price on an unstoppable business. The whole question was which one mattered more.':
+    '真心难判：荒唐的价格配上一门挡不住的生意。全部问题就在于哪个更重要。',
+  // ---- Nikola · June 2020 ----
+  'A truck company briefly worth more than Ford': '一家市值一度超过福特的卡车公司',
+  'June 2020 · it has never sold a single truck': '2020年6月 · 它一辆卡车都没卖出过',
+  'the internet has crowned it “the next Tesla”': '互联网已把它加冕为"下一个特斯拉"',
+  'tripled in a month': '一个月翻了三倍',
+  'zero trucks sold, zero money earned — ever': '卖出的卡车为零，赚到的钱为零——从来如此',
+  'worth more than Ford, which sells millions of vehicles a year': '市值超过一年卖几百万辆车的福特',
+  'A famous demo video turned out to be a truck rolling downhill with no engine. The founder left; the price collapsed 95%. “The next Tesla” is the most expensive sentence in investing.':
+    '那段著名的演示视频，原来是一辆没开发动机、顺坡滑行的卡车。创始人走了；股价崩掉 95%。"下一个特斯拉"是投资里最贵的一句话。',
+  'The careful read: a price with no product underneath it is a story, not a business.': '底下没有产品的价格，是个故事，不是门生意。',
+  // ---- AMD · 2015 ----
+  'A chipmaker everyone has left for dead': '一家被所有人判了死刑的芯片厂商',
+  '2015 · its giant rival has been winning for a decade straight': '2015 · 它的巨头对手已经连赢十年',
+  'falling for years — now under two dollars': '连跌多年——如今不到两美元',
+  'losing money, cutting workers': '一边亏钱，一边裁员',
+  'a respected new boss just took over, betting everything on one new design': '一位受人敬重的新老板刚上任，把一切押在一个新设计上',
+  '“game over,” most of them say': '"大势已去"，他们多数人这么说',
+  'The new design worked. The two-dollar stock eventually rose more than fifty-fold and took the lead from its giant rival. Left for dead is not the same as dead.':
+    '新设计成了。那只两美元的股票最终涨了五十多倍，还从巨头对手手里夺走了领先。被当成死人，不等于真死了。',
+  'A true long shot: a dying company — but a real plan, a real leader, and nothing left to lose.':
+    '一场真正的豪赌：一家垂死的公司——但计划是真的，掌舵人是真的，而且已经没什么可输的了。',
+  // ---- Best Buy · 2012 ----
+  'An electronics chain everyone now uses as a showroom': '一家如今被人人当成免费展厅的电器连锁',
+  '2012 · people try the products in store, then buy online for less': '2012 · 人们到店里试货，回头上网买更便宜的',
+  'sales slipping as shopping moves online': '购物转到线上，销售额在下滑',
+  '“retail is dead,” the stories all say': '报道众口一词："实体零售已死"',
+  'the cheapest price in its history': '它有史以来最便宜的价格',
+  'a new boss arrives with a simple, believable plan': '新老板带着一个简单可信的计划来了',
+  'The new boss matched online prices and turned the stores into pickup points. “Dead” retail tripled. A fade can turn — if someone actually changes the business.':
+    '新老板把价格对齐线上，把门店改成自提点。"已死"的零售翻了三倍。衰败可以掉头——前提是真有人在改造这门生意。',
+  'The honest answer: it depended entirely on whether the plan would work — and nobody knew.': '诚实的答案：这完全取决于计划能不能成——而没人知道。',
+  // ---- Enron · 2001 ----
+  'An energy giant crowned “most innovative company” six years running': '一家连续六年被封"最具创新力公司"的能源巨头',
+  '2001 · the numbers look amazing — and nobody can explain them': '2001 · 数字漂亮得惊人——却没人能解释',
+  'reported profits look spectacular': '账面利润漂亮得惊人',
+  'nearly every analyst says buy': '几乎每个分析师都在喊买入',
+  'one lone reporter keeps asking how it actually makes money': '只有一位记者在一直追问：它到底怎么赚钱',
+  'the bosses are quietly selling large amounts of their own shares': '老板们在悄悄大笔卖出自家股票',
+  'The spectacular numbers were fake. It collapsed to nothing within a year. When nobody can explain how the money is made, that is not a detail — that is the whole question.':
+    '那些漂亮得惊人的数字是假的。一年之内它崩塌归零。当没人能解释钱是怎么赚来的，那不是细节——那就是全部问题。',
+  'The careful read: profits nobody can explain, plus bosses selling — the two quietest clues were the ones that mattered.':
+    '没人能解释的利润，加上老板在卖——最安静的两条线索恰恰最要命。',
+  // ---- Intel · 2020 ----
+  'A famous chip giant that looks safe and cheap': '一家看起来又稳又便宜的知名芯片巨头',
+  '2020 · steady profits, trusted name, low price': '2020 · 利润稳、牌子硬、价格低',
+  'big, steady profits': '利润又大又稳',
+  '“the safe choice,” most say': '"稳妥之选"，多数人这么说',
+  'its newest chips keep arriving late — a smaller rival just pulled ahead': '最新的芯片一再迟到——一个更小的对手刚刚超了车',
+  'Cheap and famous — but the product itself was falling behind. The “safe choice” lost 40% while its smaller rival multiplied. In technology, falling behind is the one thing cheap cannot fix.':
+    '又便宜又有名——可产品本身在掉队。"稳妥之选"跌了 40%，它那个更小的对手却翻了几倍。在科技行业，掉队是便宜唯一治不了的病。',
+  'The careful read: when the product is losing the race, steady past profits are just the rear-view mirror.':
+    '当产品正在输掉比赛，过去的稳定利润只是后视镜。',
+});
+
+Object.assign(ZH, {
+  // ---- account dialog (AccountBar) ----
+  'Sign in': '登录',
+  'Sign out': '退出登录',
+  'Save your progress': '保存你的进度',
+  'Reset your password': '重置密码',
+  'An account keeps your runs and lets you pick up on any device. Entirely optional.': '账号会记住你的战绩，换台设备也能接着玩。完全可选。',
+  "Enter the email you signed up with and we'll send a link to set a new password.": '输入你注册时用的邮箱，我们会发一条设置新密码的链接给你。',
+  'or': '或',
+  'Email': '邮箱',
+  'Password': '密码',
+  'Display name': '昵称',
+  'Create account': '注册账号',
+  'Send reset link': '发送重置链接',
+  'Forgot your password?': '忘记密码？',
+  'Already have an account? ': '已有账号？',
+  'New here? ': '第一次来？',
+  'Create one': '注册一个',
+  'Back to sign in': '返回登录',
+  'Play without an account': '不用账号，直接玩',
+  'Google sign-in failed. Try email instead.': 'Google 登录失败，试试邮箱登录。',
+  'If that address has an account, a reset link is on its way.': '如果这个邮箱有账号，重置链接已经在路上了。',
+  'Something went wrong. Try again.': '出了点问题，请再试一次。',
 });
