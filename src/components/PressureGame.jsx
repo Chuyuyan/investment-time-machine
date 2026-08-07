@@ -393,7 +393,6 @@ export default function PressureGame() {
   const [verdicts, setVerdicts] = useState([]); // last period's map judgments
   const [pouchOpen, setPouchOpen] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false); // re-open the pouch how-to after the first link exists
-  const [salWait, setSalWait] = useState(false);
   const [hint, setHint] = useState(null);            // one-time first-touch nudges, Sal-voiced
   const hintsShown = useRef((() => { try { return JSON.parse(localStorage.getItem('itm_hints_v1')) || {}; } catch (e) { return {}; } })());
   function fireHint(key, en, zh) {
@@ -402,12 +401,6 @@ export default function PressureGame() {
     try { localStorage.setItem('itm_hints_v1', JSON.stringify(hintsShown.current)); } catch (e) { /* private mode */ }
     setHint({ key, en, zh });
   }
-  useEffect(() => {
-    if (phase !== 'play' || t === 0) return;
-    setSalWait(true);
-    const id = setTimeout(() => setSalWait(false), 3500);
-    return () => clearTimeout(id);
-  }, [phase, t]);
   const [soundOn, setSoundOn] = useState(() => { try { return localStorage.getItem('itm_sound') !== '0'; } catch (e) { return true; } });
   const lastVoice = useRef('');
   // Night school: once per period, 1 move. A real case (+2 if right) or an
@@ -515,11 +508,7 @@ export default function PressureGame() {
     }
     return S.base[turn] || null;
   }
-  // Sal never opens the show. Period 1 he waits for the player's first real
-  // action (a move spent or a position taken), later periods he holds back a
-  // few seconds so the headline and the pouch banner land first.
-  const orientated = t > 0 || acts < ACTIONS || Object.values(shares).some((n) => n > 0);
-  const salEvt = !salDone[t] && !salWait && orientated ? salFor(t) : null;
+  const salEvt = !salDone[t] ? salFor(t) : null;
 
   // sound: music follows the market's mood; Sal babbles gibberish when he pops in
   useEffect(() => { if (phase === 'play') itmAudio.music(MUSIC_MOODS[t] || 'calm'); }, [phase, t]);
